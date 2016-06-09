@@ -5,8 +5,9 @@ import (
 	"github.com/bborbe/log"
 	io_util "github.com/bborbe/io/util"
 	"flag"
-	"io"
 	"github.com/bborbe/kubernetes_tools/config_parser"
+	"github.com/bborbe/kubernetes_tools/config_writer"
+	"fmt"
 )
 
 const (
@@ -27,7 +28,7 @@ func main() {
 	logger.SetLevelThreshold(log.LogStringToLevel(*logLevelPtr))
 	logger.Debugf("set log level to %s", *logLevelPtr)
 
-	err := do(os.Stdout, *configPtr)
+	err := do(*configPtr)
 	if err != nil {
 		logger.Fatal(err)
 		logger.Close()
@@ -35,7 +36,11 @@ func main() {
 	}
 }
 
-func do(writer io.Writer, configPath string) (error) {
+func do(configPath string) (error) {
+	if len(configPath) == 0 {
+		return fmt.Errorf("parameter %s missing", PARAMETER_CONFIG)
+	}
+
 	logger.Debugf("config: %s", configPath)
 	configPath, err := io_util.NormalizePath(configPath)
 	if err != nil {
@@ -49,6 +54,14 @@ func do(writer io.Writer, configPath string) (error) {
 		logger.Warnf("parse config '%s' failed: %v", config, err)
 		return err
 	}
+
+	configWriter := config_writer.New()
+	if err := configWriter.WriteConfigs(*config); err != nil {
+		logger.Warnf("write configs failed: %v", err)
+		return err
+	}
+
+	logger.Debugf("generate kubernetes cluster configs completed")
 
 	return nil
 }
