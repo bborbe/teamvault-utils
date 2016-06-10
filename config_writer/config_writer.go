@@ -46,11 +46,11 @@ func createScripts(cluster config.Cluster) error {
 		return err
 	}
 
-	if err := writeAdminCopyKeys(); err != nil {
+	if err := writeAdminCopyKeys(cluster); err != nil {
 		return err
 	}
 
-	if err := writeAdminKubectlConfigure(); err != nil {
+	if err := writeAdminKubectlConfigure(cluster); err != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func createScripts(cluster config.Cluster) error {
 		return err
 	}
 
-	if err := writeStorageDataDestroy(); err != nil {
+	if err := writeStorageDestroy(); err != nil {
 		return err
 	}
 
@@ -113,9 +113,14 @@ func createScripts(cluster config.Cluster) error {
 	return nil
 }
 
-func writeAdminCopyKeys() error {
+func writeAdminCopyKeys(cluster config.Cluster) error {
 
-	var script struct{}
+	var data struct{
+		Host string
+		Region string
+	}
+	data.Host = cluster.Host
+	data.Region = cluster.Region
 
 	return writeTemplate("scripts/admin-copy-keys.sh", `#!/bin/bash
 
@@ -126,17 +131,20 @@ set -o errtrace
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
-mkdir -p ~/.kube/hm
+mkdir -p ~/.kube/{{.Region}}
 
-scp bborbe@fire.hm.benjamin-borbe.de:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-ca.pem ~/.kube/hm/
-scp bborbe@fire.hm.benjamin-borbe.de:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin.pem ~/.kube/hm/
-scp bborbe@fire.hm.benjamin-borbe.de:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin-key.pem ~/.kube/hm/
-`, script, true)
+scp bborbe@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-ca.pem ~/.kube/{{.Region}}/
+scp bborbe@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin.pem ~/.kube/{{.Region}}/
+scp bborbe@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin-key.pem ~/.kube/{{.Region}}/
+`, data, true)
 }
 
-func writeAdminKubectlConfigure() error {
+func writeAdminKubectlConfigure(cluster config.Cluster) error {
 
-	var script struct{}
+	var data struct{
+		Region string
+	}
+	data.Region = cluster.Region
 
 	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/bin/bash
 
@@ -147,19 +155,19 @@ set -o errtrace
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
-mkdir -p $HOME/.kube/hm
-kubectl config set-cluster hm-cluster --server=https://172.16.60.6:443 --certificate-authority=$HOME/.kube/hm/kubernetes-ca.pem
-kubectl config set-credentials hm-admin --certificate-authority=$HOME/.kube/hm/kubernetes-ca.pem --client-key=$HOME/.kube/hm/kubernetes-admin-key.pem --client-certificate=$HOME/.kube/hm/kubernetes-admin.pem
-kubectl config set-context hm-system --cluster=hm-cluster --user=hm-admin
-kubectl config use-context hm-system
+mkdir -p $HOME/.kube/{{.Region}}
+kubectl config set-cluster {{.Region}}-cluster --server=https://172.16.60.6:443 --certificate-authority=$HOME/.kube/{{.Region}}/kubernetes-ca.pem
+kubectl config set-credentials {{.Region}}-admin --certificate-authority=$HOME/.kube/{{.Region}}/kubernetes-ca.pem --client-key=$HOME/.kube/{{.Region}}/kubernetes-admin-key.pem --client-certificate=$HOME/.kube/{{.Region}}/kubernetes-admin.pem
+kubectl config set-context {{.Region}}-system --cluster={{.Region}}-cluster --user={{.Region}}-admin
+kubectl config use-context {{.Region}}-system
 
 echo "test with 'kubectl get nodes'"
-`, script, true)
+`, data, true)
 }
 
 func writeClusterCreate() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
 
@@ -212,12 +220,12 @@ rm /var/lib/libvirt/images/coreos_production_qemu_image.img /var/lib/libvirt/ima
 ${SCRIPT_ROOT}/virsh-create.sh
 
 echo "done"
-`, script, true)
+`, data, true)
 }
 
 func writeClusterDestroy() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/cluster-destroy.sh", `#!/bin/bash
 
@@ -249,13 +257,13 @@ for ((i=0; i < 3; i++)) do
 done
 
 echo "done"
-`, script, true)
+`, data, true)
 
 }
 
 func writeStorageDataCreate() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/storage-data-create.sh", `#!/bin/bash
 
@@ -286,12 +294,12 @@ function create_storage {
 for ((i=0; i < 3; i++)) do
 	create_storage "worker${i}"
 done
-`, script, true)
+`, data, true)
 }
 
-func writeStorageDataDestroy() error {
+func writeStorageDestroy() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/storage-data-destroy.sh", `#!/bin/bash
 
@@ -313,12 +321,12 @@ function delete_storage {
 for ((i=0; i < 3; i++)) do
 	delete_storage "worker${i}"
 done
-`, script, true)
+`, data, true)
 }
 
 func writeSSLCopyKeys() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/ssl-copy-keys.sh", `#!/bin/bash
 
@@ -364,12 +372,12 @@ for ((i=0; i < 3; i++)) do
 	#chmod 600 ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl/*.pem
 	chown root:root ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl/*.pem
 done
-`, script, true)
+`, data, true)
 }
 
 func writeSSLGenerateKeys() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/ssl-generate-keys.sh", `#!/bin/bash
 
@@ -426,12 +434,12 @@ done
 openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-admin-key.pem 2048
 openssl req -new -key ${SCRIPT_ROOT}/kubernetes-admin-key.pem -out ${SCRIPT_ROOT}/kubernetes-admin.csr -subj "/CN=kube-admin"
 openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-admin.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-admin.pem -days 365
-`, script, true)
+`, data, true)
 }
 
 func writeVirshCreate() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/virsh-create.sh", `#!/bin/bash
 
@@ -535,12 +543,12 @@ for ((i=0; i < 3; i++)) do
 	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-worker${i}/ssl/,kubernetes-ssl,type=mount,mode=squash \
 	--network bridge=privatebr0,mac=${NODEMAC},model=virtio
 done
-`, script, true)
+`, data, true)
 }
 
 func writeMasterOpenssl() error {
 
-	var script struct{}
+	var data struct{}
 
 	return writeTemplate("scripts/master-openssl.cnf", `[req]
 req_extensions = v3_req
@@ -558,7 +566,7 @@ DNS.4 = kubernetes.default.svc.cluster.local
 IP.1 = $ENV::KUBERNETES_SVC
 IP.2 = $ENV::MASTER_IP
 IP.3 = $ENV::FIREWALL_IP
-`, script, false)
+`, data, false)
 }
 
 func writeNodeOpenssl() error {
@@ -590,12 +598,12 @@ func generateVmNames(cluster config.Cluster) []string {
 }
 
 func generateVirsh(cluster config.Cluster, action string) error {
-	var virsh struct {
+	var data struct {
 		Action  string
 		VmNames []string
 	}
-	virsh.Action = action
-	virsh.VmNames = generateVmNames(cluster)
+	data.Action = action
+	data.VmNames = generateVmNames(cluster)
 	if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/bin/bash
 
 set -o errexit
@@ -606,7 +614,7 @@ set -o errtrace
 {{range $vmname := .VmNames}}
 virsh {{$out.Action}} {{$vmname}}
 {{end}}
-`, virsh, true); err != nil {
+`, data, true); err != nil {
 		return err
 	}
 	return nil
