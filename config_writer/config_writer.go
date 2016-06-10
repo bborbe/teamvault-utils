@@ -28,6 +28,520 @@ func New() *configWriter {
 func (c *configWriter) WriteConfigs(cluster config.Cluster) error {
 	logger.Debugf("write config: %v", cluster)
 
+	if err := createUserData(cluster); err != nil {
+		return err
+	}
+
+	if err := createScripts(cluster); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type Script struct {
+
+}
+
+func createScripts(cluster config.Cluster) error {
+	logger.Debugf("create scripts")
+
+	if err := mkdir("scripts"); err != nil {
+		return err
+	}
+
+	var script Script
+
+	if err := writeTemplate("scripts/admin-copy-keys.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+mkdir -p ~/.kube/hm
+
+scp bborbe@fire.hm.benjamin-borbe.de:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-ca.pem ~/.kube/hm/
+scp bborbe@fire.hm.benjamin-borbe.de:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin.pem ~/.kube/hm/
+scp bborbe@fire.hm.benjamin-borbe.de:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin-key.pem ~/.kube/hm/
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/admin-kubectl-configure.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+mkdir -p $HOME/.kube/hm
+kubectl config set-cluster hm-cluster --server=https://172.16.60.6:443 --certificate-authority=$HOME/.kube/hm/kubernetes-ca.pem
+kubectl config set-credentials hm-admin --certificate-authority=$HOME/.kube/hm/kubernetes-ca.pem --client-key=$HOME/.kube/hm/kubernetes-admin-key.pem --client-certificate=$HOME/.kube/hm/kubernetes-admin.pem
+kubectl config set-context hm-system --cluster=hm-cluster --user=hm-admin
+kubectl config use-context hm-system
+
+echo "test with 'kubectl get nodes'"
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+echo "downloading image ..."
+wget http://stable.release.core-os.net/amd64-usr/current/coreos_production_qemu_image.img.bz2 -O - | bzcat > /var/lib/libvirt/images/coreos_production_qemu_image.img
+#wget http://beta.release.core-os.net/amd64-usr/current/coreos_production_qemu_image.img.bz2 -O - | bzcat > /var/lib/libvirt/images/coreos_production_qemu_image.img
+#wget http://alpha.release.core-os.net/amd64-usr/current/coreos_production_qemu_image.img.bz2 -O - | bzcat > /var/lib/libvirt/images/coreos_production_qemu_image.img
+
+echo "converting image ..."
+qemu-img convert /var/lib/libvirt/images/coreos_production_qemu_image.img -O raw /var/lib/libvirt/images/coreos_production_qemu_image.raw
+
+echo "create lvm volumes ..."
+
+lvcreate -L 10G -n kubernetes-master system
+lvcreate -L 10G -n "kubernetes-master-docker" system
+
+lvcreate -L 10G -n kubernetes-storage system
+lvcreate -L 10G -n "kubernetes-storage-docker" system
+
+for ((i=0; i < 3; i++)) do
+	lvcreate -L 10G -n "kubernetes-etcd${i}" system
+	lvcreate -L 10G -n "kubernetes-etcd${i}-docker" system
+done
+
+for ((i=0; i < 3; i++)) do
+	lvcreate -L 10G -n "kubernetes-worker${i}" system
+	lvcreate -L 10G -n "kubernetes-worker${i}-docker" system
+done
+
+echo "writing images ..."
+dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-master
+dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-storage
+for ((i=0; i < 3; i++)) do
+	dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-etcd${i}
+done
+for ((i=0; i < 3; i++)) do
+	dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-worker${i}
+done
+
+echo "cleanup"
+rm /var/lib/libvirt/images/coreos_production_qemu_image.img /var/lib/libvirt/images/coreos_production_qemu_image.raw
+
+${SCRIPT_ROOT}/virsh-create.sh
+
+echo "done"
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/cluster-destroy.sh", `#!/bin/bash
+
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+${SCRIPT_ROOT}/virsh-destroy.sh
+${SCRIPT_ROOT}/virsh-undefine.sh
+
+echo "remove lvm volumes ..."
+
+lvremove /dev/system/kubernetes-master
+lvremove /dev/system/kubernetes-master-docker
+
+lvremove /dev/system/kubernetes-storage
+lvremove /dev/system/kubernetes-storage-docker
+
+for ((i=0; i < 3; i++)) do
+	lvremove /dev/system/kubernetes-etcd${i}
+	lvremove /dev/system/kubernetes-etcd${i}-docker
+done
+
+for ((i=0; i < 3; i++)) do
+	lvremove /dev/system/kubernetes-worker${i}
+	lvremove /dev/system/kubernetes-worker${i}-docker
+done
+
+echo "done"
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/storage-data-create.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+echo "create lvm data volumes ..."
+lvcreate -L 5G -n kubernetes-storage-data system
+
+echo "format data volum ..."
+wipefs /dev/system/kubernetes-storage-data
+mkfs.ext4 -F /dev/system/kubernetes-storage-data
+
+function create_storage {
+	name="$1"
+	echo "create lvm data volumes for ${name}"
+	lvcreate -L 5G -n kubernetes-${name}-storage system
+
+	echo "format data volum ..."
+	wipefs /dev/system/kubernetes-${name}-storage
+	mkfs.xfs -i size=512 /dev/system/kubernetes-${name}-storage
+}
+
+for ((i=0; i < 3; i++)) do
+	create_storage "worker${i}"
+done
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/storage-data-destroy.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+lvremove /dev/system/kubernetes-storage-data
+
+function delete_storage {
+	name="$1"
+	echo "remove lvm data volumes for worker ${name}"
+	lvremove /dev/system/kubernetes-${name}-storage
+}
+
+for ((i=0; i < 3; i++)) do
+	delete_storage "worker${i}"
+done
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/ssl-copy-keys.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+# kubernetes-master
+mkdir -p ${SCRIPT_ROOT}/../kubernetes-master/ssl
+cp ${SCRIPT_ROOT}/kubernetes-ca.pem ${SCRIPT_ROOT}/../kubernetes-master/ssl/ca.pem
+cp ${SCRIPT_ROOT}/kubernetes-apiserver.pem ${SCRIPT_ROOT}/../kubernetes-master/ssl/apiserver.pem
+cp ${SCRIPT_ROOT}/kubernetes-apiserver-key.pem ${SCRIPT_ROOT}/../kubernetes-master/ssl/apiserver-key.pem
+#chmod 600 ${SCRIPT_ROOT}/../kubernetes-master/ssl/*.pem
+chown root:root ${SCRIPT_ROOT}/../kubernetes-master/ssl/*.pem
+
+# kubernetes-storage
+mkdir -p ${SCRIPT_ROOT}/../kubernetes-storage/ssl
+cp ${SCRIPT_ROOT}/kubernetes-ca.pem ${SCRIPT_ROOT}/../kubernetes-storage/ssl/ca.pem
+cp ${SCRIPT_ROOT}/kubernetes-storage.pem ${SCRIPT_ROOT}/../kubernetes-storage/ssl/node.pem
+cp ${SCRIPT_ROOT}/kubernetes-storage-key.pem ${SCRIPT_ROOT}/../kubernetes-storage/ssl/node-key.pem
+#chmod 600 ${SCRIPT_ROOT}/../kubernetes-storage/ssl/*.pem
+chown root:root ${SCRIPT_ROOT}/../kubernetes-storage/ssl/*.pem
+
+# kubernetes-etcd
+for ((i=0; i < 3; i++)) do
+	mkdir -p ${SCRIPT_ROOT}/../kubernetes-etcd${i}/ssl
+	cp ${SCRIPT_ROOT}/kubernetes-ca.pem ${SCRIPT_ROOT}/../kubernetes-etcd${i}/ssl/ca.pem
+	cp ${SCRIPT_ROOT}/kubernetes-etcd${i}.pem ${SCRIPT_ROOT}/../kubernetes-etcd${i}/ssl/node.pem
+	cp ${SCRIPT_ROOT}/kubernetes-etcd${i}-key.pem ${SCRIPT_ROOT}/../kubernetes-etcd${i}/ssl/node-key.pem
+	#chmod 600 ${SCRIPT_ROOT}/../kubernetes-etcd${i}/ssl/*.pem
+	chown root:root ${SCRIPT_ROOT}/../kubernetes-etcd${i}/ssl/*.pem
+done
+
+# kubernetes-worker
+for ((i=0; i < 3; i++)) do
+	mkdir -p ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl
+	cp ${SCRIPT_ROOT}/kubernetes-ca.pem ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl/ca.pem
+	cp ${SCRIPT_ROOT}/kubernetes-worker${i}.pem ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl/node.pem
+	cp ${SCRIPT_ROOT}/kubernetes-worker${i}-key.pem ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl/node-key.pem
+	#chmod 600 ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl/*.pem
+	chown root:root ${SCRIPT_ROOT}/../kubernetes-worker${i}/ssl/*.pem
+done
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/ssl-generate-keys.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+# https://coreos.com/kubernetes/docs/latest/openssl.html
+
+KUBERNETES_SVC=10.103.0.1
+MASTER_IP=172.16.20.10
+FIREWALL_IP=172.16.60.6
+STORAGE_IP=172.16.20.9
+
+# CA Key
+openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-ca-key.pem 2048
+openssl req -x509 -new -nodes -key ${SCRIPT_ROOT}/kubernetes-ca-key.pem -days 10000 -out ${SCRIPT_ROOT}/kubernetes-ca.pem -subj "/CN=kube-ca"
+
+# Master Key
+openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-apiserver-key.pem 2048
+KUBERNETES_SVC=${KUBERNETES_SVC} MASTER_IP=${MASTER_IP} FIREWALL_IP=${FIREWALL_IP} openssl req -new -key ${SCRIPT_ROOT}/kubernetes-apiserver-key.pem -out ${SCRIPT_ROOT}/kubernetes-apiserver.csr -subj "/CN=kube-apiserver" -config ${SCRIPT_ROOT}/openssl.cnf
+KUBERNETES_SVC=${KUBERNETES_SVC} MASTER_IP=${MASTER_IP} FIREWALL_IP=${FIREWALL_IP} openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-apiserver.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-apiserver.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/openssl.cnf
+
+# Storage Key
+STORAGE_FQDN="storage"
+openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-${STORAGE_FQDN}-key.pem 2048
+WORKER_IP=${STORAGE_IP} openssl req -new -key ${SCRIPT_ROOT}/kubernetes-${STORAGE_FQDN}-key.pem -out ${SCRIPT_ROOT}/kubernetes-${STORAGE_FQDN}.csr -subj "/CN=${STORAGE_FQDN}" -config ${SCRIPT_ROOT}/worker-openssl.cnf
+WORKER_IP=${STORAGE_IP} openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-${STORAGE_FQDN}.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-${STORAGE_FQDN}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/worker-openssl.cnf
+
+# Etcd Key
+for ((i=0; i < 3; i++)) do
+	value=$((15 + $i))
+	ETCD_FQDN="etcd${i}"
+	ETCD_IP=172.16.20.22
+	openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-${ETCD_FQDN}-key.pem 2048
+	WORKER_IP=${ETCD_IP} openssl req -new -key ${SCRIPT_ROOT}/kubernetes-${ETCD_FQDN}-key.pem -out ${SCRIPT_ROOT}/kubernetes-${ETCD_FQDN}.csr -subj "/CN=${ETCD_FQDN}" -config ${SCRIPT_ROOT}/worker-openssl.cnf
+	WORKER_IP=${ETCD_IP} openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-${ETCD_FQDN}.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-${ETCD_FQDN}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/worker-openssl.cnf
+done
+
+# Worker Key
+for ((i=0; i < 3; i++)) do
+	value=$((20 + $i))
+	WORKER_FQDN="worker${i}"
+	WORKER_IP=172.16.20.22
+	openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}-key.pem 2048
+	WORKER_IP=${WORKER_IP} openssl req -new -key ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}-key.pem -out ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}.csr -subj "/CN=${WORKER_FQDN}" -config ${SCRIPT_ROOT}/worker-openssl.cnf
+	WORKER_IP=${WORKER_IP} openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/worker-openssl.cnf
+done
+
+# Admin Key
+openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-admin-key.pem 2048
+openssl req -new -key ${SCRIPT_ROOT}/kubernetes-admin-key.pem -out ${SCRIPT_ROOT}/kubernetes-admin.csr -subj "/CN=kube-admin"
+openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-admin.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-admin.pem -days 365
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/virsh-create.sh", `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+
+SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+
+function generate_mac {
+	printf "00:16:3e:2f:20:%02x" $1
+}
+
+for ((i=0; i < 3; i++)) do
+	NODEMAC=$(generate_mac $((15 + $i)))
+	echo "create virsh kubernetes-etcd${i} mac=${NODEMAC} ..."
+	virt-install \
+	--import \
+	--debug \
+	--serial pty \
+	--accelerate \
+	--ram 750 \
+	--vcpus 2 \
+	--cpu=host \
+	--os-type linux \
+	--os-variant virtio26 \
+	--noautoconsole \
+	--nographics \
+	--name kubernetes-etcd${i} \
+	--disk /dev/system/kubernetes-etcd${i},bus=virtio,cache=none,io=native \
+	--disk /dev/system/kubernetes-etcd${i}-docker,bus=virtio,cache=none,io=native \
+	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-etcd${i}/config/,config-2,type=mount,mode=squash \
+	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-etcd${i}/ssl/,kubernetes-ssl,type=mount,mode=squash \
+	--network bridge=privatebr0,mac=${NODEMAC},model=virtio
+done
+
+NODEMAC=$(generate_mac "10")
+echo "create virsh kubernetes-master mac=${NODEMAC} ..."
+virt-install \
+--import \
+--debug \
+--serial pty \
+--accelerate \
+--ram 1000 \
+--vcpus 2 \
+--cpu=host \
+--os-type linux \
+--os-variant virtio26 \
+--noautoconsole \
+--nographics \
+--name kubernetes-master \
+--disk /dev/system/kubernetes-master,bus=virtio,cache=none,io=native \
+--disk /dev/system/kubernetes-master-docker,bus=virtio,cache=none,io=native \
+--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-master/config/,config-2,type=mount,mode=squash \
+--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-master/ssl/,kubernetes-ssl,type=mount,mode=squash \
+--network bridge=privatebr0,mac=${NODEMAC},model=virtio
+
+NODEMAC=$(generate_mac "9")
+echo "create virsh kubernetes-storage mac=${NODEMAC} ..."
+virt-install \
+--import \
+--debug \
+--serial pty \
+--accelerate \
+--ram 750 \
+--vcpus 2 \
+--cpu=host \
+--os-type linux \
+--os-variant virtio26 \
+--noautoconsole \
+--nographics \
+--name kubernetes-storage \
+--disk /dev/system/kubernetes-storage,bus=virtio,cache=none,io=native \
+--disk /dev/system/kubernetes-storage-docker,bus=virtio,cache=none,io=native \
+--disk /dev/system/kubernetes-storage-data,bus=virtio,cache=none,io=native \
+--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-storage/config/,config-2,type=mount,mode=squash \
+--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-storage/ssl/,kubernetes-ssl,type=mount,mode=squash \
+--network bridge=privatebr0,mac=${NODEMAC},model=virtio
+
+for ((i=0; i < 3; i++)) do
+	NODEMAC=$(generate_mac $((20 + $i)))
+	echo "create virsh kubernetes-worker${i} mac=${NODEMAC} ..."
+	virt-install \
+	--import \
+	--debug \
+	--serial pty \
+	--accelerate \
+	--ram 3000 \
+	--vcpus 2 \
+	--cpu=host \
+	--os-type linux \
+	--os-variant virtio26 \
+	--noautoconsole \
+	--nographics \
+	--name kubernetes-worker${i} \
+	--disk /dev/system/kubernetes-worker${i},bus=virtio,cache=none,io=native \
+	--disk /dev/system/kubernetes-worker${i}-docker,bus=virtio,cache=none,io=native \
+	--disk /dev/system/kubernetes-worker${i}-storage,bus=virtio,cache=none,io=native \
+	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-worker${i}/config/,config-2,type=mount,mode=squash \
+	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-worker${i}/ssl/,kubernetes-ssl,type=mount,mode=squash \
+	--network bridge=privatebr0,mac=${NODEMAC},model=virtio
+done
+`, script,true); err != nil {
+		return err
+	}
+
+	if err := generateVirsh(cluster, "start"); err != nil {
+		return err
+	}
+
+	if err := generateVirsh(cluster, "reboot"); err != nil {
+		return err
+	}
+
+	if err := generateVirsh(cluster, "destroy"); err != nil {
+		return err
+	}
+
+	if err := generateVirsh(cluster, "shutdown"); err != nil {
+		return err
+	}
+
+	if err := generateVirsh(cluster, "undefine"); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/openssl.cnf", `[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = kubernetes
+DNS.2 = kubernetes.default
+DNS.3 = kubernetes.default.svc
+DNS.4 = kubernetes.default.svc.cluster.local
+IP.1 = $ENV::KUBERNETES_SVC
+IP.2 = $ENV::MASTER_IP
+IP.3 = $ENV::FIREWALL_IP
+`, script,false); err != nil {
+		return err
+	}
+
+	if err := writeTemplate("scripts/worker-openssl.cnf", `[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+[alt_names]
+IP.1 = $ENV::WORKER_IP
+`, script,false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateVmNames(cluster config.Cluster) ([]string) {
+	var result []string
+	for _, node := range cluster.Nodes {
+		for i := 0; i < node.Number; i++ {
+			name := generateNodeName(node, i)
+			result = append(result, name)
+		}
+	}
+	return result
+}
+
+func generateVirsh(cluster config.Cluster, action string) error {
+	var virsh struct {
+		Action  string
+		VmNames []string
+	}
+	virsh.Action = action
+	virsh.VmNames = generateVmNames(cluster)
+	if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+{{$out := .}}
+{{range $vmname := .VmNames}}
+virsh {{$out.Action}} {{$vmname}}
+{{end}}
+`, virsh,true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func createUserData(cluster config.Cluster) error {
+	logger.Debugf("create user data")
 	counter := 0
 	for _, node := range cluster.Nodes {
 		for i := 0; i < node.Number; i++ {
@@ -39,7 +553,6 @@ func (c *configWriter) WriteConfigs(cluster config.Cluster) error {
 			logger.Debugf("generate node %d finished", counter)
 		}
 	}
-
 	return nil
 }
 
@@ -49,6 +562,7 @@ func writeNode(cluster config.Cluster, node config.Node, number int, counter int
 
 	var configuration NodeConfiguration
 	configuration.Name = name
+	configuration.Region = cluster.Region
 	configuration.Mac = generateMac(cluster.MacPrefix, counter)
 	configuration.Ip = generateIp(cluster.Network, counter)
 	configuration.InitialCluster = generateInitialCluster(cluster)
@@ -171,11 +685,11 @@ func generateEtcdEndpoints(cluster config.Cluster) string {
 }
 
 func generateMac(prefix string, counter int) string {
-	return fmt.Sprintf("%s%02x", prefix, counter+10)
+	return fmt.Sprintf("%s%02x", prefix, counter + 10)
 }
 
 func generateIp(prefix string, counter int) string {
-	return fmt.Sprintf("%s.%d", prefix, counter+10)
+	return fmt.Sprintf("%s.%d", prefix, counter + 10)
 }
 
 func createClusterConfig(node NodeConfiguration) error {
@@ -192,19 +706,25 @@ func createClusterConfig(node NodeConfiguration) error {
 	if err != nil {
 		return err
 	}
-	if err := writeFile(fmt.Sprintf("%s/config/openstack/latest/user_data", node.Name), userData); err != nil {
+	if err := writeFile(fmt.Sprintf("%s/config/openstack/latest/user_data", node.Name), userData, false); err != nil {
 		return err
 	}
 	return nil
 }
 
-func writeFile(path string, content []byte) error {
-	var perm os.FileMode = 0644
+func writeFile(path string, content []byte, executable bool) error {
+	var perm os.FileMode
+	if executable {
+		perm = 0755
+	} else {
+		perm = 0644
+	}
 	return ioutil.WriteFile(path, content, perm)
 }
 
 type NodeConfiguration struct {
 	Name           string
+	Region         string
 	Mac            string
 	Ip             string
 	InitialCluster string
@@ -219,19 +739,19 @@ type NodeConfiguration struct {
 }
 
 func generateUserDataContent(userData NodeConfiguration) ([]byte, error) {
-	tmpl, err := template.New("test").Parse(`#cloud-config
+	content, err := generateTemplate(`#cloud-config
 ssh_authorized_keys:
  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCOw/yh7+j3ygZp2aZRdZDWUh0Dkj5N9/USdiLSoS+0CHJta+mtSxxmI/yv1nOk7xnuA6qtjpxdMlWn5obtC9xyS6T++tlTK9gaPwU7a/PObtoZdfQ7znAJDpX0IPI06/OH1tFE9kEutHQPzhCwRaIQ402BHIrUMWzzP7Ige8Oa0HwXH4sHUG5h/V/svzi9T0CKJjF8dTx4iUfKX959hT8wQnKYPULewkNBFv6pNfWIr8EzvIEQcPmmm3tP+dQPKg5QKVi6jPdRla+t5HXfhXu0W3WCDa2s0VGmJjBdMMowr5MLNYI79MKziSV1w1IWL17Z58Lop0zEHqP7Ba0Aooqd
 hostname: {{.Name}}
 coreos:
   fleet:
-    metadata: "region=rn"
+    metadata: "region={{.Region}}"
   update:
     reboot-strategy: etcd-lock
   etcd2:
     name: "{{.Name}}"
     initial-cluster: "{{.InitialCluster}}"
-    initial-cluster-token: "cluster-rn"
+    initial-cluster-token: "cluster-{{.Region}}"
 {{if .Etcd}}
     initial-cluster-state: "new"
     initial-advertise-peer-urls: "http://{{.Ip}}:2380"
@@ -714,18 +1234,35 @@ write_files:
             path: /usr/share/ca-certificates
           name: ssl-certs-host
 {{end}}
-`)
+`, userData)
 	if err != nil {
 		return nil, err
 	}
-	content := bytes.NewBufferString("")
-	tmpl.Execute(content, userData)
-
 	regex, err := regexp.Compile("\n+")
 	if err != nil {
 		return nil, err
 	}
-	return []byte(regex.ReplaceAllString(content.String(), "\n")), nil
+	return []byte(regex.ReplaceAllString(string(content), "\n")), nil
+}
+
+func writeTemplate(path string, templateContent string, data interface{}, executable bool) (error) {
+	content, err := generateTemplate(templateContent, data)
+	if err != nil {
+		return err
+	}
+	return writeFile(path, content, executable)
+}
+
+func generateTemplate(templateContent string, data interface{}) ([]byte, error) {
+	tmpl, err := template.New("test").Parse(templateContent)
+	if err != nil {
+		return nil, err
+	}
+	content := bytes.NewBufferString("")
+	if err := tmpl.Execute(content, data); err != nil {
+		return nil, err
+	}
+	return content.Bytes(), nil
 }
 
 func mkdir(path string) error {
@@ -734,5 +1271,5 @@ func mkdir(path string) error {
 }
 
 func touch(path string) error {
-	return writeFile(path, make([]byte, 0))
+	return writeFile(path, make([]byte, 0), false)
 }
