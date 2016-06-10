@@ -1,7 +1,6 @@
 package config_writer
 
 import (
-	"net/http"
 	"testing"
 
 	. "github.com/bborbe/assert"

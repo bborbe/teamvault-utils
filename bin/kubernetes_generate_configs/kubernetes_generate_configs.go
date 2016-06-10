@@ -1,23 +1,24 @@
 package main
 
 import (
-	"os"
-	"github.com/bborbe/log"
-	io_util "github.com/bborbe/io/util"
 	"flag"
+	"fmt"
+	"os"
+
+	io_util "github.com/bborbe/io/util"
 	"github.com/bborbe/kubernetes_tools/config_parser"
 	"github.com/bborbe/kubernetes_tools/config_writer"
-	"fmt"
+	"github.com/bborbe/log"
 )
 
 const (
 	PARAMETER_LOGLEVEL = "loglevel"
-	PARAMETER_CONFIG = "config"
+	PARAMETER_CONFIG   = "config"
 )
 
 var (
-	logger = log.DefaultLogger
-	configPtr = flag.String(PARAMETER_CONFIG, "", "config json file")
+	logger      = log.DefaultLogger
+	configPtr   = flag.String(PARAMETER_CONFIG, "", "config json file")
 	logLevelPtr = flag.String(PARAMETER_LOGLEVEL, log.INFO_STRING, log.FLAG_USAGE)
 )
 
@@ -36,7 +37,7 @@ func main() {
 	}
 }
 
-func do(configPath string) (error) {
+func do(configPath string) error {
 	if len(configPath) == 0 {
 		return fmt.Errorf("parameter %s missing", PARAMETER_CONFIG)
 	}

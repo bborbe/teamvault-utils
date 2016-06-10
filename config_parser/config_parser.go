@@ -1,16 +1,16 @@
 package config_parser
 
 import (
-	"github.com/bborbe/kubernetes_tools/config"
-	"os"
-	"github.com/bborbe/log"
 	"encoding/json"
+	"os"
+
+	"github.com/bborbe/kubernetes_tools/config"
+	"github.com/bborbe/log"
 )
 
 var logger = log.DefaultLogger
 
 type config_parser struct {
-
 }
 
 type ConfigParser interface {

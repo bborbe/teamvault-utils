@@ -1,20 +1,20 @@
 package config_writer
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"regexp"
+	"text/template"
+
 	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/log"
-	"fmt"
-	"os"
-	"io/ioutil"
-	"bytes"
-	"text/template"
-	"regexp"
 )
 
 var logger = log.DefaultLogger
 
 type configWriter struct {
-
 }
 
 type ConfigWriter interface {
@@ -93,13 +93,12 @@ func generateRoles(node config.Node) string {
 }
 
 func generateNodeName(node config.Node, number int) string {
-	if (node.Number == 1) {
+	if node.Number == 1 {
 		return node.Name
 	} else {
 		return fmt.Sprintf("%s%d", node.Name, number)
 	}
 }
-
 
 func generateApiServers(cluster config.Cluster) string {
 	first := true
@@ -122,7 +121,6 @@ func generateApiServers(cluster config.Cluster) string {
 	}
 	return content.String()
 }
-
 
 func generateInitialCluster(cluster config.Cluster) string {
 	first := true
@@ -173,11 +171,11 @@ func generateEtcdEndpoints(cluster config.Cluster) string {
 }
 
 func generateMac(prefix string, counter int) string {
-	return fmt.Sprintf("%s%02x", prefix, counter + 10)
+	return fmt.Sprintf("%s%02x", prefix, counter+10)
 }
 
 func generateIp(prefix string, counter int) string {
-	return fmt.Sprintf("%s.%d", prefix, counter + 10)
+	return fmt.Sprintf("%s.%d", prefix, counter+10)
 }
 
 func createClusterConfig(node NodeConfiguration) error {
@@ -216,8 +214,8 @@ type NodeConfiguration struct {
 	Roles          string
 	Nfsd           bool
 	Storage        bool
-	Master bool
-	ApiServers string
+	Master         bool
+	ApiServers     string
 }
 
 func generateUserDataContent(userData NodeConfiguration) ([]byte, error) {
@@ -725,7 +723,7 @@ write_files:
 
 	regex, err := regexp.Compile("\n+")
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	return []byte(regex.ReplaceAllString(content.String(), "\n")), nil
 }
