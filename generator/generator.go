@@ -665,7 +665,7 @@ write_files:
             initialDelaySeconds: 15
             timeoutSeconds: 1
           volumeMounts:
-            - mountPath: /etc/kubernetes/ssl
+					- mountPath: /etc/kubernetes/ssl
             name: ssl-certs-kubernetes
             readOnly: true
           - mountPath: /etc/ssl/certs
