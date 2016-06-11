@@ -203,6 +203,12 @@ func (n *Node) Labels() string {
 	if n.Etcd {
 		labels = append(labels, "etcd=true")
 	}
+	if n.Storage {
+		labels = append(labels, "storage=true")
+	}
+	if n.Nfsd {
+		labels = append(labels, "nfsd=true")
+	}
 	if n.Worker {
 		labels = append(labels, "worker=true")
 	}
