@@ -118,6 +118,26 @@ func (c *Cluster) NotMasterNodes() []*Node {
 	return result
 }
 
+func (c *Cluster) StorageNodes() []*Node {
+	var result []*Node
+	for _, node := range c.Nodes {
+		if node.Storage {
+			result = append(result, node)
+		}
+	}
+	return result
+}
+
+func (c *Cluster) NfsdNodes() []*Node {
+	var result []*Node
+	for _, node := range c.Nodes {
+		if node.Nfsd {
+			result = append(result, node)
+		}
+	}
+	return result
+}
+
 func (c *Cluster) EtcdEndpoints() string {
 	first := true
 	content := bytes.NewBufferString("")

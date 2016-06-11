@@ -84,11 +84,11 @@ func createScripts(cluster *model.Cluster) error {
 		return err
 	}
 
-	if err := writeStorageDataCreate(); err != nil {
+	if err := writeStorageDataCreate(cluster); err != nil {
 		return err
 	}
 
-	if err := writeStorageDestroy(); err != nil {
+	if err := writeStorageDestroy(cluster); err != nil {
 		return err
 	}
 
@@ -828,66 +828,71 @@ echo "done"
 
 }
 
-func writeStorageDataCreate() error {
+func writeStorageDataCreate(cluster *model.Cluster) error {
 
-	var data struct{}
+	var data struct {
+		LvmVolumeGroup string
+		NfsdNodes    []*model.Node
+		StorageNodes []*model.Node
+	}
+	data.NfsdNodes = cluster.NfsdNodes()
+	data.StorageNodes = cluster.StorageNodes()
+	data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
 	return writeTemplate("scripts/storage-data-create.sh", `#!/bin/bash
-
+{{$out := .}}
 set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+{{range $node := .NfsdNodes}}
+echo "create lvm nfsd volumes for {{$node.Name}}"
+lvcreate -L 5G -n {{$node.VolumeName}}-data {{$out.LvmVolumeGroup}}
 
-echo "create lvm data volumes ..."
-lvcreate -L 5G -n kubernetes-storage-data system
+echo "format nfsd volume of {{$node.Name}}"
+wipefs /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data
+mkfs.ext4 -F /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data
+{{end}}
 
-echo "format data volum ..."
-wipefs /dev/system/kubernetes-storage-data
-mkfs.ext4 -F /dev/system/kubernetes-storage-data
+{{range $node := .StorageNodes}}
+echo "create lvm storage volumes for {{$node.Name}}"
+lvcreate -L 5G -n {{$node.VolumeName}}-storage {{$out.LvmVolumeGroup}}
 
-function create_storage {
-	name="$1"
-	echo "create lvm data volumes for ${name}"
-	lvcreate -L 5G -n kubernetes-${name}-storage system
-
-	echo "format data volum ..."
-	wipefs /dev/system/kubernetes-${name}-storage
-	mkfs.xfs -i size=512 /dev/system/kubernetes-${name}-storage
-}
-
-for ((i=0; i < 3; i++)) do
-	create_storage "worker${i}"
-done
+echo "format storage volume of {{$node.Name}}"
+wipefs /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
+mkfs.xfs -i size=512 /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
+{{end}}
 `, data, true)
 }
 
-func writeStorageDestroy() error {
+func writeStorageDestroy(cluster *model.Cluster) error {
 
-	var data struct{}
+	var data struct {
+		LvmVolumeGroup string
+		NfsdNodes    []*model.Node
+		StorageNodes []*model.Node
+	}
+	data.NfsdNodes = cluster.NfsdNodes()
+	data.StorageNodes = cluster.StorageNodes()
+	data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
 	return writeTemplate("scripts/storage-data-destroy.sh", `#!/bin/bash
-
+{{$out := .}}
 set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
+{{range $node := .NfsdNodes}}
+echo "remove lvm data volumes for worker {{$node.Name}}"
+lvremove /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data
+{{end}}
 
-lvremove /dev/system/kubernetes-storage-data
-
-function delete_storage {
-	name="$1"
-	echo "remove lvm data volumes for worker ${name}"
-	lvremove /dev/system/kubernetes-${name}-storage
-}
-
-for ((i=0; i < 3; i++)) do
-	delete_storage "worker${i}"
-done
+{{range $node := .StorageNodes}}
+echo "remove lvm data volumes for worker {{$node.Name}}"
+lvremove /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
+{{end}}
 `, data, true)
 }
 
