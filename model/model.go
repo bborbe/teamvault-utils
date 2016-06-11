@@ -12,7 +12,10 @@ type Cluster struct {
 	PublicIp       string
 	LvmVolumeGroup string
 	Network        string
-	Nodes          []Node
+	Gateway        string
+	Dns            string
+	Bridge         string
+	Nodes          []*Node
 }
 
 type Node struct {
@@ -22,35 +25,47 @@ type Node struct {
 	VolumeName string
 	Etcd       bool
 	Worker     bool
-	Storage    bool
 	Master     bool
+	Nfsd       bool
+	Storage    bool
 	Cores      int
+	Memory     int
 }
 
 func NewCluster(cluster *config.Cluster) *Cluster {
 	c := new(Cluster)
 
+	c.Bridge = cluster.Bridge
 	c.Region = cluster.Region
 	c.Host = cluster.Host
 	c.PublicIp = cluster.PublicIp
 	c.LvmVolumeGroup = cluster.LvmVolumeGroup
 	c.Network = cluster.Network
+	c.Gateway = fmt.Sprintf("%s.1", cluster.Network)
+	c.Dns = fmt.Sprintf("%s.1", cluster.Network)
 
 	counter := 0
 	for _, n := range cluster.Nodes {
 		for i := 0; i < n.Amount; i++ {
+
+			if (n.Storage && n.Nfsd) {
+				panic("storage and nfsd at the same time is currently not supported")
+			}
+
 			counter++
 			name := generateNodeName(n, i)
-			node := Node{
+			node := &Node{
 				Name:       name,
 				Ip:         fmt.Sprintf("%s.%d", cluster.Network, counter + 10),
 				Mac:        fmt.Sprintf("%s%02x", cluster.MacPrefix, counter + 10),
 				VolumeName: fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
 				Etcd:       n.Etcd,
 				Worker:     n.Worker,
-				Storage:    n.Storage,
 				Master:     n.Master,
+				Storage : n.Storage,
+				Nfsd : n.Nfsd,
 				Cores:      n.Cores,
+				Memory:      n.Memory,
 			}
 			c.Nodes = append(c.Nodes, node)
 		}
@@ -83,21 +98,21 @@ func (c *Cluster) NodeNames() []string {
 	return result
 }
 
-func (c *Cluster) MasterNodeNames() []string {
-	var result []string
+func (c *Cluster) MasterNodes() []*Node {
+	var result []*Node
 	for _, node := range c.Nodes {
 		if node.Master {
-			result = append(result, node.Name)
+			result = append(result, node)
 		}
 	}
 	return result
 }
 
-func (c *Cluster) NotMasterNodeNames() []string {
-	var result []string
+func (c *Cluster) NotMasterNodes() []*Node {
+	var result []*Node
 	for _, node := range c.Nodes {
-		if !node.Master {
-			result = append(result, node.Name)
+		if ! node.Master {
+			result = append(result, node)
 		}
 	}
 	return result

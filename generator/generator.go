@@ -27,7 +27,7 @@ func New() *generator {
 }
 
 func (c *generator) Write(cluster *model.Cluster) error {
-	logger.Debugf("write config: %v", cluster)
+	logger.Debugf("write config")
 
 	if err := createStructur(cluster); err != nil {
 		return err
@@ -60,7 +60,6 @@ func createStructur(cluster *model.Cluster) error {
 	}
 	return nil
 }
-
 
 func createScripts(cluster *model.Cluster) error {
 	logger.Debugf("create scripts")
@@ -109,7 +108,7 @@ func createScripts(cluster *model.Cluster) error {
 		return err
 	}
 
-	if err := writeVirshCreate(); err != nil {
+	if err := writeVirshCreate(cluster); err != nil {
 		return err
 	}
 
@@ -146,7 +145,7 @@ func writeUserDatas(cluster *model.Cluster) error {
 	return nil
 }
 
-func writeUserData(cluster *model.Cluster, node model.Node) error {
+func writeUserData(cluster *model.Cluster, node *model.Node) error {
 	logger.Debugf("write node %s", node.Name)
 
 	var data struct {
@@ -176,11 +175,11 @@ func writeUserData(cluster *model.Cluster, node model.Node) error {
 	data.Etcd = node.Etcd
 	data.Schedulable = node.Worker
 	data.Roles = node.Roles()
-	data.Nfsd = node.Storage
-	data.Storage = node.Worker
+	data.Nfsd = node.Nfsd
+	data.Storage = node.Storage
 	data.Master = node.Master
-	data.Gateway = fmt.Sprintf("%s.1", cluster.Network)
-	data.Dns = fmt.Sprintf("%s.1", cluster.Network)
+	data.Gateway = cluster.Gateway
+	data.Dns = cluster.Dns
 
 	content, err := generateTemplate(`#cloud-config
 ssh_authorized_keys:
@@ -718,9 +717,9 @@ SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
 mkdir -p ~/.kube/{{.Region}}
 
-scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-ca.pem ~/.kube/{{.Region}}/
-scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin.pem ~/.kube/{{.Region}}/
-scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin-key.pem ~/.kube/{{.Region}}/
+scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/ca.pem ~/.kube/{{.Region}}/
+scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/admin.pem ~/.kube/{{.Region}}/
+scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/admin-key.pem ~/.kube/{{.Region}}/
 `, data, true)
 }
 
@@ -743,8 +742,8 @@ set -o errtrace
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
 mkdir -p $HOME/.kube/{{.Region}}
-kubectl config set-cluster {{.Region}}-cluster --server=https://{{.PublicIp}}:443 --certificate-authority=$HOME/.kube/{{.Region}}/kubernetes-ca.pem
-kubectl config set-credentials {{.Region}}-admin --certificate-authority=$HOME/.kube/{{.Region}}/kubernetes-ca.pem --client-key=$HOME/.kube/{{.Region}}/kubernetes-admin-key.pem --client-certificate=$HOME/.kube/{{.Region}}/kubernetes-admin.pem
+kubectl config set-cluster {{.Region}}-cluster --server=https://{{.PublicIp}}:443 --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem
+kubectl config set-credentials {{.Region}}-admin --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem --client-key=$HOME/.kube/{{.Region}}/admin-key.pem --client-certificate=$HOME/.kube/{{.Region}}/admin.pem
 kubectl config set-context {{.Region}}-system --cluster={{.Region}}-cluster --user={{.Region}}-admin
 kubectl config use-context {{.Region}}-system
 
@@ -910,7 +909,7 @@ SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
 {{range $nodeName := .NodeNames}}
 mkdir -p ${SCRIPT_ROOT}/../{{$nodeName}}/ssl
-cp ${SCRIPT_ROOT}/kubernetes-ca.pem ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/ca.pem
+cp ${SCRIPT_ROOT}/ca.pem ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/ca.pem
 cp ${SCRIPT_ROOT}/{{$nodeName}}.pem ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/node.pem
 cp ${SCRIPT_ROOT}/{{$nodeName}}-key.pem ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/node-key.pem
 #chmod 600 ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/*.pem
@@ -922,13 +921,13 @@ chown root:root ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/*.pem
 func writeSSLGenerateKeys(cluster *model.Cluster) error {
 
 	var data struct {
-		PublicIp           string
-		MasterNodeNames    []string
-		NotMasterNodeNames []string
+		PublicIp       string
+		MasterNodes    []*model.Node
+		NotMasterNodes []*model.Node
 	}
 	data.PublicIp = cluster.PublicIp
-	data.MasterNodeNames = cluster.MasterNodeNames()
-	data.NotMasterNodeNames = cluster.NotMasterNodeNames()
+	data.MasterNodes = cluster.MasterNodes()
+	data.NotMasterNodes = cluster.NotMasterNodes()
 
 	return writeTemplate("scripts/ssl-generate-keys.sh", `#!/bin/bash
 {{$out := .}}
@@ -942,136 +941,62 @@ SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 # https://coreos.com/kubernetes/docs/latest/openssl.html
 
 # CA Key
-openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-ca-key.pem 2048
-openssl req -x509 -new -nodes -key ${SCRIPT_ROOT}/kubernetes-ca-key.pem -days 10000 -out ${SCRIPT_ROOT}/kubernetes-ca.pem -subj "/CN=kube-ca"
+openssl genrsa -out ${SCRIPT_ROOT}/ca-key.pem 2048
+openssl req -x509 -new -nodes -key ${SCRIPT_ROOT}/ca-key.pem -days 10000 -out ${SCRIPT_ROOT}/ca.pem -subj "/CN=kube-ca"
 
 # Admin Key
-openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-admin-key.pem 2048
-openssl req -new -key ${SCRIPT_ROOT}/kubernetes-admin-key.pem -out ${SCRIPT_ROOT}/kubernetes-admin.csr -subj "/CN=kube-admin"
-openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-admin.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-admin.pem -days 365
+openssl genrsa -out ${SCRIPT_ROOT}/admin-key.pem 2048
+openssl req -new -key ${SCRIPT_ROOT}/admin-key.pem -out ${SCRIPT_ROOT}/admin.csr -subj "/CN=kube-admin"
+openssl x509 -req -in ${SCRIPT_ROOT}/admin.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/admin.pem -days 365
 
-{{range $nodeName := .MasterNodeNames}}
-# {{$nodeName}}
-openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-apiserver-key.pem 2048
-KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP=${NODE_IP} openssl req -new -key ${SCRIPT_ROOT}/kubernetes-apiserver-key.pem -out ${SCRIPT_ROOT}/kubernetes-apiserver.csr -subj "/CN=kube-apiserver" -config ${SCRIPT_ROOT}/master-openssl.cnf
-KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP=${NODE_IP} openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-apiserver.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-apiserver.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
+{{range $node := .MasterNodes}}
+# {{$node.Name}}
+openssl genrsa -out ${SCRIPT_ROOT}/{{$node.Name}}-key.pem 2048
+KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN=kube-apiserver" -config ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
 {{end}}
-{{range $nodeName := .NotMasterNodeNames}}
-# {{$nodeName}}
-openssl genrsa -out ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}-key.pem 2048
-NODE_IP=${NODE_IP} openssl req -new -key ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}-key.pem -out ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}.csr -subj "/CN=${WORKER_FQDN}" -config ${SCRIPT_ROOT}/node-openssl.cnf
-NODE_IP=${NODE_IP} openssl x509 -req -in ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}.csr -CA ${SCRIPT_ROOT}/kubernetes-ca.pem -CAkey ${SCRIPT_ROOT}/kubernetes-ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/kubernetes-${WORKER_FQDN}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/node-openssl.cnf
+{{range $node := .NotMasterNodes}}
+# {{$node.Name}}
+openssl genrsa -out ${SCRIPT_ROOT}/{{$node.Name}}-key.pem 2048
+NODE_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/node-openssl.cnf
+NODE_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/node-openssl.cnf
 {{end}}
 `, data, true)
 }
 
-func writeVirshCreate() error {
-
-	var data struct{}
+func writeVirshCreate(cluster *model.Cluster) error {
 
 	return writeTemplate("scripts/virsh-create.sh", `#!/bin/bash
-
+{{$out := .}}
 set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
-
-function generate_mac {
-	printf "00:16:3e:2f:20:%02x" $1
-}
-
-for ((i=0; i < 3; i++)) do
-	NODEMAC=$(generate_mac $((15 + $i)))
-	echo "create virsh kubernetes-etcd${i} mac=${NODEMAC} ..."
-	virt-install \
-	--import \
-	--debug \
-	--serial pty \
-	--accelerate \
-	--ram 750 \
-	--vcpus 2 \
-	--cpu=host \
-	--os-type linux \
-	--os-variant virtio26 \
-	--noautoconsole \
-	--nographics \
-	--name kubernetes-etcd${i} \
-	--disk /dev/system/kubernetes-etcd${i},bus=virtio,cache=none,io=native \
-	--disk /dev/system/kubernetes-etcd${i}-docker,bus=virtio,cache=none,io=native \
-	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-etcd${i}/config/,config-2,type=mount,mode=squash \
-	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-etcd${i}/ssl/,kubernetes-ssl,type=mount,mode=squash \
-	--network bridge=privatebr0,mac=${NODEMAC},model=virtio
-done
-
-NODEMAC=$(generate_mac "10")
-echo "create virsh kubernetes-master mac=${NODEMAC} ..."
+{{range $node := .MasterNodes}}
+echo "create virsh {{$node.Name}} mac={{$node.Mac}} ..."
 virt-install \
 --import \
 --debug \
 --serial pty \
 --accelerate \
---ram 1000 \
---vcpus 2 \
+--ram {{$node.Memory}} \
+--vcpus {{$node.Cores}} \
 --cpu=host \
 --os-type linux \
 --os-variant virtio26 \
 --noautoconsole \
 --nographics \
---name kubernetes-master \
---disk /dev/system/kubernetes-master,bus=virtio,cache=none,io=native \
---disk /dev/system/kubernetes-master-docker,bus=virtio,cache=none,io=native \
+--name {{$node.Name}} \
+--disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}},bus=virtio,cache=none,io=native \
+--disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-docker,bus=virtio,cache=none,io=native \{{if $node.Nfsd}}
+--disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data,bus=virtio,cache=none,io=native \{{end}}{{if $node.Storage}}
+--disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage,bus=virtio,cache=none,io=native \{{end}}
 --filesystem /var/lib/libvirt/images/kubernetes/kubernetes-master/config/,config-2,type=mount,mode=squash \
 --filesystem /var/lib/libvirt/images/kubernetes/kubernetes-master/ssl/,kubernetes-ssl,type=mount,mode=squash \
---network bridge=privatebr0,mac=${NODEMAC},model=virtio
-
-NODEMAC=$(generate_mac "9")
-echo "create virsh kubernetes-storage mac=${NODEMAC} ..."
-virt-install \
---import \
---debug \
---serial pty \
---accelerate \
---ram 750 \
---vcpus 2 \
---cpu=host \
---os-type linux \
---os-variant virtio26 \
---noautoconsole \
---nographics \
---name kubernetes-storage \
---disk /dev/system/kubernetes-storage,bus=virtio,cache=none,io=native \
---disk /dev/system/kubernetes-storage-docker,bus=virtio,cache=none,io=native \
---disk /dev/system/kubernetes-storage-data,bus=virtio,cache=none,io=native \
---filesystem /var/lib/libvirt/images/kubernetes/kubernetes-storage/config/,config-2,type=mount,mode=squash \
---filesystem /var/lib/libvirt/images/kubernetes/kubernetes-storage/ssl/,kubernetes-ssl,type=mount,mode=squash \
---network bridge=privatebr0,mac=${NODEMAC},model=virtio
-
-for ((i=0; i < 3; i++)) do
-	NODEMAC=$(generate_mac $((20 + $i)))
-	echo "create virsh kubernetes-worker${i} mac=${NODEMAC} ..."
-	virt-install \
-	--import \
-	--debug \
-	--serial pty \
-	--accelerate \
-	--ram 3000 \
-	--vcpus 2 \
-	--cpu=host \
-	--os-type linux \
-	--os-variant virtio26 \
-	--noautoconsole \
-	--nographics \
-	--name kubernetes-worker${i} \
-	--disk /dev/system/kubernetes-worker${i},bus=virtio,cache=none,io=native \
-	--disk /dev/system/kubernetes-worker${i}-docker,bus=virtio,cache=none,io=native \
-	--disk /dev/system/kubernetes-worker${i}-storage,bus=virtio,cache=none,io=native \
-	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-worker${i}/config/,config-2,type=mount,mode=squash \
-	--filesystem /var/lib/libvirt/images/kubernetes/kubernetes-worker${i}/ssl/,kubernetes-ssl,type=mount,mode=squash \
-	--network bridge=privatebr0,mac=${NODEMAC},model=virtio
-done
-`, data, true)
+--network bridge={{$out.Bridge}},mac={{$node.Mac}},model=virtio
+{{end}}
+`, cluster, true)
 }
 
 func writeMasterOpenssl() error {
@@ -1146,7 +1071,6 @@ func writeFile(path string, content []byte, executable bool) error {
 	}
 	return ioutil.WriteFile(path, content, perm)
 }
-
 
 func writeTemplate(path string, templateContent string, data interface{}, executable bool) error {
 	content, err := generateTemplate(templateContent, data)

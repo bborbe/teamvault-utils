@@ -15,10 +15,12 @@ type Cluster struct {
 
 type Node struct {
 	Name    string `json:"name"`
+	Master  bool   `json:"master"`
 	Etcd    bool   `json:"etcd"`
 	Worker  bool   `json:"worker"`
-	Storage bool   `json:"nfsd"`
-	Master  bool   `json:"master"`
+	Storage bool   `json:"storage"`
+	Nfsd    bool   `json:"nfsd"`
 	Cores   int    `json:"cores"`
+	Memory  int    `json:"memory"`
 	Amount  int    `json:"number"`
 }
