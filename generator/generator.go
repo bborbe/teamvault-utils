@@ -150,22 +150,22 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
   logger.Debugf("write node %s", node.Name)
 
   var data struct {
-    Name           string
-    Region         string
-    Mac            string
-    Ip             string
-    InitialCluster string
-    EtcdEndpoints  string
-    Etcd           bool
-    Schedulable    bool
-    Roles          string
-    Nfsd           bool
-    Storage        bool
-    Master         bool
-    ApiServers     string
-    Gateway        string
-    Dns            string
-    Network        string
+		Name           string
+		Region         string
+		Mac            string
+		Ip             string
+		InitialCluster string
+		EtcdEndpoints  string
+		Etcd           bool
+		Schedulable    bool
+		Labels         string
+		Nfsd           bool
+		Storage        bool
+		Master         bool
+		ApiServers     string
+		Gateway        string
+		Dns            string
+		Network        string
   }
   data.Name = node.Name
   data.Region = cluster.Region
@@ -176,7 +176,7 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
   data.ApiServers = cluster.ApiServers()
   data.Etcd = node.Etcd
   data.Schedulable = node.Worker
-  data.Roles = node.Roles()
+  data.Labels = node.Labels()
   data.Nfsd = node.Nfsd
   data.Storage = node.Storage
   data.Master = node.Master
@@ -383,7 +383,7 @@ coreos:
             --tls-cert-file=/etc/kubernetes/ssl/node.pem \
             --tls-private-key-file=/etc/kubernetes/ssl/node-key.pem \
 {{end}}
-            --node-labels={{.Roles}} \
+            --node-labels={{.Labels}} \
             --v=2
         [Install]
         WantedBy=multi-user.target

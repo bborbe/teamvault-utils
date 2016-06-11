@@ -5,18 +5,19 @@ import (
 	"fmt"
 
 	"github.com/bborbe/kubernetes_tools/config"
+	"strings"
 )
 
 type Cluster struct {
-	Host           string
-	Region         string
-	ApiServerPublicIp       string
-	LvmVolumeGroup string
-	Network        string
-	Gateway        string
-	Dns            string
-	Bridge         string
-	Nodes          []*Node
+	Host              string
+	Region            string
+	ApiServerPublicIp string
+	LvmVolumeGroup    string
+	Network           string
+	Gateway           string
+	Dns               string
+	Bridge            string
+	Nodes             []*Node
 }
 
 type Node struct {
@@ -58,8 +59,8 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 			name := generateNodeName(n, i)
 			node := &Node{
 				Name:        name,
-				Ip:          fmt.Sprintf("%s.%d", cluster.Network, counter+10),
-				Mac:         fmt.Sprintf("%s%02x", cluster.MacPrefix, counter+10),
+				Ip:          fmt.Sprintf("%s.%d", cluster.Network, counter + 10),
+				Mac:         fmt.Sprintf("%s%02x", cluster.MacPrefix, counter + 10),
 				VolumeName:  fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
 				Etcd:        n.Etcd,
 				Worker:      n.Worker,
@@ -197,27 +198,16 @@ func (c *Cluster) ApiServers() string {
 	return content.String()
 }
 
-func (n *Node) Roles() string {
-	var roles []string
+func (n *Node) Labels() string {
+	var labels []string
 	if n.Etcd {
-		roles = append(roles, "etcd")
+		labels = append(labels, "etcd=true")
 	}
 	if n.Worker {
-		roles = append(roles, "worker")
+		labels = append(labels, "worker=true")
 	}
 	if n.Master {
-		roles = append(roles, "master")
+		labels = append(labels, "master=true")
 	}
-	if n.Storage {
-		roles = append(roles, "storage")
-	}
-	content := bytes.NewBufferString("")
-	for i, role := range roles {
-		if i != 0 {
-			content.WriteString(",")
-		}
-		content.WriteString("role=")
-		content.WriteString(role)
-	}
-	return content.String()
+	return strings.Join(labels, ",")
 }
