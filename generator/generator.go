@@ -998,8 +998,8 @@ virt-install \
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-docker,bus=virtio,cache=none,io=native \{{if $node.Nfsd}}
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data,bus=virtio,cache=none,io=native \{{end}}{{if $node.Storage}}
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage,bus=virtio,cache=none,io=native \{{end}}
---filesystem /var/lib/libvirt/images/kubernetes/kubernetes-master/config/,config-2,type=mount,mode=squash \
---filesystem /var/lib/libvirt/images/kubernetes/kubernetes-master/ssl/,kubernetes-ssl,type=mount,mode=squash \
+--filesystem /var/lib/libvirt/images/kubernetes/{{$node.Name}}/config/,config-2,type=mount,mode=squash \
+--filesystem /var/lib/libvirt/images/kubernetes/{{$node.Name}}/ssl/,kubernetes-ssl,type=mount,mode=squash \
 --network bridge={{$out.Bridge}},mac={{$node.Mac}},model=virtio
 {{end}}
 `, cluster, true)
