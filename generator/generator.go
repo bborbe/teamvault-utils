@@ -1,17 +1,17 @@
 package generator
 
 import (
-	"bytes"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"regexp"
-	"text/template"
+  "bytes"
+  "fmt"
+  "io/ioutil"
+  "os"
+  "regexp"
+  "text/template"
 
-	"os/user"
+  "os/user"
 
-	"github.com/bborbe/kubernetes_tools/model"
-	"github.com/bborbe/log"
+  "github.com/bborbe/kubernetes_tools/model"
+  "github.com/bborbe/log"
 )
 
 var logger = log.DefaultLogger
@@ -20,171 +20,171 @@ type generator struct {
 }
 
 type ConfigWriter interface {
-	Write(config *model.Cluster) error
+  Write(config *model.Cluster) error
 }
 
 func New() *generator {
-	return new(generator)
+  return new(generator)
 }
 
 func (c *generator) Write(cluster *model.Cluster) error {
-	logger.Debugf("write config")
+  logger.Debugf("write config")
 
-	if err := createStructur(cluster); err != nil {
-		return err
-	}
+  if err := createStructur(cluster); err != nil {
+    return err
+  }
 
-	if err := writeUserDatas(cluster); err != nil {
-		return err
-	}
+  if err := writeUserDatas(cluster); err != nil {
+    return err
+  }
 
-	if err := createScripts(cluster); err != nil {
-		return err
-	}
+  if err := createScripts(cluster); err != nil {
+    return err
+  }
 
-	return nil
+  return nil
 }
 
 func createStructur(cluster *model.Cluster) error {
-	logger.Debugf("create user data")
-	for _, node := range cluster.Nodes {
+  logger.Debugf("create user data")
+  for _, node := range cluster.Nodes {
 
-		if err := mkdir(fmt.Sprintf("%s/ssl", node.Name)); err != nil {
-			return err
-		}
-		if err := touch(fmt.Sprintf("%s/ssl/.keep", node.Name)); err != nil {
-			return err
-		}
-		if err := mkdir(fmt.Sprintf("%s/config/openstack/latest", node.Name)); err != nil {
-			return err
-		}
-	}
-	return nil
+    if err := mkdir(fmt.Sprintf("%s/ssl", node.Name)); err != nil {
+      return err
+    }
+    if err := touch(fmt.Sprintf("%s/ssl/.keep", node.Name)); err != nil {
+      return err
+    }
+    if err := mkdir(fmt.Sprintf("%s/config/openstack/latest", node.Name)); err != nil {
+      return err
+    }
+  }
+  return nil
 }
 
 func createScripts(cluster *model.Cluster) error {
-	logger.Debugf("create scripts")
+  logger.Debugf("create scripts")
 
-	if err := mkdir("scripts"); err != nil {
-		return err
-	}
+  if err := mkdir("scripts"); err != nil {
+    return err
+  }
 
-	if err := writeAdminCopyKeys(cluster); err != nil {
-		return err
-	}
+  if err := writeAdminCopyKeys(cluster); err != nil {
+    return err
+  }
 
-	if err := writeAdminKubectlConfigure(cluster); err != nil {
-		return err
-	}
+  if err := writeAdminKubectlConfigure(cluster); err != nil {
+    return err
+  }
 
-	if err := writeClusterCreate(cluster); err != nil {
-		return err
-	}
+  if err := writeClusterCreate(cluster); err != nil {
+    return err
+  }
 
-	if err := writeClusterDestroy(cluster); err != nil {
-		return err
-	}
+  if err := writeClusterDestroy(cluster); err != nil {
+    return err
+  }
 
-	if err := writeStorageDataCreate(cluster); err != nil {
-		return err
-	}
+  if err := writeStorageDataCreate(cluster); err != nil {
+    return err
+  }
 
-	if err := writeStorageDestroy(cluster); err != nil {
-		return err
-	}
+  if err := writeStorageDestroy(cluster); err != nil {
+    return err
+  }
 
-	if err := writeSSLCopyKeys(cluster); err != nil {
-		return err
-	}
+  if err := writeSSLCopyKeys(cluster); err != nil {
+    return err
+  }
 
-	if err := writeSSLGenerateKeys(cluster); err != nil {
-		return err
-	}
+  if err := writeSSLGenerateKeys(cluster); err != nil {
+    return err
+  }
 
-	if err := writeMasterOpenssl(); err != nil {
-		return err
-	}
+  if err := writeMasterOpenssl(); err != nil {
+    return err
+  }
 
-	if err := writeNodeOpenssl(); err != nil {
-		return err
-	}
+  if err := writeNodeOpenssl(); err != nil {
+    return err
+  }
 
-	if err := writeVirshCreate(cluster); err != nil {
-		return err
-	}
+  if err := writeVirshCreate(cluster); err != nil {
+    return err
+  }
 
-	if err := writeVirsh(cluster, "start"); err != nil {
-		return err
-	}
+  if err := writeVirsh(cluster, "start"); err != nil {
+    return err
+  }
 
-	if err := writeVirsh(cluster, "reboot"); err != nil {
-		return err
-	}
+  if err := writeVirsh(cluster, "reboot"); err != nil {
+    return err
+  }
 
-	if err := writeVirsh(cluster, "destroy"); err != nil {
-		return err
-	}
+  if err := writeVirsh(cluster, "destroy"); err != nil {
+    return err
+  }
 
-	if err := writeVirsh(cluster, "shutdown"); err != nil {
-		return err
-	}
+  if err := writeVirsh(cluster, "shutdown"); err != nil {
+    return err
+  }
 
-	if err := writeVirsh(cluster, "undefine"); err != nil {
-		return err
-	}
+  if err := writeVirsh(cluster, "undefine"); err != nil {
+    return err
+  }
 
-	return nil
+  return nil
 }
 
 func writeUserDatas(cluster *model.Cluster) error {
-	logger.Debugf("create user data")
-	for _, node := range cluster.Nodes {
-		if err := writeUserData(cluster, node); err != nil {
-			return err
-		}
-	}
-	return nil
+  logger.Debugf("create user data")
+  for _, node := range cluster.Nodes {
+    if err := writeUserData(cluster, node); err != nil {
+      return err
+    }
+  }
+  return nil
 }
 
 func writeUserData(cluster *model.Cluster, node *model.Node) error {
-	logger.Debugf("write node %s", node.Name)
+  logger.Debugf("write node %s", node.Name)
 
-	var data struct {
-		Name           string
-		Region         string
-		Mac            string
-		Ip             string
-		InitialCluster string
-		EtcdEndpoints  string
-		Etcd           bool
-		Schedulable    bool
-		Roles          string
-		Nfsd           bool
-		Storage        bool
-		Master         bool
-		ApiServers     string
-		Gateway        string
-		Dns            string
-		Network        string
-	}
-	data.Name = node.Name
-	data.Region = cluster.Region
-	data.Mac = node.Mac
-	data.Ip = node.Ip
-	data.InitialCluster = cluster.InitialCluster()
-	data.EtcdEndpoints = cluster.EtcdEndpoints()
-	data.ApiServers = cluster.ApiServers()
-	data.Etcd = node.Etcd
-	data.Schedulable = node.Worker
-	data.Roles = node.Roles()
-	data.Nfsd = node.Nfsd
-	data.Storage = node.Storage
-	data.Master = node.Master
-	data.Gateway = cluster.Gateway
-	data.Dns = cluster.Dns
-	data.Network = cluster.Network
+  var data struct {
+    Name           string
+    Region         string
+    Mac            string
+    Ip             string
+    InitialCluster string
+    EtcdEndpoints  string
+    Etcd           bool
+    Schedulable    bool
+    Roles          string
+    Nfsd           bool
+    Storage        bool
+    Master         bool
+    ApiServers     string
+    Gateway        string
+    Dns            string
+    Network        string
+  }
+  data.Name = node.Name
+  data.Region = cluster.Region
+  data.Mac = node.Mac
+  data.Ip = node.Ip
+  data.InitialCluster = cluster.InitialCluster()
+  data.EtcdEndpoints = cluster.EtcdEndpoints()
+  data.ApiServers = cluster.ApiServers()
+  data.Etcd = node.Etcd
+  data.Schedulable = node.Worker
+  data.Roles = node.Roles()
+  data.Nfsd = node.Nfsd
+  data.Storage = node.Storage
+  data.Master = node.Master
+  data.Gateway = cluster.Gateway
+  data.Dns = cluster.Dns
+  data.Network = cluster.Network
 
-	content, err := generateTemplate(`#cloud-config
+  content, err := generateTemplate(`#cloud-config
 ssh_authorized_keys:
  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCOw/yh7+j3ygZp2aZRdZDWUh0Dkj5N9/USdiLSoS+0CHJta+mtSxxmI/yv1nOk7xnuA6qtjpxdMlWn5obtC9xyS6T++tlTK9gaPwU7a/PObtoZdfQ7znAJDpX0IPI06/OH1tFE9kEutHQPzhCwRaIQ402BHIrUMWzzP7Ige8Oa0HwXH4sHUG5h/V/svzi9T0CKJjF8dTx4iUfKX959hT8wQnKYPULewkNBFv6pNfWIr8EzvIEQcPmmm3tP+dQPKg5QKVi6jPdRla+t5HXfhXu0W3WCDa2s0VGmJjBdMMowr5MLNYI79MKziSV1w1IWL17Z58Lop0zEHqP7Ba0Aooqd
 hostname: {{.Name}}
@@ -665,51 +665,52 @@ write_files:
             initialDelaySeconds: 15
             timeoutSeconds: 1
           volumeMounts:
-					- mountPath: /etc/kubernetes/ssl
+          - mountPath: /etc/kubernetes/ssl
             name: ssl-certs-kubernetes
             readOnly: true
           - mountPath: /etc/ssl/certs
             name: ssl-certs-host
-              readOnly: true
+            readOnly: true
         volumes:
-        - hostPath:
+        - name: ssl-certs-kubernetes 
+          hostPath:
             path: /etc/kubernetes/ssl
-          name: ssl-certs-kubernetes
-        - hostPath:
+        - name: ssl-certs-host 
+          hostPath:
             path: /usr/share/ca-certificates
-          name: ssl-certs-host
+          
 {{end}}
 `, data)
-	if err != nil {
-		return err
-	}
-	regex, err := regexp.Compile("\n+")
-	if err != nil {
-		return err
-	}
-	userData := []byte(regex.ReplaceAllString(string(content), "\n"))
-	if err := writeFile(fmt.Sprintf("%s/config/openstack/latest/user_data", node.Name), userData, false); err != nil {
-		return err
-	}
-	return nil
+  if err != nil {
+    return err
+  }
+  regex, err := regexp.Compile("\n+")
+  if err != nil {
+    return err
+  }
+  userData := []byte(regex.ReplaceAllString(string(content), "\n"))
+  if err := writeFile(fmt.Sprintf("%s/config/openstack/latest/user_data", node.Name), userData, false); err != nil {
+    return err
+  }
+  return nil
 }
 
 func writeAdminCopyKeys(cluster *model.Cluster) error {
 
-	var data struct {
-		Host   string
-		Region string
-		User   string
-	}
-	data.Host = cluster.Host
-	data.Region = cluster.Region
-	user, err := user.Current()
-	if err != nil {
-		return err
-	}
-	data.User = user.Username
+  var data struct {
+    Host   string
+    Region string
+    User   string
+  }
+  data.Host = cluster.Host
+  data.Region = cluster.Region
+  user, err := user.Current()
+  if err != nil {
+    return err
+  }
+  data.User = user.Username
 
-	return writeTemplate("scripts/admin-copy-keys.sh", `#!/bin/bash
+  return writeTemplate("scripts/admin-copy-keys.sh", `#!/bin/bash
 
 set -o errexit
 set -o nounset
@@ -728,14 +729,14 @@ scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/admin-key.pem
 
 func writeAdminKubectlConfigure(cluster *model.Cluster) error {
 
-	var data struct {
-		Region   string
-		MasterIp string
-	}
-	data.Region = cluster.Region
-	data.MasterIp = cluster.MasterNodes()[0].Ip
+  var data struct {
+    Region   string
+    MasterIp string
+  }
+  data.Region = cluster.Region
+  data.MasterIp = cluster.MasterNodes()[0].Ip
 
-	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/bin/bash
+  return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/bin/bash
 
 set -o errexit
 set -o nounset
@@ -756,14 +757,14 @@ echo "test with 'kubectl get nodes'"
 
 func writeClusterCreate(cluster *model.Cluster) error {
 
-	var data struct {
-		VolumeNames []string
-		VolumeGroup string
-	}
-	data.VolumeGroup = cluster.LvmVolumeGroup
-	data.VolumeNames = cluster.VolumeNames()
+  var data struct {
+    VolumeNames []string
+    VolumeGroup string
+  }
+  data.VolumeGroup = cluster.LvmVolumeGroup
+  data.VolumeNames = cluster.VolumeNames()
 
-	return writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
+  return writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -802,14 +803,14 @@ echo "done"
 
 func writeClusterDestroy(cluster *model.Cluster) error {
 
-	var data struct {
-		VolumeNames []string
-		VolumeGroup string
-	}
-	data.VolumeGroup = cluster.LvmVolumeGroup
-	data.VolumeNames = cluster.VolumeNames()
+  var data struct {
+    VolumeNames []string
+    VolumeGroup string
+  }
+  data.VolumeGroup = cluster.LvmVolumeGroup
+  data.VolumeNames = cluster.VolumeNames()
 
-	return writeTemplate("scripts/cluster-destroy.sh", `#!/bin/bash
+  return writeTemplate("scripts/cluster-destroy.sh", `#!/bin/bash
 {{$out := .}}
 set -o nounset
 set -o pipefail
@@ -833,16 +834,16 @@ echo "done"
 
 func writeStorageDataCreate(cluster *model.Cluster) error {
 
-	var data struct {
-		LvmVolumeGroup string
-		NfsdNodes      []*model.Node
-		StorageNodes   []*model.Node
-	}
-	data.NfsdNodes = cluster.NfsdNodes()
-	data.StorageNodes = cluster.StorageNodes()
-	data.LvmVolumeGroup = cluster.LvmVolumeGroup
+  var data struct {
+    LvmVolumeGroup string
+    NfsdNodes      []*model.Node
+    StorageNodes   []*model.Node
+  }
+  data.NfsdNodes = cluster.NfsdNodes()
+  data.StorageNodes = cluster.StorageNodes()
+  data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
-	return writeTemplate("scripts/storage-data-create.sh", `#!/bin/bash
+  return writeTemplate("scripts/storage-data-create.sh", `#!/bin/bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -871,16 +872,16 @@ mkfs.xfs -i size=512 /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 
 func writeStorageDestroy(cluster *model.Cluster) error {
 
-	var data struct {
-		LvmVolumeGroup string
-		NfsdNodes      []*model.Node
-		StorageNodes   []*model.Node
-	}
-	data.NfsdNodes = cluster.NfsdNodes()
-	data.StorageNodes = cluster.StorageNodes()
-	data.LvmVolumeGroup = cluster.LvmVolumeGroup
+  var data struct {
+    LvmVolumeGroup string
+    NfsdNodes      []*model.Node
+    StorageNodes   []*model.Node
+  }
+  data.NfsdNodes = cluster.NfsdNodes()
+  data.StorageNodes = cluster.StorageNodes()
+  data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
-	return writeTemplate("scripts/storage-data-destroy.sh", `#!/bin/bash
+  return writeTemplate("scripts/storage-data-destroy.sh", `#!/bin/bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -901,12 +902,12 @@ lvremove /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 
 func writeSSLCopyKeys(cluster *model.Cluster) error {
 
-	var data struct {
-		NodeNames []string
-	}
-	data.NodeNames = cluster.NodeNames()
+  var data struct {
+    NodeNames []string
+  }
+  data.NodeNames = cluster.NodeNames()
 
-	return writeTemplate("scripts/ssl-copy-keys.sh", `#!/bin/bash
+  return writeTemplate("scripts/ssl-copy-keys.sh", `#!/bin/bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -928,16 +929,16 @@ chown root:root ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/*.pem
 
 func writeSSLGenerateKeys(cluster *model.Cluster) error {
 
-	var data struct {
-		ApiServerPublicIp       string
-		MasterNodes    []*model.Node
-		NotMasterNodes []*model.Node
-	}
-	data.ApiServerPublicIp = cluster.ApiServerPublicIp
-	data.MasterNodes = cluster.MasterNodes()
-	data.NotMasterNodes = cluster.NotMasterNodes()
+  var data struct {
+    ApiServerPublicIp       string
+    MasterNodes    []*model.Node
+    NotMasterNodes []*model.Node
+  }
+  data.ApiServerPublicIp = cluster.ApiServerPublicIp
+  data.MasterNodes = cluster.MasterNodes()
+  data.NotMasterNodes = cluster.NotMasterNodes()
 
-	return writeTemplate("scripts/ssl-generate-keys.sh", `#!/bin/bash
+  return writeTemplate("scripts/ssl-generate-keys.sh", `#!/bin/bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -976,7 +977,7 @@ openssl x509 -req -in ${SCRIPT_ROOT}/admin.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey 
 
 func writeVirshCreate(cluster *model.Cluster) error {
 
-	return writeTemplate("scripts/virsh-create.sh", `#!/bin/bash
+  return writeTemplate("scripts/virsh-create.sh", `#!/bin/bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -1011,9 +1012,9 @@ virt-install \
 
 func writeMasterOpenssl() error {
 
-	var data struct{}
+  var data struct{}
 
-	return writeTemplate("scripts/master-openssl.cnf", `[req]
+  return writeTemplate("scripts/master-openssl.cnf", `[req]
 req_extensions = v3_req
 distinguished_name = req_distinguished_name
 [req_distinguished_name]
@@ -1034,9 +1035,9 @@ IP.3 = $ENV::APISERVER_PUBLIC_IP
 
 func writeNodeOpenssl() error {
 
-	var script struct{}
+  var script struct{}
 
-	return writeTemplate("scripts/node-openssl.cnf", `[req]
+  return writeTemplate("scripts/node-openssl.cnf", `[req]
 req_extensions = v3_req
 distinguished_name = req_distinguished_name
 [req_distinguished_name]
@@ -1050,13 +1051,13 @@ IP.1 = $ENV::NODE_IP
 }
 
 func writeVirsh(cluster *model.Cluster, action string) error {
-	var data struct {
-		Action  string
-		VmNames []string
-	}
-	data.Action = action
-	data.VmNames = cluster.NodeNames()
-	if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/bin/bash
+  var data struct {
+    Action  string
+    VmNames []string
+  }
+  data.Action = action
+  data.VmNames = cluster.NodeNames()
+  if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/bin/bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -1067,46 +1068,46 @@ set -o errtrace
 virsh {{$out.Action}} {{$vmname}}
 {{end}}
 `, data, true); err != nil {
-		return err
-	}
-	return nil
+    return err
+  }
+  return nil
 }
 
 func writeFile(path string, content []byte, executable bool) error {
-	var perm os.FileMode
-	if executable {
-		perm = 0755
-	} else {
-		perm = 0644
-	}
-	return ioutil.WriteFile(path, content, perm)
+  var perm os.FileMode
+  if executable {
+    perm = 0755
+  } else {
+    perm = 0644
+  }
+  return ioutil.WriteFile(path, content, perm)
 }
 
 func writeTemplate(path string, templateContent string, data interface{}, executable bool) error {
-	content, err := generateTemplate(templateContent, data)
-	if err != nil {
-		return err
-	}
-	return writeFile(path, content, executable)
+  content, err := generateTemplate(templateContent, data)
+  if err != nil {
+    return err
+  }
+  return writeFile(path, content, executable)
 }
 
 func generateTemplate(templateContent string, data interface{}) ([]byte, error) {
-	tmpl, err := template.New("test").Parse(templateContent)
-	if err != nil {
-		return nil, err
-	}
-	content := bytes.NewBufferString("")
-	if err := tmpl.Execute(content, data); err != nil {
-		return nil, err
-	}
-	return content.Bytes(), nil
+  tmpl, err := template.New("test").Parse(templateContent)
+  if err != nil {
+    return nil, err
+  }
+  content := bytes.NewBufferString("")
+  if err := tmpl.Execute(content, data); err != nil {
+    return nil, err
+  }
+  return content.Bytes(), nil
 }
 
 func mkdir(path string) error {
-	var perm os.FileMode = 0755
-	return os.MkdirAll(path, perm)
+  var perm os.FileMode = 0755
+  return os.MkdirAll(path, perm)
 }
 
 func touch(path string) error {
-	return writeFile(path, make([]byte, 0), false)
+  return writeFile(path, make([]byte, 0), false)
 }
