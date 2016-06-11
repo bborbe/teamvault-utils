@@ -730,10 +730,10 @@ func writeAdminKubectlConfigure(cluster *model.Cluster) error {
 
 	var data struct {
 		Region   string
-		PublicIp string
+		MasterIp string
 	}
 	data.Region = cluster.Region
-	data.PublicIp = cluster.PublicIp
+	data.MasterIp = cluster.MasterNodes()[0].Ip
 
 	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/bin/bash
 
@@ -745,7 +745,7 @@ set -o errtrace
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
 mkdir -p $HOME/.kube/{{.Region}}
-kubectl config set-cluster {{.Region}}-cluster --server=https://{{.PublicIp}}:443 --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem
+kubectl config set-cluster {{.Region}}-cluster --server=https://{{.MasterIp}}:443 --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem
 kubectl config set-credentials {{.Region}}-admin --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem --client-key=$HOME/.kube/{{.Region}}/admin-key.pem --client-certificate=$HOME/.kube/{{.Region}}/admin.pem
 kubectl config set-context {{.Region}}-system --cluster={{.Region}}-cluster --user={{.Region}}-admin
 kubectl config use-context {{.Region}}-system
@@ -929,11 +929,11 @@ chown root:root ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/*.pem
 func writeSSLGenerateKeys(cluster *model.Cluster) error {
 
 	var data struct {
-		PublicIp       string
+		ApiServerPublicIp       string
 		MasterNodes    []*model.Node
 		NotMasterNodes []*model.Node
 	}
-	data.PublicIp = cluster.PublicIp
+	data.ApiServerPublicIp = cluster.ApiServerPublicIp
 	data.MasterNodes = cluster.MasterNodes()
 	data.NotMasterNodes = cluster.NotMasterNodes()
 
@@ -955,8 +955,8 @@ openssl req -x509 -new -nodes -key ${SCRIPT_ROOT}/ca-key.pem -days 10000 -out ${
 {{range $node := .MasterNodes}}
 # {{$node.Name}}
 openssl genrsa -out ${SCRIPT_ROOT}/{{$node.Name}}-key.pem 2048
-KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/master-openssl.cnf
-KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 APISERVER_PUBLIC_IP={{$out.ApiServerPublicIp}} NODE_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 APISERVER_PUBLIC_IP={{$out.ApiServerPublicIp}} NODE_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
 {{end}}
 
 {{range $node := .NotMasterNodes}}
@@ -1027,8 +1027,8 @@ DNS.2 = kubernetes.default
 DNS.3 = kubernetes.default.svc
 DNS.4 = kubernetes.default.svc.cluster.local
 IP.1 = $ENV::KUBERNETES_SVC
-IP.2 = $ENV::MASTER_IP
-IP.3 = $ENV::FIREWALL_IP
+IP.2 = $ENV::NODE_IP
+IP.3 = $ENV::APISERVER_PUBLIC_IP
 `, data, false)
 }
 

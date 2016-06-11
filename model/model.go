@@ -10,7 +10,7 @@ import (
 type Cluster struct {
 	Host           string
 	Region         string
-	PublicIp       string
+	ApiServerPublicIp       string
 	LvmVolumeGroup string
 	Network        string
 	Gateway        string
@@ -41,7 +41,7 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 	c.Bridge = cluster.Bridge
 	c.Region = cluster.Region
 	c.Host = cluster.Host
-	c.PublicIp = cluster.PublicIp
+	c.ApiServerPublicIp = cluster.ApiServerPublicIp
 	c.LvmVolumeGroup = cluster.LvmVolumeGroup
 	c.Network = cluster.Network
 	c.Gateway = fmt.Sprintf("%s.1", cluster.Network)
