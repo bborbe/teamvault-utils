@@ -55,7 +55,6 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 				panic("storage and nfsd at the same time is currently not supported")
 			}
 
-			counter++
 			name := generateNodeName(n, i)
 			node := &Node{
 				Name:        name,
@@ -73,6 +72,7 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 				StorageSize: n.StorageSize,
 			}
 			c.Nodes = append(c.Nodes, node)
+			counter++
 		}
 	}
 
