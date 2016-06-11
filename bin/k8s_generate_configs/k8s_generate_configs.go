@@ -7,19 +7,19 @@ import (
 
 	io_util "github.com/bborbe/io/util"
 	"github.com/bborbe/kubernetes_tools/config_parser"
-	"github.com/bborbe/log"
 	"github.com/bborbe/kubernetes_tools/generator"
 	"github.com/bborbe/kubernetes_tools/model"
+	"github.com/bborbe/log"
 )
 
 const (
 	PARAMETER_LOGLEVEL = "loglevel"
-	PARAMETER_CONFIG = "config"
+	PARAMETER_CONFIG   = "config"
 )
 
 var (
-	logger = log.DefaultLogger
-	configPtr = flag.String(PARAMETER_CONFIG, "", "config json file")
+	logger      = log.DefaultLogger
+	configPtr   = flag.String(PARAMETER_CONFIG, "", "config json file")
 	logLevelPtr = flag.String(PARAMETER_LOGLEVEL, log.INFO_STRING, log.FLAG_USAGE)
 )
 

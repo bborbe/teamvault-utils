@@ -1,9 +1,10 @@
 package model
 
 import (
-	"fmt"
-	"github.com/bborbe/kubernetes_tools/config"
 	"bytes"
+	"fmt"
+
+	"github.com/bborbe/kubernetes_tools/config"
 )
 
 type Cluster struct {
@@ -48,7 +49,7 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 	for _, n := range cluster.Nodes {
 		for i := 0; i < n.Amount; i++ {
 
-			if (n.Storage && n.Nfsd) {
+			if n.Storage && n.Nfsd {
 				panic("storage and nfsd at the same time is currently not supported")
 			}
 
@@ -56,16 +57,16 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 			name := generateNodeName(n, i)
 			node := &Node{
 				Name:       name,
-				Ip:         fmt.Sprintf("%s.%d", cluster.Network, counter + 10),
-				Mac:        fmt.Sprintf("%s%02x", cluster.MacPrefix, counter + 10),
+				Ip:         fmt.Sprintf("%s.%d", cluster.Network, counter+10),
+				Mac:        fmt.Sprintf("%s%02x", cluster.MacPrefix, counter+10),
 				VolumeName: fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
 				Etcd:       n.Etcd,
 				Worker:     n.Worker,
 				Master:     n.Master,
-				Storage : n.Storage,
-				Nfsd : n.Nfsd,
+				Storage:    n.Storage,
+				Nfsd:       n.Nfsd,
 				Cores:      n.Cores,
-				Memory:      n.Memory,
+				Memory:     n.Memory,
 			}
 			c.Nodes = append(c.Nodes, node)
 		}
@@ -111,7 +112,7 @@ func (c *Cluster) MasterNodes() []*Node {
 func (c *Cluster) NotMasterNodes() []*Node {
 	var result []*Node
 	for _, node := range c.Nodes {
-		if ! node.Master {
+		if !node.Master {
 			result = append(result, node)
 		}
 	}

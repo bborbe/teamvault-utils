@@ -8,9 +8,10 @@ import (
 	"regexp"
 	"text/template"
 
+	"os/user"
+
 	"github.com/bborbe/kubernetes_tools/model"
 	"github.com/bborbe/log"
-	"os/user"
 )
 
 var logger = log.DefaultLogger
@@ -832,8 +833,8 @@ func writeStorageDataCreate(cluster *model.Cluster) error {
 
 	var data struct {
 		LvmVolumeGroup string
-		NfsdNodes    []*model.Node
-		StorageNodes []*model.Node
+		NfsdNodes      []*model.Node
+		StorageNodes   []*model.Node
 	}
 	data.NfsdNodes = cluster.NfsdNodes()
 	data.StorageNodes = cluster.StorageNodes()
@@ -870,8 +871,8 @@ func writeStorageDestroy(cluster *model.Cluster) error {
 
 	var data struct {
 		LvmVolumeGroup string
-		NfsdNodes    []*model.Node
-		StorageNodes []*model.Node
+		NfsdNodes      []*model.Node
+		StorageNodes   []*model.Node
 	}
 	data.NfsdNodes = cluster.NfsdNodes()
 	data.StorageNodes = cluster.StorageNodes()
@@ -978,7 +979,7 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
-{{range $node := .MasterNodes}}
+{{range $node := .Nodes}}
 echo "create virsh {{$node.Name}} mac={{$node.Mac}} ..."
 virt-install \
 --import \
