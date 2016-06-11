@@ -20,7 +20,7 @@ type generator struct {
 }
 
 type ConfigWriter interface {
-	Write(config model.Cluster) error
+	Write(config *model.Cluster) error
 }
 
 func New() *generator {
