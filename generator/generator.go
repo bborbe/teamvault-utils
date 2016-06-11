@@ -466,10 +466,10 @@ write_files:
           - --secure-port=443
           - --advertise-address={{.Ip}}
           - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
-          - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
-          - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+          - --tls-cert-file=/etc/kubernetes/ssl/node.pem
+          - --tls-private-key-file=/etc/kubernetes/ssl/node-key.pem
           - --client-ca-file=/etc/kubernetes/ssl/ca.pem
-          - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+          - --service-account-key-file=/etc/kubernetes/ssl/node-key.pem
           ports:
           - containerPort: 443
             hostPort: 443
@@ -653,7 +653,7 @@ write_files:
           - /hyperkube
           - controller-manager
           - --master=http://127.0.0.1:8080
-          - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+          - --service-account-private-key-file=/etc/kubernetes/ssl/node-key.pem
           - --root-ca-file=/etc/kubernetes/ssl/ca.pem
           livenessProbe:
             httpGet:
@@ -849,7 +849,7 @@ set -o errtrace
 
 {{range $node := .NfsdNodes}}
 echo "create lvm nfsd volumes for {{$node.Name}}"
-lvcreate -L 5G -n {{$node.VolumeName}}-data {{$out.LvmVolumeGroup}}
+lvcreate -L {{$node.NfsSize}} -n {{$node.VolumeName}}-data {{$out.LvmVolumeGroup}}
 
 echo "format nfsd volume of {{$node.Name}}"
 wipefs /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data
@@ -858,7 +858,7 @@ mkfs.ext4 -F /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data
 
 {{range $node := .StorageNodes}}
 echo "create lvm storage volumes for {{$node.Name}}"
-lvcreate -L 5G -n {{$node.VolumeName}}-storage {{$out.LvmVolumeGroup}}
+lvcreate -L {{$node.StorageSize}} -n {{$node.VolumeName}}-storage {{$out.LvmVolumeGroup}}
 
 echo "format storage volume of {{$node.Name}}"
 wipefs /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
