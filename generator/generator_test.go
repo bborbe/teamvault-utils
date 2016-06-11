@@ -1,4 +1,4 @@
-package config_writer
+package generator
 
 import (
 	"testing"

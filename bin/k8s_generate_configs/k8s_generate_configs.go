@@ -7,18 +7,19 @@ import (
 
 	io_util "github.com/bborbe/io/util"
 	"github.com/bborbe/kubernetes_tools/config_parser"
-	"github.com/bborbe/kubernetes_tools/config_writer"
 	"github.com/bborbe/log"
+	"github.com/bborbe/kubernetes_tools/generator"
+	"github.com/bborbe/kubernetes_tools/model"
 )
 
 const (
 	PARAMETER_LOGLEVEL = "loglevel"
-	PARAMETER_CONFIG   = "config"
+	PARAMETER_CONFIG = "config"
 )
 
 var (
-	logger      = log.DefaultLogger
-	configPtr   = flag.String(PARAMETER_CONFIG, "", "config json file")
+	logger = log.DefaultLogger
+	configPtr = flag.String(PARAMETER_CONFIG, "", "config json file")
 	logLevelPtr = flag.String(PARAMETER_LOGLEVEL, log.INFO_STRING, log.FLAG_USAGE)
 )
 
@@ -56,8 +57,9 @@ func do(configPath string) error {
 		return err
 	}
 
-	configWriter := config_writer.New()
-	if err := configWriter.WriteConfigs(*config); err != nil {
+	configWriter := generator.New()
+	cluster := model.NewCluster(config)
+	if err := configWriter.Write(cluster); err != nil {
 		logger.Warnf("write configs failed: %v", err)
 		return err
 	}

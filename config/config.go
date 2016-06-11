@@ -20,5 +20,5 @@ type Node struct {
 	Storage bool   `json:"nfsd"`
 	Master  bool   `json:"master"`
 	Cores   int    `json:"cores"`
-	Number  int    `json:"number"`
+	Amount  int    `json:"number"`
 }
