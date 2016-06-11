@@ -960,7 +960,7 @@ openssl x509 -req -in ${SCRIPT_ROOT}/admin.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey 
 {{range $node := .MasterNodes}}
 # {{$node.Name}}
 openssl genrsa -out ${SCRIPT_ROOT}/{{$node.Name}}-key.pem 2048
-KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN=kube-apiserver" -config ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/master-openssl.cnf
 KUBERNETES_SVC=10.103.0.1 FIREWALL_IP={{$out.PublicIp}} MASTER_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
 {{end}}
 {{range $node := .NotMasterNodes}}
