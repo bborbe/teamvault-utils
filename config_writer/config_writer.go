@@ -115,8 +115,8 @@ func createScripts(cluster config.Cluster) error {
 
 func writeAdminCopyKeys(cluster config.Cluster) error {
 
-	var data struct{
-		Host string
+	var data struct {
+		Host   string
 		Region string
 	}
 	data.Host = cluster.Host
@@ -141,10 +141,12 @@ scp bborbe@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/kubernetes-admin
 
 func writeAdminKubectlConfigure(cluster config.Cluster) error {
 
-	var data struct{
-		Region string
+	var data struct {
+		Region   string
+		PublicIp string
 	}
 	data.Region = cluster.Region
+	data.PublicIp = cluster.PublicIp
 
 	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/bin/bash
 
@@ -156,7 +158,7 @@ set -o errtrace
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
 mkdir -p $HOME/.kube/{{.Region}}
-kubectl config set-cluster {{.Region}}-cluster --server=https://172.16.60.6:443 --certificate-authority=$HOME/.kube/{{.Region}}/kubernetes-ca.pem
+kubectl config set-cluster {{.Region}}-cluster --server=https://{{.PublicIp}}:443 --certificate-authority=$HOME/.kube/{{.Region}}/kubernetes-ca.pem
 kubectl config set-credentials {{.Region}}-admin --certificate-authority=$HOME/.kube/{{.Region}}/kubernetes-ca.pem --client-key=$HOME/.kube/{{.Region}}/kubernetes-admin-key.pem --client-certificate=$HOME/.kube/{{.Region}}/kubernetes-admin.pem
 kubectl config set-context {{.Region}}-system --cluster={{.Region}}-cluster --user={{.Region}}-admin
 kubectl config use-context {{.Region}}-system
@@ -654,6 +656,8 @@ func writeNode(cluster config.Cluster, node config.Node, number int, counter int
 	configuration.Nfsd = node.Storage
 	configuration.Storage = node.Worker
 	configuration.Master = node.Master
+	configuration.Gateway = fmt.Sprintf("%s.1", cluster.Network)
+	configuration.Dns = fmt.Sprintf("%s.1", cluster.Network)
 
 	if err := createClusterConfig(configuration); err != nil {
 		return err
@@ -765,11 +769,11 @@ func generateEtcdEndpoints(cluster config.Cluster) string {
 }
 
 func generateMac(prefix string, counter int) string {
-	return fmt.Sprintf("%s%02x", prefix, counter+10)
+	return fmt.Sprintf("%s%02x", prefix, counter + 10)
 }
 
 func generateIp(prefix string, counter int) string {
-	return fmt.Sprintf("%s.%d", prefix, counter+10)
+	return fmt.Sprintf("%s.%d", prefix, counter + 10)
 }
 
 func createClusterConfig(node NodeConfiguration) error {
@@ -816,9 +820,11 @@ type NodeConfiguration struct {
 	Storage        bool
 	Master         bool
 	ApiServers     string
+	Gateway        string
+	Dns            string
 }
 
-func generateUserDataContent(userData NodeConfiguration) ([]byte, error) {
+func generateUserDataContent(node NodeConfiguration) ([]byte, error) {
 	content, err := generateTemplate(`#cloud-config
 ssh_authorized_keys:
  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCOw/yh7+j3ygZp2aZRdZDWUh0Dkj5N9/USdiLSoS+0CHJta+mtSxxmI/yv1nOk7xnuA6qtjpxdMlWn5obtC9xyS6T++tlTK9gaPwU7a/PObtoZdfQ7znAJDpX0IPI06/OH1tFE9kEutHQPzhCwRaIQ402BHIrUMWzzP7Ige8Oa0HwXH4sHUG5h/V/svzi9T0CKJjF8dTx4iUfKX959hT8wQnKYPULewkNBFv6pNfWIr8EzvIEQcPmmm3tP+dQPKg5QKVi6jPdRla+t5HXfhXu0W3WCDa2s0VGmJjBdMMowr5MLNYI79MKziSV1w1IWL17Z58Lop0zEHqP7Ba0Aooqd
@@ -865,8 +871,8 @@ coreos:
         MACAddress={{.Mac}}
         [Network]
         Address={{.Ip}}/24
-        Gateway=172.16.30.1
-        DNS=172.16.30.1
+        Gateway={{.Gateway}}
+        DNS={{.Dns}}
     - name: format-ephemeral.service
       command: start
       content: |
@@ -1101,7 +1107,7 @@ write_files:
           - --allow-privileged=true
           - --service-cluster-ip-range=10.103.0.0/16
           - --secure-port=443
-          - --advertise-address=172.16.30.10
+          - --advertise-address={{.Ip}}
           - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
           - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
           - --tls-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
@@ -1145,7 +1151,7 @@ write_files:
           - /podmaster
           - --etcd-servers=http://172.16.30.15:2379,http://172.16.30.16:2379,http://172.16.30.17:2379
           - --key=controller
-          - --whoami=172.16.30.10
+          - --whoami={{.Ip}}
           - --source-file=/src/manifests/kube-controller-manager.yaml
           - --dest-file=/dst/manifests/kube-controller-manager.yaml
           terminationMessagePath: /dev/termination-log
@@ -1161,7 +1167,7 @@ write_files:
           - /podmaster
           - --etcd-servers=http://172.16.30.15:2379,http://172.16.30.16:2379,http://172.16.30.17:2379
           - --key=scheduler
-          - --whoami=172.16.30.10
+          - --whoami={{.Ip}}
           - --source-file=/src/manifests/kube-scheduler.yaml
           - --dest-file=/dst/manifests/kube-scheduler.yaml
           volumeMounts:
@@ -1314,7 +1320,7 @@ write_files:
             path: /usr/share/ca-certificates
           name: ssl-certs-host
 {{end}}
-`, userData)
+`, node)
 	if err != nil {
 		return nil, err
 	}
