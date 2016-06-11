@@ -998,7 +998,7 @@ virt-install \
 --os-variant virtio26 \
 --noautoconsole \
 --nographics \
---name {{$node.Name}} \
+--name {{$node.VmName}} \
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}},bus=virtio,cache=none,io=native \
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-docker,bus=virtio,cache=none,io=native \{{if $node.Nfsd}}
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data,bus=virtio,cache=none,io=native \{{end}}{{if $node.Storage}}
@@ -1056,7 +1056,7 @@ func writeVirsh(cluster *model.Cluster, action string) error {
     VmNames []string
   }
   data.Action = action
-  data.VmNames = cluster.NodeNames()
+  data.VmNames = cluster.VmNames()
   if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/bin/bash
 {{$out := .}}
 set -o errexit

@@ -25,6 +25,7 @@ type Node struct {
 	Mac         string
 	Ip          string
 	VolumeName  string
+	VmName      string
 	Etcd        bool
 	Worker      bool
 	Master      bool
@@ -62,6 +63,7 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 				Ip:          fmt.Sprintf("%s.%d", cluster.Network, counter + 10),
 				Mac:         fmt.Sprintf("%s%02x", cluster.MacPrefix, counter + 10),
 				VolumeName:  fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
+				VmName:  fmt.Sprintf("%s%s", cluster.VmPrefix, name),
 				Etcd:        n.Etcd,
 				Worker:      n.Worker,
 				Master:      n.Master,
@@ -100,6 +102,14 @@ func (c *Cluster) NodeNames() []string {
 	var result []string
 	for _, node := range c.Nodes {
 		result = append(result, node.Name)
+	}
+	return result
+}
+
+func (c *Cluster) VmNames() []string {
+	var result []string
+	for _, node := range c.Nodes {
+		result = append(result, node.VmName)
 	}
 	return result
 }
