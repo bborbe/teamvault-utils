@@ -20,17 +20,19 @@ type Cluster struct {
 }
 
 type Node struct {
-	Name       string
-	Mac        string
-	Ip         string
-	VolumeName string
-	Etcd       bool
-	Worker     bool
-	Master     bool
-	Nfsd       bool
-	Storage    bool
-	Cores      int
-	Memory     int
+	Name        string
+	Mac         string
+	Ip          string
+	VolumeName  string
+	Etcd        bool
+	Worker      bool
+	Master      bool
+	Nfsd        bool
+	Storage     bool
+	Cores       int
+	Memory      int
+	NfsSize     string
+	StorageSize string
 }
 
 func NewCluster(cluster *config.Cluster) *Cluster {
@@ -56,17 +58,19 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 			counter++
 			name := generateNodeName(n, i)
 			node := &Node{
-				Name:       name,
-				Ip:         fmt.Sprintf("%s.%d", cluster.Network, counter+10),
-				Mac:        fmt.Sprintf("%s%02x", cluster.MacPrefix, counter+10),
-				VolumeName: fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
-				Etcd:       n.Etcd,
-				Worker:     n.Worker,
-				Master:     n.Master,
-				Storage:    n.Storage,
-				Nfsd:       n.Nfsd,
-				Cores:      n.Cores,
-				Memory:     n.Memory,
+				Name:        name,
+				Ip:          fmt.Sprintf("%s.%d", cluster.Network, counter+10),
+				Mac:         fmt.Sprintf("%s%02x", cluster.MacPrefix, counter+10),
+				VolumeName:  fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
+				Etcd:        n.Etcd,
+				Worker:      n.Worker,
+				Master:      n.Master,
+				Storage:     n.Storage,
+				Nfsd:        n.Nfsd,
+				Cores:       n.Cores,
+				Memory:      n.Memory,
+				NfsSize:     n.NfsSize,
+				StorageSize: n.StorageSize,
 			}
 			c.Nodes = append(c.Nodes, node)
 		}
