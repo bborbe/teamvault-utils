@@ -10,6 +10,7 @@ import (
 
 	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/log"
+	"k8s.io/kubernetes/federation/registry/cluster"
 )
 
 var logger = log.DefaultLogger
@@ -54,7 +55,7 @@ func createScripts(cluster config.Cluster) error {
 		return err
 	}
 
-	if err := writeClusterCreate(); err != nil {
+	if err := writeClusterCreate(cluster); err != nil {
 		return err
 	}
 
@@ -167,12 +168,28 @@ echo "test with 'kubectl get nodes'"
 `, data, true)
 }
 
-func writeClusterCreate() error {
+func generateVolumeNames(cluster config.Cluster) []string {
+	var result []string
+	for _, node := range cluster.Nodes {
+		for i := 0; i < node.Number; i++ {
+			name := generateNodeName(node, i)
+			result = append(result, fmt.Sprintf("%s%s", cluster.VolumePrefix, name))
+		}
+	}
+	return result
+}
 
-	var data struct{}
+func writeClusterCreate(cluster config.Cluster) error {
+
+	var data struct {
+		VolumeNames []string
+		VolumeGroup string
+	}
+	data.VolumeGroup = cluster.LvmVolumeGroup
+	data.VolumeNames = generateVolumeNames(cluster)
 
 	return writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
-
+{{$out := .}}
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -189,32 +206,15 @@ echo "converting image ..."
 qemu-img convert /var/lib/libvirt/images/coreos_production_qemu_image.img -O raw /var/lib/libvirt/images/coreos_production_qemu_image.raw
 
 echo "create lvm volumes ..."
-
-lvcreate -L 10G -n kubernetes-master system
-lvcreate -L 10G -n "kubernetes-master-docker" system
-
-lvcreate -L 10G -n kubernetes-storage system
-lvcreate -L 10G -n "kubernetes-storage-docker" system
-
-for ((i=0; i < 3; i++)) do
-	lvcreate -L 10G -n "kubernetes-etcd${i}" system
-	lvcreate -L 10G -n "kubernetes-etcd${i}-docker" system
-done
-
-for ((i=0; i < 3; i++)) do
-	lvcreate -L 10G -n "kubernetes-worker${i}" system
-	lvcreate -L 10G -n "kubernetes-worker${i}-docker" system
-done
+{{range $volumeName := .VolumeNames}}
+lvcreate -L 10G -n {{$volumeName}} {{$out.VolumeGroup}}
+lvcreate -L 10G -n {{$volumeName}}-docker {{$out.VolumeGroup}}
+{{end}}
 
 echo "writing images ..."
-dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-master
-dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-storage
-for ((i=0; i < 3; i++)) do
-	dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-etcd${i}
-done
-for ((i=0; i < 3; i++)) do
-	dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/system/kubernetes-worker${i}
-done
+{{range $volumeName := .VolumeNames}}
+dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/{{$out.VolumeGroup}}/{{$volumeName}}
+{{end}}
 
 echo "cleanup"
 rm /var/lib/libvirt/images/coreos_production_qemu_image.img /var/lib/libvirt/images/coreos_production_qemu_image.raw
@@ -225,12 +225,17 @@ echo "done"
 `, data, true)
 }
 
-func writeClusterDestroy() error {
+func writeClusterDestroy(cluster config.Cluster) error {
 
-	var data struct{}
+	var data struct {
+		VolumeNames []string
+		VolumeGroup string
+	}
+	data.VolumeGroup = cluster.LvmVolumeGroup
+	data.VolumeNames = generateVolumeNames(cluster)
 
 	return writeTemplate("scripts/cluster-destroy.sh", `#!/bin/bash
-
+{{$out := .}}
 set -o nounset
 set -o pipefail
 set -o errtrace
@@ -241,22 +246,10 @@ ${SCRIPT_ROOT}/virsh-destroy.sh
 ${SCRIPT_ROOT}/virsh-undefine.sh
 
 echo "remove lvm volumes ..."
-
-lvremove /dev/system/kubernetes-master
-lvremove /dev/system/kubernetes-master-docker
-
-lvremove /dev/system/kubernetes-storage
-lvremove /dev/system/kubernetes-storage-docker
-
-for ((i=0; i < 3; i++)) do
-	lvremove /dev/system/kubernetes-etcd${i}
-	lvremove /dev/system/kubernetes-etcd${i}-docker
-done
-
-for ((i=0; i < 3; i++)) do
-	lvremove /dev/system/kubernetes-worker${i}
-	lvremove /dev/system/kubernetes-worker${i}-docker
-done
+{{range $volumeName := .VolumeNames}}
+lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}
+lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}-docker
+{{end}}
 
 echo "done"
 `, data, true)
@@ -607,12 +600,12 @@ func generateVirsh(cluster config.Cluster, action string) error {
 	data.Action = action
 	data.VmNames = generateVmNames(cluster)
 	if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/bin/bash
-
+{{$out := .}}
 set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
-{{$out := .}}
+
 {{range $vmname := .VmNames}}
 virsh {{$out.Action}} {{$vmname}}
 {{end}}
