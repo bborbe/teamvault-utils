@@ -165,6 +165,7 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 		ApiServers     string
 		Gateway        string
 		Dns            string
+		Network        string
 	}
 	data.Name = node.Name
 	data.Region = cluster.Region
@@ -181,6 +182,7 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 	data.Master = node.Master
 	data.Gateway = cluster.Gateway
 	data.Dns = cluster.Dns
+	data.Network = cluster.Network
 
 	content, err := generateTemplate(`#cloud-config
 ssh_authorized_keys:
@@ -440,7 +442,7 @@ write_files:
   - path: /etc/exports
     permissions: 0644
     content: |
-      /data/ 172.16.30.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
+      /data/ {{.Network}}.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
 {{end}}
 {{if .Master}}
   - path: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -460,7 +462,7 @@ write_files:
           - /hyperkube
           - apiserver
           - --bind-address=0.0.0.0
-          - --etcd-servers=http://172.16.30.15:2379,http://172.16.30.16:2379,http://172.16.30.17:2379
+          - --etcd-servers={{.EtcdEndpoints}}
           - --allow-privileged=true
           - --service-cluster-ip-range=10.103.0.0/16
           - --secure-port=443
@@ -506,7 +508,7 @@ write_files:
           image: gcr.io/google_containers/podmaster:1.1
           command:
           - /podmaster
-          - --etcd-servers=http://172.16.30.15:2379,http://172.16.30.16:2379,http://172.16.30.17:2379
+          - --etcd-servers={{.EtcdEndpoints}}
           - --key=controller
           - --whoami={{.Ip}}
           - --source-file=/src/manifests/kube-controller-manager.yaml
@@ -522,7 +524,7 @@ write_files:
           image: gcr.io/google_containers/podmaster:1.1
           command:
           - /podmaster
-          - --etcd-servers=http://172.16.30.15:2379,http://172.16.30.16:2379,http://172.16.30.17:2379
+          - --etcd-servers={{.EtcdEndpoints}}
           - --key=scheduler
           - --whoami={{.Ip}}
           - --source-file=/src/manifests/kube-scheduler.yaml
