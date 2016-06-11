@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/bborbe/kubernetes_tools/config"
 	"strings"
+
+	"github.com/bborbe/kubernetes_tools/config"
 )
 
 type Cluster struct {
@@ -60,10 +61,10 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 			name := generateNodeName(n, i)
 			node := &Node{
 				Name:        name,
-				Ip:          fmt.Sprintf("%s.%d", cluster.Network, counter + 10),
-				Mac:         fmt.Sprintf("%s%02x", cluster.MacPrefix, counter + 10),
+				Ip:          fmt.Sprintf("%s.%d", cluster.Network, counter+10),
+				Mac:         fmt.Sprintf("%s%02x", cluster.MacPrefix, counter+10),
 				VolumeName:  fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
-				VmName:  fmt.Sprintf("%s%s", cluster.VmPrefix, name),
+				VmName:      fmt.Sprintf("%s%s", cluster.VmPrefix, name),
 				Etcd:        n.Etcd,
 				Worker:      n.Worker,
 				Master:      n.Master,
