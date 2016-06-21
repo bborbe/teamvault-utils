@@ -760,9 +760,13 @@ func writeClusterCreate(cluster *model.Cluster) error {
 	var data struct {
 		VolumeNames []string
 		VolumeGroup string
+		RootSize string
+		DockerSize string
 	}
 	data.VolumeGroup = cluster.LvmVolumeGroup
 	data.VolumeNames = cluster.VolumeNames()
+	data.RootSize = "10G"
+	data.DockerSize = "10G"
 
 	return writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
 {{$out := .}}
@@ -783,8 +787,8 @@ qemu-img convert /var/lib/libvirt/images/coreos_production_qemu_image.img -O raw
 
 echo "create lvm volumes ..."
 {{range $volumeName := .VolumeNames}}
-lvcreate -L 10G -n {{$volumeName}} {{$out.VolumeGroup}}
-lvcreate -L 10G -n {{$volumeName}}-docker {{$out.VolumeGroup}}
+lvcreate -L {{$out.RootSize}} -n {{$volumeName}} {{$out.VolumeGroup}}
+lvcreate -L {{$out.DockerSize}} -n {{$volumeName}}-docker {{$out.VolumeGroup}}
 {{end}}
 
 echo "writing images ..."
