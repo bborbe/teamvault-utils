@@ -36,6 +36,9 @@ type Node struct {
 	Memory      int
 	NfsSize     string
 	StorageSize string
+	RootSize    string
+	DockerSize  string
+	KubeletSize string
 }
 
 func NewCluster(cluster *config.Cluster) *Cluster {
@@ -74,6 +77,9 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 				Memory:      n.Memory,
 				NfsSize:     n.NfsSize,
 				StorageSize: n.StorageSize,
+				RootSize:    valueOf(n.RootSize, "10G"),
+				DockerSize:  valueOf(n.DockerSize, "10G"),
+				KubeletSize: valueOf(n.KubeletSize, "10G"),
 			}
 			c.Nodes = append(c.Nodes, node)
 			counter++
@@ -81,6 +87,13 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 	}
 
 	return c
+}
+
+func valueOf(value string, defaultValue string) string {
+	if len(value) == 0 {
+		return defaultValue
+	}
+	return value
 }
 
 func (c *Cluster) VolumeNames() []string {

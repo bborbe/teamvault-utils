@@ -255,6 +255,29 @@ coreos:
         What=/dev/vdb
         Where=/var/lib/docker
         Type=ext4
+    - name: format-kubelet.service
+      command: start
+      content: |
+        [Unit]
+        Description=Formats the kubelet drive
+        After=dev-vdc.device
+        Requires=dev-vdc.device
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/sbin/wipefs -f /dev/vdc
+        ExecStart=/usr/sbin/mkfs.ext4 -i 4096 -F /dev/vdc
+    - name: var-lib-kubelet.mount
+      command: start
+      content: |
+        [Unit]
+        Description=Mount /var/lib/kubelet
+        Requires=format-kubelet.service
+        After=format-kubelet.service
+        [Mount]
+        What=/dev/vdc
+        Where=/var/lib/kubelet
+        Type=ext4
 {{if .Nfsd}}
     - name: data.mount
       command: start
@@ -262,7 +285,7 @@ coreos:
         [Unit]
         Description=Mount /data
         [Mount]
-        What=/dev/vdc
+        What=/dev/vdd
         Where=/data
         Type=ext4
 {{end}}
@@ -273,7 +296,7 @@ coreos:
         [Unit]
         Description=Mount Storage to /storage
         [Mount]
-        What=/dev/vdc
+        What=/dev/vdd
         Where=/storage
         Type=xfs
 {{end}}
@@ -758,15 +781,13 @@ echo "test with 'kubectl get nodes'"
 func writeClusterCreate(cluster *model.Cluster) error {
 
 	var data struct {
-		VolumeNames []string
+		Nodes       []*model.Node
 		VolumeGroup string
-		RootSize string
-		DockerSize string
+		RootSize    string
+		DockerSize  string
 	}
 	data.VolumeGroup = cluster.LvmVolumeGroup
-	data.VolumeNames = cluster.VolumeNames()
-	data.RootSize = "10G"
-	data.DockerSize = "10G"
+	data.Nodes = cluster.Nodes
 
 	return writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
 {{$out := .}}
@@ -786,14 +807,15 @@ echo "converting image ..."
 qemu-img convert /var/lib/libvirt/images/coreos_production_qemu_image.img -O raw /var/lib/libvirt/images/coreos_production_qemu_image.raw
 
 echo "create lvm volumes ..."
-{{range $volumeName := .VolumeNames}}
-lvcreate -L {{$out.RootSize}} -n {{$volumeName}} {{$out.VolumeGroup}}
-lvcreate -L {{$out.DockerSize}} -n {{$volumeName}}-docker {{$out.VolumeGroup}}
+{{range $node := .Nodes}}
+lvcreate -L {{$node.RootSize}} -n {{$node.VolumeName}} {{$out.VolumeGroup}}
+lvcreate -L {{$node.DockerSize}} -n {{$node.VolumeName}}-docker {{$out.VolumeGroup}}
+lvcreate -L {{$node.KubeletSize}} -n {{$node.VolumeName}}-kubelet {{$out.VolumeGroup}}
 {{end}}
 
 echo "writing images ..."
-{{range $volumeName := .VolumeNames}}
-dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/{{$out.VolumeGroup}}/{{$volumeName}}
+{{range $node := .Nodes}}
+dd bs=1M iflag=direct oflag=direct if=/var/lib/libvirt/images/coreos_production_qemu_image.raw of=/dev/{{$out.VolumeGroup}}/{{$node.VolumeName}}
 {{end}}
 
 echo "cleanup"
@@ -829,6 +851,7 @@ echo "remove lvm volumes ..."
 {{range $volumeName := .VolumeNames}}
 lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}
 lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}-docker
+lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}-kubelet
 {{end}}
 
 echo "done"
@@ -1004,7 +1027,8 @@ virt-install \
 --nographics \
 --name {{$node.VmName}} \
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}},bus=virtio,cache=none,io=native \
---disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-docker,bus=virtio,cache=none,io=native \{{if $node.Nfsd}}
+--disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-docker,bus=virtio,cache=none,io=native \
+--disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-kubelet,bus=virtio,cache=none,io=native \{{if $node.Nfsd}}
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-data,bus=virtio,cache=none,io=native \{{end}}{{if $node.Storage}}
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage,bus=virtio,cache=none,io=native \{{end}}
 --filesystem /var/lib/libvirt/images/kubernetes/{{$node.Name}}/config/,config-2,type=mount,mode=squash \

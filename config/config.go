@@ -25,4 +25,7 @@ type Node struct {
 	Amount      int    `json:"number"`
 	NfsSize     string `json:"nfssize"`
 	StorageSize string `json:"storagesize"`
+	RootSize    string `json:"rootsize"`
+	DockerSize  string `json:"dockersize"`
+	KubeletSize string `json:"kubeletsize"`
 }
