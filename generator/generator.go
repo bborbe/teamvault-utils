@@ -150,6 +150,7 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 	logger.Debugf("write node %s", node.Name)
 
 	var data struct {
+		Version        string
 		Name           string
 		Region         string
 		Mac            string
@@ -167,6 +168,7 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 		Dns            string
 		Network        string
 	}
+	data.Version = cluster.Version
 	data.Name = node.Name
 	data.Region = cluster.Region
 	data.Mac = node.Mac
@@ -384,7 +386,7 @@ coreos:
           --net=host \
           --privileged=true \
           --pid=host \
-          gcr.io/google_containers/hyperkube-amd64:v1.2.4 \
+          gcr.io/google_containers/hyperkube-amd64:{{.Version}} \
           /hyperkube kubelet \
             --containerized \
 {{if .Master}}
@@ -480,7 +482,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-apiserver
-          image: gcr.io/google_containers/hyperkube-amd64:v1.2.4
+          image: gcr.io/google_containers/hyperkube-amd64:{{.Version}}
           command:
           - /hyperkube
           - apiserver
@@ -599,7 +601,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-proxy
-          image: gcr.io/google_containers/hyperkube-amd64:v1.2.4
+          image: gcr.io/google_containers/hyperkube-amd64:{{.Version}}
           command:
           - /hyperkube
           - proxy
@@ -649,7 +651,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-scheduler
-          image: gcr.io/google_containers/hyperkube-amd64:v1.2.4
+          image: gcr.io/google_containers/hyperkube-amd64:{{.Version}}
           command:
           - /hyperkube
           - scheduler
@@ -673,7 +675,7 @@ write_files:
         hostNetwork: true
         containers:
         - name: kube-controller-manager
-          image: gcr.io/google_containers/hyperkube-amd64:v1.2.4
+          image: gcr.io/google_containers/hyperkube-amd64:{{.Version}}
           command:
           - /hyperkube
           - controller-manager

@@ -1,6 +1,7 @@
 package config
 
 type Cluster struct {
+	Version           string `json:"version"`
 	Region            string `json:"region"`
 	ApiServerPublicIp string `json:"api-server-ip"`
 	Network           string `json:"network"`

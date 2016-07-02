@@ -10,6 +10,7 @@ import (
 )
 
 type Cluster struct {
+	Version           string
 	Host              string
 	Region            string
 	ApiServerPublicIp string
@@ -44,6 +45,7 @@ type Node struct {
 func NewCluster(cluster *config.Cluster) *Cluster {
 	c := new(Cluster)
 
+	c.Version = valueOf(cluster.Version, "v1.2.5")
 	c.Bridge = cluster.Bridge
 	c.Region = cluster.Region
 	c.Host = cluster.Host
