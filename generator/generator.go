@@ -150,24 +150,26 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 	logger.Debugf("write node %s", node.Name)
 
 	var data struct {
-		Version        string
-		Name           string
-		Region         string
-		Mac            string
-		Ip             string
-		InitialCluster string
-		EtcdEndpoints  string
-		Etcd           bool
-		Schedulable    bool
-		Labels         string
-		Nfsd           bool
-		Storage        bool
-		Master         bool
-		ApiServers     string
-		Gateway        string
-		Dns            string
-		Network        string
+		Version              string
+		Name                 string
+		Region               string
+		Mac                  string
+		Ip                   string
+		InitialCluster       string
+		EtcdEndpoints        string
+		Etcd                 bool
+		Schedulable          bool
+		Labels               string
+		Nfsd                 bool
+		Storage              bool
+		Master               bool
+		ApiServers           string
+		Gateway              string
+		Dns                  string
+		Network              string
+		UpdateRebootStrategy string
 	}
+	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
 	data.Name = node.Name
 	data.Region = cluster.Region
@@ -194,7 +196,7 @@ coreos:
   fleet:
     metadata: "region={{.Region}}"
   update:
-    reboot-strategy: etcd-lock
+    reboot-strategy: {{.UpdateRebootStrategy}}
   etcd2:
     name: "{{.Name}}"
     initial-cluster: "{{.InitialCluster}}"

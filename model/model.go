@@ -10,16 +10,17 @@ import (
 )
 
 type Cluster struct {
-	Version           string
-	Host              string
-	Region            string
-	ApiServerPublicIp string
-	LvmVolumeGroup    string
-	Network           string
-	Gateway           string
-	Dns               string
-	Bridge            string
-	Nodes             []*Node
+	Version              string
+	Host                 string
+	Region               string
+	ApiServerPublicIp    string
+	LvmVolumeGroup       string
+	Network              string
+	Gateway              string
+	Dns                  string
+	Bridge               string
+	Nodes                []*Node
+	UpdateRebootStrategy string
 }
 
 type Node struct {
@@ -45,6 +46,7 @@ type Node struct {
 func NewCluster(cluster *config.Cluster) *Cluster {
 	c := new(Cluster)
 
+	c.UpdateRebootStrategy = valueOf(cluster.UpdateRebootStrategy, "etcd-lock")
 	c.Version = valueOf(cluster.Version, "v1.2.5")
 	c.Bridge = cluster.Bridge
 	c.Region = cluster.Region
