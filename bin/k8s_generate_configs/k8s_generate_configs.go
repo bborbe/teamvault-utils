@@ -10,6 +10,7 @@ import (
 	"github.com/bborbe/kubernetes_tools/generator"
 	"github.com/bborbe/kubernetes_tools/model"
 	"github.com/bborbe/log"
+	"runtime"
 )
 
 const (
@@ -29,6 +30,8 @@ func main() {
 
 	logger.SetLevelThreshold(log.LogStringToLevel(*logLevelPtr))
 	logger.Debugf("set log level to %s", *logLevelPtr)
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	err := do(*configPtr)
 	if err != nil {
