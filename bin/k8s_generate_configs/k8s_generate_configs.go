@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 
+	"runtime"
+
 	io_util "github.com/bborbe/io/util"
 	"github.com/bborbe/kubernetes_tools/config_parser"
 	"github.com/bborbe/kubernetes_tools/generator"
 	"github.com/bborbe/kubernetes_tools/model"
 	"github.com/bborbe/log"
-	"runtime"
 )
 
 const (
