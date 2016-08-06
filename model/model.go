@@ -9,6 +9,8 @@ import (
 	"github.com/bborbe/kubernetes_tools/config"
 )
 
+const K8S_DEFAULT_VERSION = "v1.3.4"
+
 type Cluster struct {
 	Version              string
 	Host                 string
@@ -47,7 +49,7 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 	c := new(Cluster)
 
 	c.UpdateRebootStrategy = valueOf(cluster.UpdateRebootStrategy, "etcd-lock")
-	c.Version = valueOf(cluster.Version, "v1.2.5")
+	c.Version = valueOf(cluster.Version, K8S_DEFAULT_VERSION)
 	c.Bridge = cluster.Bridge
 	c.Region = cluster.Region
 	c.Host = cluster.Host
