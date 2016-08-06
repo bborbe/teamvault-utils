@@ -1,0 +1,13 @@
+hash: 7343e0989d4c79ebb0ccab59df89ac39b7c455f3487724ed163ee481ee6f4f63
+updated: 2016-08-06T16:19:55.031381972+02:00
+imports:
+- name: github.com/bborbe/io
+  version: 56d91e8345e4418981a56bc4b8466b4096138f08
+  subpackages:
+  - util
+  - buffered_writer
+- name: github.com/bborbe/log
+  version: c4d96aa2d0cc39cbc38a942d6f11046381bf2a46
+testImports:
+- name: github.com/bborbe/assert
+  version: cd6d0ec67c40ced8ca6cf72773b9e4b44420fbd2
