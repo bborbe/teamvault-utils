@@ -377,7 +377,7 @@ coreos:
           --volume=/:/rootfs:ro \
           --volume=/sys:/sys:ro \
           --volume=/var/lib/docker/:/var/lib/docker:rw \
-          --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
+          --volume=/var/lib/kubelet/:/var/lib/kubelet:rw,shared \
           --volume=/var/run:/var/run:rw \
 {{if .Master}}
           --volume=/etc/kubernetes:/etc/kubernetes \
