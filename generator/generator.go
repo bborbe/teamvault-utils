@@ -737,7 +737,7 @@ func writeAdminCopyKeys(cluster *model.Cluster) error {
 	}
 	data.User = user.Username
 
-	return writeTemplate("scripts/admin-copy-keys.sh", `#!/bin/bash
+	return writeTemplate("scripts/admin-copy-keys.sh", `#!/usr/bin/env bash
 
 set -o errexit
 set -o nounset
@@ -763,7 +763,7 @@ func writeAdminKubectlConfigure(cluster *model.Cluster) error {
 	data.Region = cluster.Region
 	data.MasterIp = cluster.MasterNodes()[0].Ip
 
-	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/bin/bash
+	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/usr/bin/env bash
 
 set -o errexit
 set -o nounset
@@ -793,7 +793,7 @@ func writeClusterCreate(cluster *model.Cluster) error {
 	data.VolumeGroup = cluster.LvmVolumeGroup
 	data.Nodes = cluster.Nodes
 
-	return writeTemplate("scripts/cluster-create.sh", `#!/bin/bash
+	return writeTemplate("scripts/cluster-create.sh", `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -840,7 +840,7 @@ func writeClusterDestroy(cluster *model.Cluster) error {
 	data.VolumeGroup = cluster.LvmVolumeGroup
 	data.VolumeNames = cluster.VolumeNames()
 
-	return writeTemplate("scripts/cluster-destroy.sh", `#!/bin/bash
+	return writeTemplate("scripts/cluster-destroy.sh", `#!/usr/bin/env bash
 {{$out := .}}
 set -o nounset
 set -o pipefail
@@ -874,7 +874,7 @@ func writeStorageDataCreate(cluster *model.Cluster) error {
 	data.StorageNodes = cluster.StorageNodes()
 	data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
-	return writeTemplate("scripts/storage-data-create.sh", `#!/bin/bash
+	return writeTemplate("scripts/storage-data-create.sh", `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -912,7 +912,7 @@ func writeStorageDestroy(cluster *model.Cluster) error {
 	data.StorageNodes = cluster.StorageNodes()
 	data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
-	return writeTemplate("scripts/storage-data-destroy.sh", `#!/bin/bash
+	return writeTemplate("scripts/storage-data-destroy.sh", `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -938,7 +938,7 @@ func writeSSLCopyKeys(cluster *model.Cluster) error {
 	}
 	data.NodeNames = cluster.NodeNames()
 
-	return writeTemplate("scripts/ssl-copy-keys.sh", `#!/bin/bash
+	return writeTemplate("scripts/ssl-copy-keys.sh", `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -969,7 +969,7 @@ func writeSSLGenerateKeys(cluster *model.Cluster) error {
 	data.MasterNodes = cluster.MasterNodes()
 	data.NotMasterNodes = cluster.NotMasterNodes()
 
-	return writeTemplate("scripts/ssl-generate-keys.sh", `#!/bin/bash
+	return writeTemplate("scripts/ssl-generate-keys.sh", `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -1008,7 +1008,7 @@ openssl x509 -req -in ${SCRIPT_ROOT}/admin.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey 
 
 func writeVirshCreate(cluster *model.Cluster) error {
 
-	return writeTemplate("scripts/virsh-create.sh", `#!/bin/bash
+	return writeTemplate("scripts/virsh-create.sh", `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
 set -o nounset
@@ -1089,7 +1089,7 @@ func writeVirsh(cluster *model.Cluster, action string) error {
 	}
 	data.Action = action
 	data.VmNames = cluster.VmNames()
-	if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/bin/bash
+	if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
 set -o nounset
