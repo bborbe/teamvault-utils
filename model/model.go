@@ -56,8 +56,8 @@ func NewCluster(cluster *config.Cluster) *Cluster {
 	c.ApiServerPublicIp = cluster.ApiServerPublicIp
 	c.LvmVolumeGroup = cluster.LvmVolumeGroup
 	c.Network = cluster.Network
-	c.Gateway = fmt.Sprintf("%s.1", cluster.Network)
-	c.Dns = fmt.Sprintf("%s.1", cluster.Network)
+	c.Gateway = valueOf(cluster.Gateway, fmt.Sprintf("%s.1", cluster.Network))
+	c.Dns = valueOf(cluster.Dns, fmt.Sprintf("%s.1", cluster.Network))
 
 	counter := 0
 	for _, n := range cluster.Nodes {

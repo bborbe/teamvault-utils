@@ -6,6 +6,8 @@ type Cluster struct {
 	Region               string `json:"region"`
 	ApiServerPublicIp    string `json:"api-server-ip"`
 	Network              string `json:"network"`
+	Gateway              string `json:"gateway"`
+	Dns                  string `json:"dns"`
 	MacPrefix            string `json:"macprefix"`
 	LvmVolumeGroup       string `json:"lvm-vg"`
 	VmPrefix             string `json:"vm-prefix"`
