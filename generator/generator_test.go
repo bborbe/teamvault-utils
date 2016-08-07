@@ -9,8 +9,7 @@ import (
 func TestImplementsConfigWriter(t *testing.T) {
 	object := New()
 	var expected *ConfigWriter
-	err := AssertThat(object, Implements(expected))
-	if err != nil {
+	if err := AssertThat(object, Implements(expected)); err != nil {
 		t.Fatal(err)
 	}
 }
