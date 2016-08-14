@@ -9,7 +9,7 @@ import (
 	"github.com/bborbe/kubernetes_tools/config"
 )
 
-const K8S_DEFAULT_VERSION = "v1.3.4"
+const K8S_DEFAULT_VERSION = "v1.3.5"
 
 type Cluster struct {
 	Version              string
