@@ -1,8 +1,9 @@
 package model
 
 import (
-	. "github.com/bborbe/assert"
 	"testing"
+
+	. "github.com/bborbe/assert"
 
 	"github.com/bborbe/kubernetes_tools/config"
 )
