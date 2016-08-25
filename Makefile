@@ -4,7 +4,7 @@ test:
 	GO15VENDOREXPERIMENT=1 go test `glide novendor`
 vet:
 	go tool vet .
-	go tool vet .-shadow .
+	go tool vet --shadow .
 lint:
 	golint -min_confidence 1 ./...
 errcheck:
