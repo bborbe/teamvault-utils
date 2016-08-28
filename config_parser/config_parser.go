@@ -5,10 +5,8 @@ import (
 	"os"
 
 	"github.com/bborbe/kubernetes_tools/config"
-	"github.com/bborbe/log"
+	"github.com/golang/glog"
 )
-
-var logger = log.DefaultLogger
 
 type config_parser struct {
 }
@@ -24,13 +22,13 @@ func New() *config_parser {
 func (c *config_parser) ParseConfig(path string) (*config.Cluster, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		logger.Warnf("open filed failed: %v", err)
+		glog.Warningf("open filed failed: %v", err)
 		return nil, err
 	}
 	defer file.Close()
 	var config config.Cluster
 	if err := json.NewDecoder(file).Decode(&config); err != nil {
-		logger.Warnf("decode json failed: %v", err)
+		glog.Warningf("decode json failed: %v", err)
 		return nil, err
 	}
 	return &config, nil

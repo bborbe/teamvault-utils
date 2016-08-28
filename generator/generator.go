@@ -11,10 +11,8 @@ import (
 	"os/user"
 
 	"github.com/bborbe/kubernetes_tools/model"
-	"github.com/bborbe/log"
+	"github.com/golang/glog"
 )
-
-var logger = log.DefaultLogger
 
 type generator struct {
 }
@@ -28,7 +26,7 @@ func New() *generator {
 }
 
 func (c *generator) Write(cluster *model.Cluster) error {
-	logger.Debugf("write config")
+	glog.V(2).Infof("write config")
 
 	if err := createStructur(cluster); err != nil {
 		return err
@@ -46,7 +44,7 @@ func (c *generator) Write(cluster *model.Cluster) error {
 }
 
 func createStructur(cluster *model.Cluster) error {
-	logger.Debugf("create user data")
+	glog.V(2).Infof("create user data")
 	for _, node := range cluster.Nodes {
 
 		if err := mkdir(fmt.Sprintf("%s/ssl", node.Name)); err != nil {
@@ -63,7 +61,7 @@ func createStructur(cluster *model.Cluster) error {
 }
 
 func createScripts(cluster *model.Cluster) error {
-	logger.Debugf("create scripts")
+	glog.V(2).Infof("create scripts")
 
 	if err := mkdir("scripts"); err != nil {
 		return err
@@ -137,7 +135,7 @@ func createScripts(cluster *model.Cluster) error {
 }
 
 func writeUserDatas(cluster *model.Cluster) error {
-	logger.Debugf("create user data")
+	glog.V(2).Infof("create user data")
 	for _, node := range cluster.Nodes {
 		if err := writeUserData(cluster, node); err != nil {
 			return err
@@ -147,7 +145,7 @@ func writeUserDatas(cluster *model.Cluster) error {
 }
 
 func writeUserData(cluster *model.Cluster, node *model.Node) error {
-	logger.Debugf("write node %s", node.Name)
+	glog.V(2).Infof("write node %s", node.Name)
 
 	var data struct {
 		Version              string
