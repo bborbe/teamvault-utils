@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 )
 
@@ -13,46 +14,84 @@ type VolumePrefix string
 type LvmVolumeGroup string
 type Size string
 type Device string
-type Gateway string
-type Network string
 type HostName string
+
+type Ip struct {
+	a int
+	b int
+	c int
+	d int
+}
+
+func (i Ip) String() string {
+	return fmt.Sprintf("%d.%d.%d.%d", i.a, i.b, i.c, i.d)
+}
+
+type Gateway Ip
+type Mac string
+type Address struct {
+	Ip   Ip
+	Mask Mask
+}
+type Dns Ip
+type Mask int
 
 type Cluster struct {
 	Version              KubernetesVersion
 	Region               Region
-	ApiServerPublicIp    string
-	LvmVolumeGroup       LvmVolumeGroup
-	Network              string
-	Gateway              string
-	Dns                  string
-	Bridge               string
 	UpdateRebootStrategy UpdateRebootStrategy
-	Hosts                []*Host
+	Hosts                []Host
 }
 
 type Host struct {
-	Name  HostName
-	Nodes []*Node
+	Name           HostName
+	Nodes          []Node
+	LvmVolumeGroup LvmVolumeGroup
+	VolumePrefix   VolumePrefix
+	VmPrefix       VmPrefix
 }
 
 type Node struct {
-	Name        string
-	Mac         string
-	Ip          string
-	VolumeName  string
-	VmName      string
-	Etcd        bool
-	Worker      bool
-	Master      bool
-	Nfsd        bool
-	Storage     bool
-	Cores       int
-	Memory      int
-	NfsSize     Size
-	StorageSize Size
-	RootSize    Size
-	DockerSize  Size
-	KubeletSize Size
+	HostNetwork      *Network
+	KuberntesNetwork *Network
+	BackupNetwork    *Network
+	Name             string
+	VolumeName       string
+	VmName           string
+	Etcd             bool
+	Worker           bool
+	Master           bool
+	Nfsd             bool
+	Storage          bool
+	Cores            int
+	Memory           int
+	NfsSize          Size
+	StorageSize      Size
+	RootSize         Size
+	DockerSize       Size
+	KubeletSize      Size
+}
+
+func (n *Node) Networks() []Network {
+	result := []Network{}
+	if n.HostNetwork != nil {
+		result = append(result, *n.HostNetwork)
+	}
+	if n.KuberntesNetwork != nil {
+		result = append(result, *n.KuberntesNetwork)
+	}
+	if n.BackupNetwork != nil {
+		result = append(result, *n.BackupNetwork)
+	}
+	return result
+}
+
+type Network struct {
+	Device  Device
+	Mac     Mac
+	Address Address
+	Gateway Gateway
+	Dns     Dns
 }
 
 func (c *Host) VolumeNames() []string {
@@ -79,8 +118,8 @@ func (c *Host) VmNames() []string {
 	return result
 }
 
-func (c *Host) MasterNodes() []*Node {
-	var result []*Node
+func (c *Host) MasterNodes() []Node {
+	var result []Node
 	for _, node := range c.Nodes {
 		if node.Master {
 			result = append(result, node)
@@ -89,8 +128,8 @@ func (c *Host) MasterNodes() []*Node {
 	return result
 }
 
-func (c *Host) NotMasterNodes() []*Node {
-	var result []*Node
+func (c *Host) NotMasterNodes() []Node {
+	var result []Node
 	for _, node := range c.Nodes {
 		if !node.Master {
 			result = append(result, node)
@@ -99,8 +138,8 @@ func (c *Host) NotMasterNodes() []*Node {
 	return result
 }
 
-func (c *Host) StorageNodes() []*Node {
-	var result []*Node
+func (c *Host) StorageNodes() []Node {
+	var result []Node
 	for _, node := range c.Nodes {
 		if node.Storage {
 			result = append(result, node)
@@ -109,8 +148,8 @@ func (c *Host) StorageNodes() []*Node {
 	return result
 }
 
-func (c *Host) NfsdNodes() []*Node {
-	var result []*Node
+func (c *Host) NfsdNodes() []Node {
+	var result []Node
 	for _, node := range c.Nodes {
 		if node.Nfsd {
 			result = append(result, node)
@@ -130,7 +169,7 @@ func (c *Host) EtcdEndpoints() string {
 				content.WriteString(",")
 			}
 			content.WriteString("http://")
-			content.WriteString(node.Ip)
+			content.WriteString(node.KuberntesNetwork.Address.Ip.String())
 			content.WriteString(":2379")
 		}
 	}
@@ -149,7 +188,7 @@ func (c *Host) InitialCluster() string {
 			}
 			content.WriteString(node.Name)
 			content.WriteString("=http://")
-			content.WriteString(node.Ip)
+			content.WriteString(node.KuberntesNetwork.Address.Ip.String())
 			content.WriteString(":2380")
 		}
 	}
@@ -167,7 +206,7 @@ func (c *Host) ApiServers() string {
 				content.WriteString(",")
 			}
 			content.WriteString("https://")
-			content.WriteString(node.Ip)
+			content.WriteString(node.KuberntesNetwork.Address.Ip.String())
 		}
 	}
 	return content.String()

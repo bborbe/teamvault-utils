@@ -14,12 +14,12 @@ type Cluster struct {
 
 type Host struct {
 	Name              model.HostName `json:"name"`
-	HostNetwork       model.Network  `json:"host-network"`
+	HostNetwork       model.Address  `json:"host-network"`
 	HostGateway       model.Gateway  `json:"host-gateway"`
 	HostDevice        model.Device   `json:"host-device"`
-	BackupNetwork     model.Network  `json:"backup-network"`
+	BackupNetwork     model.Address  `json:"backup-network"`
 	BackupDevice      model.Device   `json:"backup-device"`
-	KubernetesNetwork model.Network  `json:"kubernetes-network"`
+	KubernetesNetwork model.Address  `json:"kubernetes-network"`
 	KubernetesGateway model.Gateway  `json:"kubernetes-gateway"`
 	KubernetesDevice  model.Device   `json:"kubernetes-device"`
 	Nodes             []Node         `json:"nodes"`

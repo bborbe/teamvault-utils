@@ -18,14 +18,14 @@ type generator struct {
 }
 
 type ConfigWriter interface {
-	Write(config *model.Cluster) error
+	Write(config model.Cluster) error
 }
 
 func New() *generator {
 	return new(generator)
 }
 
-func (c *generator) Write(cluster *model.Cluster) error {
+func (c *generator) Write(cluster model.Cluster) error {
 	glog.V(2).Infof("write config")
 	for _, host := range cluster.Hosts {
 		if err := c.createHost(cluster, host); err != nil {
@@ -35,7 +35,7 @@ func (c *generator) Write(cluster *model.Cluster) error {
 	return nil
 }
 
-func (c *generator) createHost(cluster *model.Cluster, host *model.Host) error {
+func (c *generator) createHost(cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("write config")
 
 	if err := createStructur(cluster, host); err != nil {
@@ -53,7 +53,7 @@ func (c *generator) createHost(cluster *model.Cluster, host *model.Host) error {
 	return nil
 }
 
-func createStructur(cluster *model.Cluster, host *model.Host) error {
+func createStructur(cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("create user data")
 	for _, node := range host.Nodes {
 		if err := mkdir(fmt.Sprintf("%s/ssl", node.Name)); err != nil {
@@ -69,7 +69,7 @@ func createStructur(cluster *model.Cluster, host *model.Host) error {
 	return nil
 }
 
-func createScripts(cluster *model.Cluster, host *model.Host) error {
+func createScripts(cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("create scripts")
 
 	if err := mkdir("scripts"); err != nil {
@@ -143,7 +143,7 @@ func createScripts(cluster *model.Cluster, host *model.Host) error {
 	return nil
 }
 
-func writeUserDatas(cluster *model.Cluster, host *model.Host) error {
+func writeUserDatas(cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("create user data")
 	for _, node := range host.Nodes {
 		if err := writeUserData(cluster, host, node); err != nil {
@@ -153,15 +153,13 @@ func writeUserDatas(cluster *model.Cluster, host *model.Host) error {
 	return nil
 }
 
-func writeUserData(cluster *model.Cluster, host *model.Host, node *model.Node) error {
+func writeUserData(cluster model.Cluster, host model.Host, node model.Node) error {
 	glog.V(2).Infof("write node %s", node.Name)
 
 	var data struct {
 		Version              model.KubernetesVersion
 		Name                 string
 		Region               model.Region
-		Mac                  string
-		Ip                   string
 		InitialCluster       string
 		EtcdEndpoints        string
 		Etcd                 bool
@@ -171,17 +169,13 @@ func writeUserData(cluster *model.Cluster, host *model.Host, node *model.Node) e
 		Storage              bool
 		Master               bool
 		ApiServers           string
-		Gateway              string
-		Dns                  string
-		Network              string
+		Networks             []model.Network
 		UpdateRebootStrategy model.UpdateRebootStrategy
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
 	data.Name = node.Name
 	data.Region = cluster.Region
-	data.Mac = node.Mac
-	data.Ip = node.Ip
 	data.InitialCluster = host.InitialCluster()
 	data.EtcdEndpoints = host.EtcdEndpoints()
 	data.ApiServers = host.ApiServers()
@@ -191,9 +185,7 @@ func writeUserData(cluster *model.Cluster, host *model.Host, node *model.Node) e
 	data.Nfsd = node.Nfsd
 	data.Storage = node.Storage
 	data.Master = node.Master
-	data.Gateway = cluster.Gateway
-	data.Dns = cluster.Dns
-	data.Network = cluster.Network
+	data.Networks = node.Networks()
 
 	content, err := generateTemplate(`#cloud-config
 ssh_authorized_keys:
@@ -235,14 +227,16 @@ coreos:
         Where=/etc/kubernetes/ssl
         Options=ro,trans=virtio,version=9p2000.L
         Type=9p
-    - name: 10-ens3.network
+{{range $network := .Networks}}
+    - name: 10-ens{{$network.Number}}.network
       content: |
         [Match]
-        MACAddress={{.Mac}}
+        MACAddress={{$network.Mac}}
         [Network]
-        Address={{.Ip}}/24
-        Gateway={{.Gateway}}
-        DNS={{.Dns}}
+        Address={{$network.Ip}}
+        Gateway={{$network.Gateway}}
+        DNS={{$networkDns}}
+{{end}}
     - name: format-ephemeral.service
       command: start
       content: |
@@ -729,7 +723,7 @@ write_files:
 	return nil
 }
 
-func writeAdminCopyKeys(cluster *model.Cluster, host *model.Host) error {
+func writeAdminCopyKeys(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
 		Host   model.HostName
@@ -761,13 +755,13 @@ scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/admin-key.pem
 `, data, true)
 }
 
-func writeAdminKubectlConfigure(cluster *model.Cluster, host *model.Host) error {
+func writeAdminKubectlConfigure(cluster model.Cluster, host model.Host) error {
 	var data struct {
 		Region   model.Region
-		MasterIp string
+		MasterIp model.Ip
 	}
 	data.Region = cluster.Region
-	data.MasterIp = host.MasterNodes()[0].Ip
+	data.MasterIp = host.MasterNodes()[0].KuberntesNetwork.Address.Ip
 
 	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/usr/bin/env bash
 
@@ -788,15 +782,15 @@ echo "test with 'kubectl get nodes'"
 `, data, true)
 }
 
-func writeClusterCreate(cluster *model.Cluster, host *model.Host) error {
+func writeClusterCreate(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
-		Nodes       []*model.Node
+		Nodes       []model.Node
 		VolumeGroup model.LvmVolumeGroup
 		RootSize    model.Size
 		DockerSize  model.Size
 	}
-	data.VolumeGroup = cluster.LvmVolumeGroup
+	data.VolumeGroup = host.LvmVolumeGroup
 	data.Nodes = host.Nodes
 
 	return writeTemplate("scripts/cluster-create.sh", `#!/usr/bin/env bash
@@ -837,13 +831,13 @@ echo "done"
 `, data, true)
 }
 
-func writeClusterDestroy(cluster *model.Cluster, host *model.Host) error {
+func writeClusterDestroy(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
 		VolumeNames []string
 		VolumeGroup model.LvmVolumeGroup
 	}
-	data.VolumeGroup = cluster.LvmVolumeGroup
+	data.VolumeGroup = host.LvmVolumeGroup
 	data.VolumeNames = host.VolumeNames()
 
 	return writeTemplate("scripts/cluster-destroy.sh", `#!/usr/bin/env bash
@@ -869,16 +863,16 @@ echo "done"
 
 }
 
-func writeStorageDataCreate(cluster *model.Cluster, host *model.Host) error {
+func writeStorageDataCreate(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
 		LvmVolumeGroup model.LvmVolumeGroup
-		NfsdNodes      []*model.Node
-		StorageNodes   []*model.Node
+		NfsdNodes      []model.Node
+		StorageNodes   []model.Node
 	}
 	data.NfsdNodes = host.NfsdNodes()
 	data.StorageNodes = host.StorageNodes()
-	data.LvmVolumeGroup = cluster.LvmVolumeGroup
+	data.LvmVolumeGroup = host.LvmVolumeGroup
 
 	return writeTemplate("scripts/storage-data-create.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -907,16 +901,16 @@ mkfs.xfs -i size=512 /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 `, data, true)
 }
 
-func writeStorageDestroy(cluster *model.Cluster, host *model.Host) error {
+func writeStorageDestroy(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
 		LvmVolumeGroup model.LvmVolumeGroup
-		NfsdNodes      []*model.Node
-		StorageNodes   []*model.Node
+		NfsdNodes      []model.Node
+		StorageNodes   []model.Node
 	}
 	data.NfsdNodes = host.NfsdNodes()
 	data.StorageNodes = host.StorageNodes()
-	data.LvmVolumeGroup = cluster.LvmVolumeGroup
+	data.LvmVolumeGroup = host.LvmVolumeGroup
 
 	return writeTemplate("scripts/storage-data-destroy.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -937,7 +931,7 @@ lvremove /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 `, data, true)
 }
 
-func writeSSLCopyKeys(cluster *model.Cluster, host *model.Host) error {
+func writeSSLCopyKeys(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
 		NodeNames []string
@@ -964,14 +958,13 @@ chown root:root ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/*.pem
 `, data, true)
 }
 
-func writeSSLGenerateKeys(cluster *model.Cluster, host *model.Host) error {
+func writeSSLGenerateKeys(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
 		ApiServerPublicIp string
-		MasterNodes       []*model.Node
-		NotMasterNodes    []*model.Node
+		MasterNodes       []model.Node
+		NotMasterNodes    []model.Node
 	}
-	data.ApiServerPublicIp = cluster.ApiServerPublicIp
 	data.MasterNodes = host.MasterNodes()
 	data.NotMasterNodes = host.NotMasterNodes()
 
@@ -993,8 +986,8 @@ openssl req -x509 -new -nodes -key ${SCRIPT_ROOT}/ca-key.pem -days 10000 -out ${
 {{range $node := .MasterNodes}}
 # {{$node.Name}}
 openssl genrsa -out ${SCRIPT_ROOT}/{{$node.Name}}-key.pem 2048
-KUBERNETES_SVC=10.103.0.1 APISERVER_PUBLIC_IP={{$out.ApiServerPublicIp}} NODE_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/master-openssl.cnf
-KUBERNETES_SVC=10.103.0.1 APISERVER_PUBLIC_IP={{$out.ApiServerPublicIp}} NODE_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 NODE_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 NODE_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
 {{end}}
 
 {{range $node := .NotMasterNodes}}
@@ -1012,7 +1005,7 @@ openssl x509 -req -in ${SCRIPT_ROOT}/admin.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey 
 `, data, true)
 }
 
-func writeVirshCreate(cluster *model.Cluster) error {
+func writeVirshCreate(cluster model.Cluster) error {
 
 	return writeTemplate("scripts/virsh-create.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -1067,7 +1060,6 @@ DNS.3 = kubernetes.default.svc
 DNS.4 = kubernetes.default.svc.cluster.local
 IP.1 = $ENV::KUBERNETES_SVC
 IP.2 = $ENV::NODE_IP
-IP.3 = $ENV::APISERVER_PUBLIC_IP
 `, data, false)
 }
 
@@ -1088,7 +1080,7 @@ IP.1 = $ENV::NODE_IP
 `, script, false)
 }
 
-func writeVirsh(cluster *model.Cluster, host *model.Host, action string) error {
+func writeVirsh(cluster model.Cluster, host model.Host, action string) error {
 	var data struct {
 		Action  string
 		VmNames []string
