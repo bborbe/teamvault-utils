@@ -2,27 +2,33 @@ package model
 
 import (
 	"bytes"
-	"fmt"
-
 	"strings"
-
-	"github.com/bborbe/kubernetes_tools/config"
 )
 
-const K8S_DEFAULT_VERSION = "v1.3.5"
+type UpdateRebootStrategy string
+type KubernetesVersion string
+type Region string
+type VmPrefix string
+type VolumePrefix string
+type LvmVolumeGroup string
+type Size string
+type Device string
+type Gateway string
+type Network string
+type HostName string
 
 type Cluster struct {
-	Version              string
+	Version              KubernetesVersion
 	Host                 string
-	Region               string
+	Region               Region
 	ApiServerPublicIp    string
-	LvmVolumeGroup       string
+	LvmVolumeGroup       LvmVolumeGroup
 	Network              string
 	Gateway              string
 	Dns                  string
 	Bridge               string
 	Nodes                []*Node
-	UpdateRebootStrategy string
+	UpdateRebootStrategy UpdateRebootStrategy
 }
 
 type Node struct {
@@ -38,68 +44,11 @@ type Node struct {
 	Storage     bool
 	Cores       int
 	Memory      int
-	NfsSize     string
-	StorageSize string
-	RootSize    string
-	DockerSize  string
-	KubeletSize string
-}
-
-func NewCluster(cluster *config.Cluster) *Cluster {
-	c := new(Cluster)
-
-	c.UpdateRebootStrategy = valueOf(cluster.UpdateRebootStrategy, "etcd-lock")
-	c.Version = valueOf(cluster.Version, K8S_DEFAULT_VERSION)
-	c.Bridge = cluster.Bridge
-	c.Region = cluster.Region
-	c.Host = cluster.Host
-	c.ApiServerPublicIp = cluster.ApiServerPublicIp
-	c.LvmVolumeGroup = cluster.LvmVolumeGroup
-	c.Network = cluster.Network
-	c.Gateway = valueOf(cluster.Gateway, fmt.Sprintf("%s.1", cluster.Network))
-	c.Dns = valueOf(cluster.Dns, fmt.Sprintf("%s.1", cluster.Network))
-
-	counter := 0
-	for _, n := range cluster.Nodes {
-		for i := 0; i < n.Amount; i++ {
-
-			if n.Storage && n.Nfsd {
-				panic("storage and nfsd at the same time is currently not supported")
-			}
-
-			name := generateNodeName(n, i)
-			node := &Node{
-				Name:        name,
-				Ip:          fmt.Sprintf("%s.%d", cluster.Network, counter+10),
-				Mac:         fmt.Sprintf("%s%02x", cluster.MacPrefix, counter+10),
-				VolumeName:  fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
-				VmName:      fmt.Sprintf("%s%s", cluster.VmPrefix, name),
-				Etcd:        n.Etcd,
-				Worker:      n.Worker,
-				Master:      n.Master,
-				Storage:     n.Storage,
-				Nfsd:        n.Nfsd,
-				Cores:       n.Cores,
-				Memory:      n.Memory,
-				NfsSize:     n.NfsSize,
-				StorageSize: n.StorageSize,
-				RootSize:    valueOf(n.RootSize, "10G"),
-				DockerSize:  valueOf(n.DockerSize, "10G"),
-				KubeletSize: valueOf(n.KubeletSize, "10G"),
-			}
-			c.Nodes = append(c.Nodes, node)
-			counter++
-		}
-	}
-
-	return c
-}
-
-func valueOf(value string, defaultValue string) string {
-	if len(value) == 0 {
-		return defaultValue
-	}
-	return value
+	NfsSize     Size
+	StorageSize Size
+	RootSize    Size
+	DockerSize  Size
+	KubeletSize Size
 }
 
 func (c *Cluster) VolumeNames() []string {
@@ -108,14 +57,6 @@ func (c *Cluster) VolumeNames() []string {
 		result = append(result, node.VolumeName)
 	}
 	return result
-}
-
-func generateNodeName(node config.Node, number int) string {
-	if node.Amount == 1 {
-		return node.Name
-	} else {
-		return fmt.Sprintf("%s%d", node.Name, number)
-	}
 }
 
 func (c *Cluster) NodeNames() []string {

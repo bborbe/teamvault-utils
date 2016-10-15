@@ -1,4 +1,4 @@
-package generator
+package file_generator
 
 import (
 	"bytes"
@@ -148,9 +148,9 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 	glog.V(2).Infof("write node %s", node.Name)
 
 	var data struct {
-		Version              string
+		Version              model.KubernetesVersion
 		Name                 string
-		Region               string
+		Region               model.Region
 		Mac                  string
 		Ip                   string
 		InitialCluster       string
@@ -165,7 +165,7 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 		Gateway              string
 		Dns                  string
 		Network              string
-		UpdateRebootStrategy string
+		UpdateRebootStrategy model.UpdateRebootStrategy
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
@@ -724,7 +724,7 @@ func writeAdminCopyKeys(cluster *model.Cluster) error {
 
 	var data struct {
 		Host   string
-		Region string
+		Region model.Region
 		User   string
 	}
 	data.Host = cluster.Host
@@ -755,7 +755,7 @@ scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/admin-key.pem
 func writeAdminKubectlConfigure(cluster *model.Cluster) error {
 
 	var data struct {
-		Region   string
+		Region   model.Region
 		MasterIp string
 	}
 	data.Region = cluster.Region
@@ -784,9 +784,9 @@ func writeClusterCreate(cluster *model.Cluster) error {
 
 	var data struct {
 		Nodes       []*model.Node
-		VolumeGroup string
-		RootSize    string
-		DockerSize  string
+		VolumeGroup model.LvmVolumeGroup
+		RootSize    model.Size
+		DockerSize  model.Size
 	}
 	data.VolumeGroup = cluster.LvmVolumeGroup
 	data.Nodes = cluster.Nodes
@@ -833,7 +833,7 @@ func writeClusterDestroy(cluster *model.Cluster) error {
 
 	var data struct {
 		VolumeNames []string
-		VolumeGroup string
+		VolumeGroup model.LvmVolumeGroup
 	}
 	data.VolumeGroup = cluster.LvmVolumeGroup
 	data.VolumeNames = cluster.VolumeNames()
@@ -864,7 +864,7 @@ echo "done"
 func writeStorageDataCreate(cluster *model.Cluster) error {
 
 	var data struct {
-		LvmVolumeGroup string
+		LvmVolumeGroup model.LvmVolumeGroup
 		NfsdNodes      []*model.Node
 		StorageNodes   []*model.Node
 	}
@@ -902,7 +902,7 @@ mkfs.xfs -i size=512 /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 func writeStorageDestroy(cluster *model.Cluster) error {
 
 	var data struct {
-		LvmVolumeGroup string
+		LvmVolumeGroup model.LvmVolumeGroup
 		NfsdNodes      []*model.Node
 		StorageNodes   []*model.Node
 	}

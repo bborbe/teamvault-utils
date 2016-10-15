@@ -7,8 +7,8 @@ import (
 
 	io_util "github.com/bborbe/io/util"
 	"github.com/bborbe/kubernetes_tools/config_parser"
-	"github.com/bborbe/kubernetes_tools/generator"
-	"github.com/bborbe/kubernetes_tools/model"
+	"github.com/bborbe/kubernetes_tools/file_generator"
+	"github.com/bborbe/kubernetes_tools/model_generator"
 	"github.com/golang/glog"
 )
 
@@ -51,8 +51,8 @@ func do(configPath string) error {
 		return err
 	}
 
-	configWriter := generator.New()
-	cluster := model.NewCluster(config)
+	configWriter := file_generator.New()
+	cluster := model_generator.GenerateModel(config)
 	if err := configWriter.Write(cluster); err != nil {
 		glog.Warningf("write configs failed: %v", err)
 		return err
