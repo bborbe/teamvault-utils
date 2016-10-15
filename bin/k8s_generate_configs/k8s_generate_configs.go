@@ -52,7 +52,16 @@ func do(configPath string) error {
 	}
 
 	configWriter := file_generator.New()
-	cluster := model_generator.GenerateModel(config)
+	cluster, err := model_generator.GenerateModel(config)
+	if err != nil {
+		glog.Warningf("generate model failed: %v", err)
+		return err
+	}
+	if err := cluster.Validate(); err != nil {
+		glog.Warningf("validate model failed: %v", err)
+		return err
+	}
+
 	if err := configWriter.Write(*cluster); err != nil {
 		glog.Warningf("write configs failed: %v", err)
 		return err

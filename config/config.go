@@ -6,23 +6,23 @@ type Cluster struct {
 	UpdateRebootStrategy model.UpdateRebootStrategy `json:"update-reboot-strategy"`
 	KubernetesVersion    model.KubernetesVersion    `json:"kuberntes-version"`
 	Region               model.Region               `json:"region"`
-	VmPrefix             model.VmPrefix             `json:"vm-prefix"`
-	VolumePrefix         model.VolumePrefix         `json:"disk-prefix"`
-	LvmVolumeGroup       model.LvmVolumeGroup       `json:"lvm-vg"`
 	Hosts                []Host                     `json:"hosts"`
 }
 
 type Host struct {
-	Name              model.HostName `json:"name"`
-	HostNetwork       model.Address  `json:"host-network"`
-	HostGateway       model.Gateway  `json:"host-gateway"`
-	HostDevice        model.Device   `json:"host-device"`
-	BackupNetwork     model.Address  `json:"backup-network"`
-	BackupDevice      model.Device   `json:"backup-device"`
-	KubernetesNetwork model.Address  `json:"kubernetes-network"`
-	KubernetesGateway model.Gateway  `json:"kubernetes-gateway"`
-	KubernetesDevice  model.Device   `json:"kubernetes-device"`
-	Nodes             []Node         `json:"nodes"`
+	VmPrefix          model.VmPrefix       `json:"vm-prefix"`
+	VolumePrefix      model.VolumePrefix   `json:"disk-prefix"`
+	LvmVolumeGroup    model.LvmVolumeGroup `json:"lvm-vg"`
+	Name              model.HostName       `json:"name"`
+	HostNetwork       model.Address        `json:"host-network"`
+	HostGateway       model.Gateway        `json:"host-gateway"`
+	HostDevice        model.Device         `json:"host-device"`
+	BackupNetwork     model.Address        `json:"backup-network"`
+	BackupDevice      model.Device         `json:"backup-device"`
+	KubernetesNetwork model.Address        `json:"kubernetes-network"`
+	KubernetesGateway model.Gateway        `json:"kubernetes-gateway"`
+	KubernetesDevice  model.Device         `json:"kubernetes-device"`
+	Nodes             []Node               `json:"nodes"`
 }
 
 type Node struct {

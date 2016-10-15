@@ -3,6 +3,7 @@ package model
 import (
 	"bytes"
 	"fmt"
+	"net"
 	"strings"
 )
 
@@ -17,22 +18,64 @@ type Device string
 type HostName string
 
 type Ip struct {
-	a int
-	b int
-	c int
-	d int
+	ip net.IP
+}
+
+func (i *Ip) Set(pos int, value byte) {
+	i.ip[pos] = value
 }
 
 func (i Ip) String() string {
-	return fmt.Sprintf("%d.%d.%d.%d", i.a, i.b, i.c, i.d)
+	return i.ip.String()
+}
+
+func IpByString(ipString string) (*Ip, error) {
+	ip := net.ParseIP(ipString)
+	if len(ip) == 0 {
+		return nil, fmt.Errorf("parse ip %s failed", ipString)
+	}
+	return &Ip{ip: ip}, nil
+}
+
+func (i Ip) Mac() (*Mac, error) {
+	mac, err := MacByString("00:16:3e:75:cf:62")
+	if err != nil {
+		return nil, err
+	}
+	mac.mac[2] = i.ip[0]
+	mac.mac[3] = i.ip[1]
+	mac.mac[4] = i.ip[2]
+	mac.mac[5] = i.ip[3]
+	return mac, nil
 }
 
 type Gateway Ip
-type Mac string
+
+type Mac struct {
+	mac net.HardwareAddr
+}
+
+func (m Mac) String() string {
+	return m.mac.String()
+}
+
+func MacByString(macString string) (*Mac, error) {
+	mac, err := net.ParseMAC(macString)
+	if err != nil {
+		return nil, err
+	}
+	return &Mac{mac}, nil
+}
+
 type Address struct {
 	Ip   Ip
 	Mask Mask
 }
+
+func (a Address) String() string {
+	return fmt.Sprintf("%s/%d", a.Ip.String(), a.Mask)
+}
+
 type Dns Ip
 type Mask int
 
@@ -43,12 +86,48 @@ type Cluster struct {
 	Hosts                []Host
 }
 
+func (c *Cluster) Validate() error {
+	if len(c.UpdateRebootStrategy) == 0 {
+		return fmt.Errorf("Cluster.UpdateRebootStrategy missing")
+	}
+	if len(c.Region) == 0 {
+		return fmt.Errorf("Cluster.Region missing")
+	}
+	if len(c.Version) == 0 {
+		return fmt.Errorf("Cluster.Version missing")
+	}
+	if len(c.Hosts) == 0 {
+		return fmt.Errorf("Cluster.Hosts missing")
+	}
+	for _, host := range c.Hosts {
+		if err := host.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type Host struct {
 	Name           HostName
-	Nodes          []Node
 	LvmVolumeGroup LvmVolumeGroup
 	VolumePrefix   VolumePrefix
 	VmPrefix       VmPrefix
+	Nodes          []Node
+}
+
+func (h *Host) Validate() error {
+	if len(h.Name) == 0 {
+		return fmt.Errorf("Host.Name missing")
+	}
+	if len(h.LvmVolumeGroup) == 0 {
+		return fmt.Errorf("Host.LvmVolumeGroup missing")
+	}
+	for _, node := range h.Nodes {
+		if err := node.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type Node struct {
@@ -70,6 +149,28 @@ type Node struct {
 	RootSize         Size
 	DockerSize       Size
 	KubeletSize      Size
+}
+
+func (n *Node) Validate() error {
+	if len(n.Networks()) == 0 {
+		return fmt.Errorf("Node.Networks missing")
+	}
+	if len(n.Name) == 0 {
+		return fmt.Errorf("Node.Name missing")
+	}
+	if len(n.VolumeName) == 0 {
+		return fmt.Errorf("Node.VolumeName missing")
+	}
+	if len(n.VmName) == 0 {
+		return fmt.Errorf("Node.VmName missing")
+	}
+	if n.Cores <= 0 {
+		return fmt.Errorf("Node.Cores missing")
+	}
+	if n.Memory <= 0 {
+		return fmt.Errorf("Node.Memory missing")
+	}
+	return nil
 }
 
 func (n *Node) Networks() []Network {
