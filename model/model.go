@@ -46,7 +46,9 @@ type Ip struct {
 }
 
 func (i *Ip) Set(pos int, value byte) {
-	i.ip[pos] = value
+	ip := net.IPv4(i.ip[12], i.ip[13], i.ip[14], i.ip[15])
+	ip[pos] = value
+	i.ip = ip
 }
 
 func (i Ip) String() string {
@@ -66,10 +68,10 @@ func (i Ip) Mac() (*Mac, error) {
 	if err != nil {
 		return nil, err
 	}
-	mac.mac[2] = i.ip[0]
-	mac.mac[3] = i.ip[1]
-	mac.mac[4] = i.ip[2]
-	mac.mac[5] = i.ip[3]
+	mac.mac[2] = i.ip[12]
+	mac.mac[3] = i.ip[13]
+	mac.mac[4] = i.ip[14]
+	mac.mac[5] = i.ip[15]
 	return mac, nil
 }
 
@@ -140,6 +142,10 @@ func (d Dns) String() string {
 }
 
 type Mask int
+
+func (m Mask) String() string {
+	return strconv.Itoa(int(m))
+}
 
 func ParseMask(mask string) (*Mask, error) {
 	i, err := strconv.Atoi(mask)

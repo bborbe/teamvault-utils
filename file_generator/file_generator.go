@@ -472,7 +472,7 @@ write_files:
   - path: /etc/exports
     permissions: 0644
     content: |
-      /data/ {{.KubernetesNetwork.Address.String}}(rw,async,no_subtree_check,no_root_squash,fsid=0)
+      /data/ {{.KubernetesNetwork.Address}}(rw,async,no_subtree_check,no_root_squash,fsid=0)
 {{end}}
 {{if .Master}}
   - path: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -1022,7 +1022,7 @@ set -o pipefail
 set -o errtrace
 
 {{range $node := .Nodes}}
-echo "create virsh {{$node.Name}} mac={{$node.KubernetesNetwork.Mac.String}} ..."
+echo "create virsh {{$node.Name}} mac={{$node.KubernetesNetwork.Mac}} ..."
 virt-install \
 --import \
 --debug \
@@ -1043,7 +1043,7 @@ virt-install \
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage,bus=virtio,cache=none,io=native \{{end}}
 --filesystem /var/lib/libvirt/images/kubernetes/{{$node.Name}}/config/,config-2,type=mount,mode=squash \
 --filesystem /var/lib/libvirt/images/kubernetes/{{$node.Name}}/ssl/,kubernetes-ssl,type=mount,mode=squash \
---network bridge={{$node.KubernetesNetwork.Device.String}},mac={{$node.KubernetesNetwork.Mac.String}},model=virtio
+--network bridge={{$node.KubernetesNetwork.Device}},mac={{$node.KubernetesNetwork.Mac}},model=virtio
 {{end}}
 `, data, true)
 }

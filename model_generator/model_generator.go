@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/kubernetes_tools/model"
+	"github.com/golang/glog"
 )
 
 const K8S_DEFAULT_VERSION = "v1.3.5"
@@ -27,13 +28,6 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 	}
 	cluster.Region = config.Region
 	for _, configHost := range config.Hosts {
-		//	cluster.LvmVolumeGroup = config.LvmVolumeGroup
-		//c.Bridge = cluster.Bridge
-		//c.ApiServerPublicIp = cluster.ApiServerPublicIp
-		//c.Network = cluster.Network
-		//c.Gateway = valueOf(cluster.Gateway, fmt.Sprintf("%s.1", cluster.Network))
-		//c.Dns = valueOf(cluster.Dns, fmt.Sprintf("%s.1", cluster.Network))
-
 		host := model.Host{}
 		host.Name = configHost.Name
 		host.LvmVolumeGroup = configHost.LvmVolumeGroup
@@ -44,10 +38,14 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 		if err != nil {
 			return nil, err
 		}
+		glog.V(2).Infof("kubernetes network: %s", kubernetesNetwork.String())
+		glog.V(2).Infof("kubernetes ip: %s", kubernetesNetwork.Ip.String())
+		glog.V(2).Infof("kubernetes mask: %s", kubernetesNetwork.Mask.String())
 
 		gatewayIp := kubernetesNetwork.Ip
-		gatewayIp.Set(3, 1)
+		gatewayIp.Set(15, 1)
 		gateway := model.Gateway(gatewayIp)
+		glog.V(2).Infof("gateway %s", gateway.String())
 		counter := 0
 		for _, configNode := range configHost.Nodes {
 			for i := 0; i < configNode.Amount; i++ {
@@ -56,17 +54,19 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 					panic("storage and nfsd at the same time is currently not supported")
 				}
 
-				address := kubernetesNetwork
-				address.Ip.Set(3, byte(counter+10))
+				address := *kubernetesNetwork
+				address.Ip.Set(15, byte(counter+10))
+				glog.V(2).Infof("kubernetes address: %s", address.String())
 				mac, err := address.Ip.Mac()
 				if err != nil {
 					return nil, err
 				}
+				glog.V(2).Infof("kubernetes mac: %s", mac.String())
 				node := model.Node{
 					KubernetesNetwork: &model.Network{
-						Number:  1,
+						Number:  3,
 						Device:  configHost.KubernetesDevice,
-						Address: *address,
+						Address: address,
 						Mac:     *mac,
 						Gateway: gateway,
 						Dns:     dns,
