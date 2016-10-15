@@ -19,7 +19,6 @@ type HostName string
 
 type Cluster struct {
 	Version              KubernetesVersion
-	Host                 string
 	Region               Region
 	ApiServerPublicIp    string
 	LvmVolumeGroup       LvmVolumeGroup
@@ -27,8 +26,13 @@ type Cluster struct {
 	Gateway              string
 	Dns                  string
 	Bridge               string
-	Nodes                []*Node
 	UpdateRebootStrategy UpdateRebootStrategy
+	Hosts                []*Host
+}
+
+type Host struct {
+	Name  HostName
+	Nodes []*Node
 }
 
 type Node struct {
@@ -51,7 +55,7 @@ type Node struct {
 	KubeletSize Size
 }
 
-func (c *Cluster) VolumeNames() []string {
+func (c *Host) VolumeNames() []string {
 	var result []string
 	for _, node := range c.Nodes {
 		result = append(result, node.VolumeName)
@@ -59,7 +63,7 @@ func (c *Cluster) VolumeNames() []string {
 	return result
 }
 
-func (c *Cluster) NodeNames() []string {
+func (c *Host) NodeNames() []string {
 	var result []string
 	for _, node := range c.Nodes {
 		result = append(result, node.Name)
@@ -67,7 +71,7 @@ func (c *Cluster) NodeNames() []string {
 	return result
 }
 
-func (c *Cluster) VmNames() []string {
+func (c *Host) VmNames() []string {
 	var result []string
 	for _, node := range c.Nodes {
 		result = append(result, node.VmName)
@@ -75,7 +79,7 @@ func (c *Cluster) VmNames() []string {
 	return result
 }
 
-func (c *Cluster) MasterNodes() []*Node {
+func (c *Host) MasterNodes() []*Node {
 	var result []*Node
 	for _, node := range c.Nodes {
 		if node.Master {
@@ -85,7 +89,7 @@ func (c *Cluster) MasterNodes() []*Node {
 	return result
 }
 
-func (c *Cluster) NotMasterNodes() []*Node {
+func (c *Host) NotMasterNodes() []*Node {
 	var result []*Node
 	for _, node := range c.Nodes {
 		if !node.Master {
@@ -95,7 +99,7 @@ func (c *Cluster) NotMasterNodes() []*Node {
 	return result
 }
 
-func (c *Cluster) StorageNodes() []*Node {
+func (c *Host) StorageNodes() []*Node {
 	var result []*Node
 	for _, node := range c.Nodes {
 		if node.Storage {
@@ -105,7 +109,7 @@ func (c *Cluster) StorageNodes() []*Node {
 	return result
 }
 
-func (c *Cluster) NfsdNodes() []*Node {
+func (c *Host) NfsdNodes() []*Node {
 	var result []*Node
 	for _, node := range c.Nodes {
 		if node.Nfsd {
@@ -115,7 +119,7 @@ func (c *Cluster) NfsdNodes() []*Node {
 	return result
 }
 
-func (c *Cluster) EtcdEndpoints() string {
+func (c *Host) EtcdEndpoints() string {
 	first := true
 	content := bytes.NewBufferString("")
 	for _, node := range c.Nodes {
@@ -133,7 +137,7 @@ func (c *Cluster) EtcdEndpoints() string {
 	return content.String()
 }
 
-func (c *Cluster) InitialCluster() string {
+func (c *Host) InitialCluster() string {
 	first := true
 	content := bytes.NewBufferString("")
 	for _, node := range c.Nodes {
@@ -152,7 +156,7 @@ func (c *Cluster) InitialCluster() string {
 	return content.String()
 }
 
-func (c *Cluster) ApiServers() string {
+func (c *Host) ApiServers() string {
 	first := true
 	content := bytes.NewBufferString("")
 	for _, node := range c.Nodes {
