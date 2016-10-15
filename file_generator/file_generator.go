@@ -27,26 +27,35 @@ func New() *generator {
 
 func (c *generator) Write(cluster *model.Cluster) error {
 	glog.V(2).Infof("write config")
+	for _, host := range cluster.Hosts {
+		if err := c.createHost(cluster, host); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	if err := createStructur(cluster); err != nil {
+func (c *generator) createHost(cluster *model.Cluster, host *model.Host) error {
+	glog.V(2).Infof("write config")
+
+	if err := createStructur(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeUserDatas(cluster); err != nil {
+	if err := writeUserDatas(cluster, host); err != nil {
 		return err
 	}
 
-	if err := createScripts(cluster); err != nil {
+	if err := createScripts(cluster, host); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func createStructur(cluster *model.Cluster) error {
+func createStructur(cluster *model.Cluster, host *model.Host) error {
 	glog.V(2).Infof("create user data")
-	for _, node := range cluster.Nodes {
-
+	for _, node := range host.Nodes {
 		if err := mkdir(fmt.Sprintf("%s/ssl", node.Name)); err != nil {
 			return err
 		}
@@ -60,42 +69,42 @@ func createStructur(cluster *model.Cluster) error {
 	return nil
 }
 
-func createScripts(cluster *model.Cluster) error {
+func createScripts(cluster *model.Cluster, host *model.Host) error {
 	glog.V(2).Infof("create scripts")
 
 	if err := mkdir("scripts"); err != nil {
 		return err
 	}
 
-	if err := writeAdminCopyKeys(cluster); err != nil {
+	if err := writeAdminCopyKeys(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeAdminKubectlConfigure(cluster); err != nil {
+	if err := writeAdminKubectlConfigure(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeClusterCreate(cluster); err != nil {
+	if err := writeClusterCreate(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeClusterDestroy(cluster); err != nil {
+	if err := writeClusterDestroy(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeStorageDataCreate(cluster); err != nil {
+	if err := writeStorageDataCreate(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeStorageDestroy(cluster); err != nil {
+	if err := writeStorageDestroy(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeSSLCopyKeys(cluster); err != nil {
+	if err := writeSSLCopyKeys(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeSSLGenerateKeys(cluster); err != nil {
+	if err := writeSSLGenerateKeys(cluster, host); err != nil {
 		return err
 	}
 
@@ -111,40 +120,40 @@ func createScripts(cluster *model.Cluster) error {
 		return err
 	}
 
-	if err := writeVirsh(cluster, "start"); err != nil {
+	if err := writeVirsh(cluster, host, "start"); err != nil {
 		return err
 	}
 
-	if err := writeVirsh(cluster, "reboot"); err != nil {
+	if err := writeVirsh(cluster, host, "reboot"); err != nil {
 		return err
 	}
 
-	if err := writeVirsh(cluster, "destroy"); err != nil {
+	if err := writeVirsh(cluster, host, "destroy"); err != nil {
 		return err
 	}
 
-	if err := writeVirsh(cluster, "shutdown"); err != nil {
+	if err := writeVirsh(cluster, host, "shutdown"); err != nil {
 		return err
 	}
 
-	if err := writeVirsh(cluster, "undefine"); err != nil {
+	if err := writeVirsh(cluster, host, "undefine"); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func writeUserDatas(cluster *model.Cluster) error {
+func writeUserDatas(cluster *model.Cluster, host *model.Host) error {
 	glog.V(2).Infof("create user data")
-	for _, node := range cluster.Nodes {
-		if err := writeUserData(cluster, node); err != nil {
+	for _, node := range host.Nodes {
+		if err := writeUserData(cluster, host, node); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func writeUserData(cluster *model.Cluster, node *model.Node) error {
+func writeUserData(cluster *model.Cluster, host *model.Host, node *model.Node) error {
 	glog.V(2).Infof("write node %s", node.Name)
 
 	var data struct {
@@ -173,9 +182,9 @@ func writeUserData(cluster *model.Cluster, node *model.Node) error {
 	data.Region = cluster.Region
 	data.Mac = node.Mac
 	data.Ip = node.Ip
-	data.InitialCluster = cluster.InitialCluster()
-	data.EtcdEndpoints = cluster.EtcdEndpoints()
-	data.ApiServers = cluster.ApiServers()
+	data.InitialCluster = host.InitialCluster()
+	data.EtcdEndpoints = host.EtcdEndpoints()
+	data.ApiServers = host.ApiServers()
 	data.Etcd = node.Etcd
 	data.Schedulable = node.Worker
 	data.Labels = node.Labels()
@@ -720,14 +729,14 @@ write_files:
 	return nil
 }
 
-func writeAdminCopyKeys(cluster *model.Cluster) error {
+func writeAdminCopyKeys(cluster *model.Cluster, host *model.Host) error {
 
 	var data struct {
-		Host   string
+		Host   model.HostName
 		Region model.Region
 		User   string
 	}
-	data.Host = cluster.Host
+	data.Host = host.Name
 	data.Region = cluster.Region
 	user, err := user.Current()
 	if err != nil {
@@ -752,14 +761,13 @@ scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/admin-key.pem
 `, data, true)
 }
 
-func writeAdminKubectlConfigure(cluster *model.Cluster) error {
-
+func writeAdminKubectlConfigure(cluster *model.Cluster, host *model.Host) error {
 	var data struct {
 		Region   model.Region
 		MasterIp string
 	}
 	data.Region = cluster.Region
-	data.MasterIp = cluster.MasterNodes()[0].Ip
+	data.MasterIp = host.MasterNodes()[0].Ip
 
 	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/usr/bin/env bash
 
@@ -780,7 +788,7 @@ echo "test with 'kubectl get nodes'"
 `, data, true)
 }
 
-func writeClusterCreate(cluster *model.Cluster) error {
+func writeClusterCreate(cluster *model.Cluster, host *model.Host) error {
 
 	var data struct {
 		Nodes       []*model.Node
@@ -789,7 +797,7 @@ func writeClusterCreate(cluster *model.Cluster) error {
 		DockerSize  model.Size
 	}
 	data.VolumeGroup = cluster.LvmVolumeGroup
-	data.Nodes = cluster.Nodes
+	data.Nodes = host.Nodes
 
 	return writeTemplate("scripts/cluster-create.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -829,14 +837,14 @@ echo "done"
 `, data, true)
 }
 
-func writeClusterDestroy(cluster *model.Cluster) error {
+func writeClusterDestroy(cluster *model.Cluster, host *model.Host) error {
 
 	var data struct {
 		VolumeNames []string
 		VolumeGroup model.LvmVolumeGroup
 	}
 	data.VolumeGroup = cluster.LvmVolumeGroup
-	data.VolumeNames = cluster.VolumeNames()
+	data.VolumeNames = host.VolumeNames()
 
 	return writeTemplate("scripts/cluster-destroy.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -861,15 +869,15 @@ echo "done"
 
 }
 
-func writeStorageDataCreate(cluster *model.Cluster) error {
+func writeStorageDataCreate(cluster *model.Cluster, host *model.Host) error {
 
 	var data struct {
 		LvmVolumeGroup model.LvmVolumeGroup
 		NfsdNodes      []*model.Node
 		StorageNodes   []*model.Node
 	}
-	data.NfsdNodes = cluster.NfsdNodes()
-	data.StorageNodes = cluster.StorageNodes()
+	data.NfsdNodes = host.NfsdNodes()
+	data.StorageNodes = host.StorageNodes()
 	data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
 	return writeTemplate("scripts/storage-data-create.sh", `#!/usr/bin/env bash
@@ -899,15 +907,15 @@ mkfs.xfs -i size=512 /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 `, data, true)
 }
 
-func writeStorageDestroy(cluster *model.Cluster) error {
+func writeStorageDestroy(cluster *model.Cluster, host *model.Host) error {
 
 	var data struct {
 		LvmVolumeGroup model.LvmVolumeGroup
 		NfsdNodes      []*model.Node
 		StorageNodes   []*model.Node
 	}
-	data.NfsdNodes = cluster.NfsdNodes()
-	data.StorageNodes = cluster.StorageNodes()
+	data.NfsdNodes = host.NfsdNodes()
+	data.StorageNodes = host.StorageNodes()
 	data.LvmVolumeGroup = cluster.LvmVolumeGroup
 
 	return writeTemplate("scripts/storage-data-destroy.sh", `#!/usr/bin/env bash
@@ -929,12 +937,12 @@ lvremove /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 `, data, true)
 }
 
-func writeSSLCopyKeys(cluster *model.Cluster) error {
+func writeSSLCopyKeys(cluster *model.Cluster, host *model.Host) error {
 
 	var data struct {
 		NodeNames []string
 	}
-	data.NodeNames = cluster.NodeNames()
+	data.NodeNames = host.NodeNames()
 
 	return writeTemplate("scripts/ssl-copy-keys.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -956,7 +964,7 @@ chown root:root ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/*.pem
 `, data, true)
 }
 
-func writeSSLGenerateKeys(cluster *model.Cluster) error {
+func writeSSLGenerateKeys(cluster *model.Cluster, host *model.Host) error {
 
 	var data struct {
 		ApiServerPublicIp string
@@ -964,8 +972,8 @@ func writeSSLGenerateKeys(cluster *model.Cluster) error {
 		NotMasterNodes    []*model.Node
 	}
 	data.ApiServerPublicIp = cluster.ApiServerPublicIp
-	data.MasterNodes = cluster.MasterNodes()
-	data.NotMasterNodes = cluster.NotMasterNodes()
+	data.MasterNodes = host.MasterNodes()
+	data.NotMasterNodes = host.NotMasterNodes()
 
 	return writeTemplate("scripts/ssl-generate-keys.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -1080,13 +1088,13 @@ IP.1 = $ENV::NODE_IP
 `, script, false)
 }
 
-func writeVirsh(cluster *model.Cluster, action string) error {
+func writeVirsh(cluster *model.Cluster, host *model.Host, action string) error {
 	var data struct {
 		Action  string
 		VmNames []string
 	}
 	data.Action = action
-	data.VmNames = cluster.VmNames()
+	data.VmNames = host.VmNames()
 	if err := writeTemplate(fmt.Sprintf("scripts/virsh-%s.sh", action), `#!/usr/bin/env bash
 {{$out := .}}
 set -o errexit
