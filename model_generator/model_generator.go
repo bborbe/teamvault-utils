@@ -1,6 +1,7 @@
 package model_generator
 
 import (
+	"fmt"
 	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/kubernetes_tools/model"
 )
@@ -39,7 +40,12 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 		host.VolumePrefix = configHost.VolumePrefix
 		host.VmPrefix = configHost.VmPrefix
 
-		gatewayIp := configHost.KubernetesNetwork.Ip
+		kubernetesNetwork, err := model.ParseAddress(configHost.KubernetesNetwork)
+		if err != nil {
+			return nil, err
+		}
+
+		gatewayIp := kubernetesNetwork.Ip
 		gatewayIp.Set(3, 1)
 		gateway := model.Gateway(gatewayIp)
 		counter := 0
@@ -50,26 +56,26 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 					panic("storage and nfsd at the same time is currently not supported")
 				}
 
-				address := configHost.KubernetesNetwork
+				address := kubernetesNetwork
 				address.Ip.Set(3, byte(counter+10))
 				mac, err := address.Ip.Mac()
 				if err != nil {
 					return nil, err
 				}
-				//name := generateNodeName(n, i)
 				node := model.Node{
-					KuberntesNetwork: &model.Network{
+					KubernetesNetwork: &model.Network{
+						Number:  1,
 						Device:  configHost.KubernetesDevice,
-						Address: address,
+						Address: *address,
 						Mac:     *mac,
 						Gateway: gateway,
 						Dns:     dns,
 					},
-					//Name:        name,
+					Name:       generateNodeName(configNode, i),
+					VolumeName: generateVolumeName(configHost, configNode, i),
+					VmName:     generateVmName(configHost, configNode, i),
 					//Ip:  fmt.Sprintf("%s.%d", configHost.KubernetesNetwork, counter + 10),
 					//Mac: fmt.Sprintf("%s%02x", configHost.KubernetesNetwork, counter + 10),
-					//VolumeName:  fmt.Sprintf("%s%s", cluster.VolumePrefix, name),
-					//VmName:      fmt.Sprintf("%s%s", cluster.VmPrefix, name),
 					Etcd:        configNode.Etcd,
 					Worker:      configNode.Worker,
 					Master:      configNode.Master,
@@ -100,17 +106,18 @@ func valueOfSize(size model.Size, defaultSize model.Size) model.Size {
 	return size
 }
 
-//func generateNodeName(node config.Node, number int) string {
-//	if node.Amount == 1 {
-//		return node.Name
-//	} else {
-//		return fmt.Sprintf("%s%d", node.Name, number)
-//	}
-//}
-
-func valueOf(value string, defaultValue string) string {
-	if len(value) == 0 {
-		return defaultValue
+func generateNodeName(node config.Node, number int) model.NodeName {
+	if node.Amount == 1 {
+		return model.NodeName(node.Name)
+	} else {
+		return model.NodeName(fmt.Sprintf("%s%d", node.Name, number))
 	}
-	return value
+}
+
+func generateVolumeName(host config.Host, node config.Node, number int) model.VolumeName {
+	return model.VolumeName(fmt.Sprintf("%s%s", host.VolumePrefix, generateNodeName(node, number)))
+}
+
+func generateVmName(host config.Host, node config.Node, number int) model.VmName {
+	return model.VmName(fmt.Sprintf("%s%s", host.VmPrefix, generateNodeName(node, number)))
 }

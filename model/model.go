@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -15,7 +16,30 @@ type VolumePrefix string
 type LvmVolumeGroup string
 type Size string
 type Device string
+
+func (d Device) String() string {
+	return string(d)
+}
+
 type HostName string
+
+type NodeName string
+
+func (n NodeName) String() string {
+	return string(n)
+}
+
+type VolumeName string
+
+func (v VolumeName) String() string {
+	return string(v)
+}
+
+type VmName string
+
+func (v VmName) String() string {
+	return string(v)
+}
 
 type Ip struct {
 	ip net.IP
@@ -51,6 +75,10 @@ func (i Ip) Mac() (*Mac, error) {
 
 type Gateway Ip
 
+func (g Gateway) String() string {
+	return g.ip.String()
+}
+
 type Mac struct {
 	mac net.HardwareAddr
 }
@@ -72,12 +100,55 @@ type Address struct {
 	Mask Mask
 }
 
+func (a *Address) Validate() error {
+	if len(a.Ip.ip) == 4 {
+		return fmt.Errorf("Address.Ip invalid")
+	}
+	if a.Mask == 0 {
+		return fmt.Errorf("Address.Mask invalid")
+	}
+	return nil
+}
+
+func ParseAddress(address string) (*Address, error) {
+	parts := strings.Split(address, "/")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("parse address failed")
+	}
+	mask, err := ParseMask(parts[1])
+	if err != nil {
+		return nil, err
+	}
+	ip, err := IpByString(parts[0])
+	if err != nil {
+		return nil, err
+	}
+	return &Address{
+		Ip:   *ip,
+		Mask: *mask,
+	}, nil
+}
+
 func (a Address) String() string {
 	return fmt.Sprintf("%s/%d", a.Ip.String(), a.Mask)
 }
 
 type Dns Ip
+
+func (d Dns) String() string {
+	return d.ip.String()
+}
+
 type Mask int
+
+func ParseMask(mask string) (*Mask, error) {
+	i, err := strconv.Atoi(mask)
+	if err != nil {
+		return nil, err
+	}
+	m := Mask(i)
+	return &m, nil
+}
 
 type Cluster struct {
 	Version              KubernetesVersion
@@ -131,29 +202,34 @@ func (h *Host) Validate() error {
 }
 
 type Node struct {
-	HostNetwork      *Network
-	KuberntesNetwork *Network
-	BackupNetwork    *Network
-	Name             string
-	VolumeName       string
-	VmName           string
-	Etcd             bool
-	Worker           bool
-	Master           bool
-	Nfsd             bool
-	Storage          bool
-	Cores            int
-	Memory           int
-	NfsSize          Size
-	StorageSize      Size
-	RootSize         Size
-	DockerSize       Size
-	KubeletSize      Size
+	Name              NodeName
+	HostNetwork       *Network
+	KubernetesNetwork *Network
+	BackupNetwork     *Network
+	VolumeName        VolumeName
+	VmName            VmName
+	Etcd              bool
+	Worker            bool
+	Master            bool
+	Nfsd              bool
+	Storage           bool
+	Cores             int
+	Memory            int
+	NfsSize           Size
+	StorageSize       Size
+	RootSize          Size
+	DockerSize        Size
+	KubeletSize       Size
 }
 
 func (n *Node) Validate() error {
 	if len(n.Networks()) == 0 {
 		return fmt.Errorf("Node.Networks missing")
+	}
+	for _, network := range n.Networks() {
+		if err := network.Validate(); err != nil {
+			return err
+		}
 	}
 	if len(n.Name) == 0 {
 		return fmt.Errorf("Node.Name missing")
@@ -178,8 +254,8 @@ func (n *Node) Networks() []Network {
 	if n.HostNetwork != nil {
 		result = append(result, *n.HostNetwork)
 	}
-	if n.KuberntesNetwork != nil {
-		result = append(result, *n.KuberntesNetwork)
+	if n.KubernetesNetwork != nil {
+		result = append(result, *n.KubernetesNetwork)
 	}
 	if n.BackupNetwork != nil {
 		result = append(result, *n.BackupNetwork)
@@ -188,6 +264,7 @@ func (n *Node) Networks() []Network {
 }
 
 type Network struct {
+	Number  int
 	Device  Device
 	Mac     Mac
 	Address Address
@@ -195,24 +272,43 @@ type Network struct {
 	Dns     Dns
 }
 
-func (c *Host) VolumeNames() []string {
-	var result []string
+func (n *Network) Validate() error {
+	if len(n.Device) == 0 {
+		return fmt.Errorf("Network.Device missing")
+	}
+	if len(n.Mac.String()) == 0 {
+		return fmt.Errorf("Network.Mac missing")
+	}
+	if len(n.Gateway.String()) == 0 {
+		return fmt.Errorf("Network.Gateway missing")
+	}
+	if len(n.Dns.String()) == 0 {
+		return fmt.Errorf("Network.Dns missing")
+	}
+	if err := n.Address.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Host) VolumeNames() []VolumeName {
+	var result []VolumeName
 	for _, node := range c.Nodes {
 		result = append(result, node.VolumeName)
 	}
 	return result
 }
 
-func (c *Host) NodeNames() []string {
-	var result []string
+func (c *Host) NodeNames() []NodeName {
+	var result []NodeName
 	for _, node := range c.Nodes {
 		result = append(result, node.Name)
 	}
 	return result
 }
 
-func (c *Host) VmNames() []string {
-	var result []string
+func (c *Host) VmNames() []VmName {
+	var result []VmName
 	for _, node := range c.Nodes {
 		result = append(result, node.VmName)
 	}
@@ -270,7 +366,7 @@ func (c *Host) EtcdEndpoints() string {
 				content.WriteString(",")
 			}
 			content.WriteString("http://")
-			content.WriteString(node.KuberntesNetwork.Address.Ip.String())
+			content.WriteString(node.KubernetesNetwork.Address.Ip.String())
 			content.WriteString(":2379")
 		}
 	}
@@ -287,9 +383,9 @@ func (c *Host) InitialCluster() string {
 			} else {
 				content.WriteString(",")
 			}
-			content.WriteString(node.Name)
+			content.WriteString(node.Name.String())
 			content.WriteString("=http://")
-			content.WriteString(node.KuberntesNetwork.Address.Ip.String())
+			content.WriteString(node.KubernetesNetwork.Address.Ip.String())
 			content.WriteString(":2380")
 		}
 	}
@@ -307,7 +403,7 @@ func (c *Host) ApiServers() string {
 				content.WriteString(",")
 			}
 			content.WriteString("https://")
-			content.WriteString(node.KuberntesNetwork.Address.Ip.String())
+			content.WriteString(node.KubernetesNetwork.Address.Ip.String())
 		}
 	}
 	return content.String()

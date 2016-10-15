@@ -116,7 +116,7 @@ func createScripts(cluster model.Cluster, host model.Host) error {
 		return err
 	}
 
-	if err := writeVirshCreate(cluster); err != nil {
+	if err := writeVirshCreate(cluster, host); err != nil {
 		return err
 	}
 
@@ -158,7 +158,7 @@ func writeUserData(cluster model.Cluster, host model.Host, node model.Node) erro
 
 	var data struct {
 		Version              model.KubernetesVersion
-		Name                 string
+		Name                 model.NodeName
 		Region               model.Region
 		InitialCluster       string
 		EtcdEndpoints        string
@@ -170,6 +170,7 @@ func writeUserData(cluster model.Cluster, host model.Host, node model.Node) erro
 		Master               bool
 		ApiServers           string
 		Networks             []model.Network
+		KubernetesNetwork    model.Network
 		UpdateRebootStrategy model.UpdateRebootStrategy
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
@@ -186,8 +187,9 @@ func writeUserData(cluster model.Cluster, host model.Host, node model.Node) erro
 	data.Storage = node.Storage
 	data.Master = node.Master
 	data.Networks = node.Networks()
+	data.KubernetesNetwork = *node.KubernetesNetwork
 
-	content, err := generateTemplate(`#cloud-config
+	content, err := generateTemplate("cloud-config", `#cloud-config
 ssh_authorized_keys:
  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCOw/yh7+j3ygZp2aZRdZDWUh0Dkj5N9/USdiLSoS+0CHJta+mtSxxmI/yv1nOk7xnuA6qtjpxdMlWn5obtC9xyS6T++tlTK9gaPwU7a/PObtoZdfQ7znAJDpX0IPI06/OH1tFE9kEutHQPzhCwRaIQ402BHIrUMWzzP7Ige8Oa0HwXH4sHUG5h/V/svzi9T0CKJjF8dTx4iUfKX959hT8wQnKYPULewkNBFv6pNfWIr8EzvIEQcPmmm3tP+dQPKg5QKVi6jPdRla+t5HXfhXu0W3WCDa2s0VGmJjBdMMowr5MLNYI79MKziSV1w1IWL17Z58Lop0zEHqP7Ba0Aooqd
 hostname: {{.Name}}
@@ -202,8 +204,8 @@ coreos:
     initial-cluster-token: "cluster-{{.Region}}"
 {{if .Etcd}}
     initial-cluster-state: "new"
-    initial-advertise-peer-urls: "http://{{.Ip}}:2380"
-    advertise-client-urls: "http://{{.Ip}}:2379"
+    initial-advertise-peer-urls: "http://{{.KubernetesNetwork.Address.Ip}}:2380"
+    advertise-client-urls: "http://{{.KubernetesNetwork.Address.Ip}}:2379"
     listen-client-urls: "http://0.0.0.0:2379,http://0.0.0.0:4001"
     listen-peer-urls: "http://0.0.0.0:2380"
 {{else}}
@@ -233,9 +235,9 @@ coreos:
         [Match]
         MACAddress={{$network.Mac}}
         [Network]
-        Address={{$network.Ip}}
+        Address={{$network.Address}}
         Gateway={{$network.Gateway}}
-        DNS={{$networkDns}}
+        DNS={{$network.Dns}}
 {{end}}
     - name: format-ephemeral.service
       command: start
@@ -403,7 +405,7 @@ coreos:
 {{end}}
             --allow-privileged=true \
             --config=/etc/kubernetes/manifests \
-            --hostname-override={{.Ip}} \
+            --hostname-override={{.KubernetesNetwork.Address.Ip}} \
             --cluster-dns=10.103.0.10 \
             --cluster-domain=cluster.local \
 {{if not .Master}}
@@ -447,12 +449,12 @@ write_files:
   - path: /etc/environment
     permissions: 0644
     content: |
-      COREOS_PUBLIC_IPV4={{.Ip}}
-      COREOS_PRIVATE_IPV4={{.Ip}}
+      COREOS_PUBLIC_IPV4={{.KubernetesNetwork.Address.Ip}}
+      COREOS_PRIVATE_IPV4={{.KubernetesNetwork.Address.Ip}}
   - path: /run/flannel/options.env
     permissions: 0644
     content: |
-      FLANNELD_IFACE={{.Ip}}
+      FLANNELD_IFACE={{.KubernetesNetwork.Address.Ip}}
       FLANNELD_ETCD_ENDPOINTS={{.EtcdEndpoints}}
   - path: /root/.toolboxrc
     owner: core
@@ -470,7 +472,7 @@ write_files:
   - path: /etc/exports
     permissions: 0644
     content: |
-      /data/ {{.Network}}.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
+      /data/ {{.KubernetesNetwork.Address.String}}(rw,async,no_subtree_check,no_root_squash,fsid=0)
 {{end}}
 {{if .Master}}
   - path: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -494,7 +496,7 @@ write_files:
           - --allow-privileged=true
           - --service-cluster-ip-range=10.103.0.0/16
           - --secure-port=443
-          - --advertise-address={{.Ip}}
+          - --advertise-address={{.KubernetesNetwork.Address.Ip}}
           - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
           - --tls-cert-file=/etc/kubernetes/ssl/node.pem
           - --tls-private-key-file=/etc/kubernetes/ssl/node-key.pem
@@ -538,7 +540,7 @@ write_files:
           - /podmaster
           - --etcd-servers={{.EtcdEndpoints}}
           - --key=controller
-          - --whoami={{.Ip}}
+          - --whoami={{.KubernetesNetwork.Address.Ip}}
           - --source-file=/src/manifests/kube-controller-manager.yaml
           - --dest-file=/dst/manifests/kube-controller-manager.yaml
           terminationMessagePath: /dev/termination-log
@@ -554,7 +556,7 @@ write_files:
           - /podmaster
           - --etcd-servers={{.EtcdEndpoints}}
           - --key=scheduler
-          - --whoami={{.Ip}}
+          - --whoami={{.KubernetesNetwork.Address.Ip}}
           - --source-file=/src/manifests/kube-scheduler.yaml
           - --dest-file=/dst/manifests/kube-scheduler.yaml
           volumeMounts:
@@ -761,7 +763,7 @@ func writeAdminKubectlConfigure(cluster model.Cluster, host model.Host) error {
 		MasterIp model.Ip
 	}
 	data.Region = cluster.Region
-	data.MasterIp = host.MasterNodes()[0].KuberntesNetwork.Address.Ip
+	data.MasterIp = host.MasterNodes()[0].KubernetesNetwork.Address.Ip
 
 	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/usr/bin/env bash
 
@@ -834,7 +836,7 @@ echo "done"
 func writeClusterDestroy(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
-		VolumeNames []string
+		VolumeNames []model.VolumeName
 		VolumeGroup model.LvmVolumeGroup
 	}
 	data.VolumeGroup = host.LvmVolumeGroup
@@ -934,7 +936,7 @@ lvremove /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage
 func writeSSLCopyKeys(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
-		NodeNames []string
+		NodeNames []model.NodeName
 	}
 	data.NodeNames = host.NodeNames()
 
@@ -961,9 +963,8 @@ chown root:root ${SCRIPT_ROOT}/../{{$nodeName}}/ssl/*.pem
 func writeSSLGenerateKeys(cluster model.Cluster, host model.Host) error {
 
 	var data struct {
-		ApiServerPublicIp string
-		MasterNodes       []model.Node
-		NotMasterNodes    []model.Node
+		MasterNodes    []model.Node
+		NotMasterNodes []model.Node
 	}
 	data.MasterNodes = host.MasterNodes()
 	data.NotMasterNodes = host.NotMasterNodes()
@@ -986,8 +987,8 @@ openssl req -x509 -new -nodes -key ${SCRIPT_ROOT}/ca-key.pem -days 10000 -out ${
 {{range $node := .MasterNodes}}
 # {{$node.Name}}
 openssl genrsa -out ${SCRIPT_ROOT}/{{$node.Name}}-key.pem 2048
-KUBERNETES_SVC=10.103.0.1 NODE_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/master-openssl.cnf
-KUBERNETES_SVC=10.103.0.1 NODE_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 NODE_IP={{$node.KubernetesNetwork.Address.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/master-openssl.cnf
+KUBERNETES_SVC=10.103.0.1 NODE_IP={{$node.KubernetesNetwork.Address.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/master-openssl.cnf
 {{end}}
 
 {{range $node := .NotMasterNodes}}
@@ -1005,7 +1006,13 @@ openssl x509 -req -in ${SCRIPT_ROOT}/admin.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey 
 `, data, true)
 }
 
-func writeVirshCreate(cluster model.Cluster) error {
+func writeVirshCreate(cluster model.Cluster, host model.Host) error {
+	var data struct {
+		Nodes          []model.Node
+		LvmVolumeGroup model.LvmVolumeGroup
+	}
+	data.Nodes = host.Nodes
+	data.LvmVolumeGroup = host.LvmVolumeGroup
 
 	return writeTemplate("scripts/virsh-create.sh", `#!/usr/bin/env bash
 {{$out := .}}
@@ -1015,7 +1022,7 @@ set -o pipefail
 set -o errtrace
 
 {{range $node := .Nodes}}
-echo "create virsh {{$node.Name}} mac={{$node.Mac}} ..."
+echo "create virsh {{$node.Name}} mac={{$node.KubernetesNetwork.Mac.String}} ..."
 virt-install \
 --import \
 --debug \
@@ -1036,9 +1043,9 @@ virt-install \
 --disk /dev/{{$out.LvmVolumeGroup}}/{{$node.VolumeName}}-storage,bus=virtio,cache=none,io=native \{{end}}
 --filesystem /var/lib/libvirt/images/kubernetes/{{$node.Name}}/config/,config-2,type=mount,mode=squash \
 --filesystem /var/lib/libvirt/images/kubernetes/{{$node.Name}}/ssl/,kubernetes-ssl,type=mount,mode=squash \
---network bridge={{$out.Bridge}},mac={{$node.Mac}},model=virtio
+--network bridge={{$node.KubernetesNetwork.Device.String}},mac={{$node.KubernetesNetwork.Mac.String}},model=virtio
 {{end}}
-`, cluster, true)
+`, data, true)
 }
 
 func writeMasterOpenssl() error {
@@ -1083,7 +1090,7 @@ IP.1 = $ENV::NODE_IP
 func writeVirsh(cluster model.Cluster, host model.Host, action string) error {
 	var data struct {
 		Action  string
-		VmNames []string
+		VmNames []model.VmName
 	}
 	data.Action = action
 	data.VmNames = host.VmNames()
@@ -1114,15 +1121,15 @@ func writeFile(path string, content []byte, executable bool) error {
 }
 
 func writeTemplate(path string, templateContent string, data interface{}, executable bool) error {
-	content, err := generateTemplate(templateContent, data)
+	content, err := generateTemplate(path, templateContent, data)
 	if err != nil {
 		return err
 	}
 	return writeFile(path, content, executable)
 }
 
-func generateTemplate(templateContent string, data interface{}) ([]byte, error) {
-	tmpl, err := template.New("test").Parse(templateContent)
+func generateTemplate(name string, templateContent string, data interface{}) ([]byte, error) {
+	tmpl, err := template.New(name).Parse(templateContent)
 	if err != nil {
 		return nil, err
 	}

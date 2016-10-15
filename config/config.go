@@ -14,29 +14,28 @@ type Host struct {
 	VolumePrefix      model.VolumePrefix   `json:"disk-prefix"`
 	LvmVolumeGroup    model.LvmVolumeGroup `json:"lvm-vg"`
 	Name              model.HostName       `json:"name"`
-	HostNetwork       model.Address        `json:"host-network"`
-	HostGateway       model.Gateway        `json:"host-gateway"`
+	HostNetwork       string               `json:"host-network"`
 	HostDevice        model.Device         `json:"host-device"`
-	BackupNetwork     model.Address        `json:"backup-network"`
+	BackupNetwork     string               `json:"backup-network"`
 	BackupDevice      model.Device         `json:"backup-device"`
-	KubernetesNetwork model.Address        `json:"kubernetes-network"`
-	KubernetesGateway model.Gateway        `json:"kubernetes-gateway"`
+	KubernetesNetwork string               `json:"kubernetes-network"`
 	KubernetesDevice  model.Device         `json:"kubernetes-device"`
 	Nodes             []Node               `json:"nodes"`
 }
 
 type Node struct {
-	Master      bool       `json:"master"`
-	Etcd        bool       `json:"etcd"`
-	Worker      bool       `json:"worker"`
-	Storage     bool       `json:"storage"`
-	Nfsd        bool       `json:"nfsd"`
-	Cores       int        `json:"cores"`
-	Memory      int        `json:"memory"`
-	Amount      int        `json:"number"`
-	NfsSize     model.Size `json:"nfssize"`
-	StorageSize model.Size `json:"storagesize"`
-	RootSize    model.Size `json:"rootsize"`
-	DockerSize  model.Size `json:"dockersize"`
-	KubeletSize model.Size `json:"kubeletsize"`
+	Name        model.NodeName `json:"name"`
+	Master      bool           `json:"master"`
+	Etcd        bool           `json:"etcd"`
+	Worker      bool           `json:"worker"`
+	Storage     bool           `json:"storage"`
+	Nfsd        bool           `json:"nfsd"`
+	Cores       int            `json:"cores"`
+	Memory      int            `json:"memory"`
+	Amount      int            `json:"number"`
+	NfsSize     model.Size     `json:"nfssize"`
+	StorageSize model.Size     `json:"storagesize"`
+	RootSize    model.Size     `json:"rootsize"`
+	DockerSize  model.Size     `json:"dockersize"`
+	KubeletSize model.Size     `json:"kubeletsize"`
 }
