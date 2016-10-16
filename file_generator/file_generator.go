@@ -855,9 +855,9 @@ ${SCRIPT_ROOT}/virsh-undefine.sh
 
 echo "remove lvm volumes ..."
 {{range $volumeName := .VolumeNames}}
-lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}
-lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}-docker
-lvremove /dev/{{$out.VolumeGroup}}/{{$volumeName}}-kubelet
+lvremove -f /dev/{{$out.VolumeGroup}}/{{$volumeName}}
+lvremove -f /dev/{{$out.VolumeGroup}}/{{$volumeName}}-docker
+lvremove -f /dev/{{$out.VolumeGroup}}/{{$volumeName}}-kubelet
 {{end}}
 
 echo "done"
