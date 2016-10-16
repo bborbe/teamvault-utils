@@ -472,7 +472,7 @@ write_files:
   - path: /etc/exports
     permissions: 0644
     content: |
-      /data/ {{.KubernetesNetwork.Address}}(rw,async,no_subtree_check,no_root_squash,fsid=0)
+      /data/ {{.KubernetesNetwork.Address.Network}}(rw,async,no_subtree_check,no_root_squash,fsid=0)
 {{end}}
 {{if .Master}}
   - path: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -994,8 +994,8 @@ KUBERNETES_SVC=10.103.0.1 NODE_IP={{$node.KubernetesNetwork.Address.Ip}} openssl
 {{range $node := .NotMasterNodes}}
 # {{$node.Name}}
 openssl genrsa -out ${SCRIPT_ROOT}/{{$node.Name}}-key.pem 2048
-NODE_IP={{$node.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/node-openssl.cnf
-NODE_IP={{$node.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/node-openssl.cnf
+NODE_IP={{$node.KubernetesNetwork.Address.Ip}} openssl req -new -key ${SCRIPT_ROOT}/{{$node.Name}}-key.pem -out ${SCRIPT_ROOT}/{{$node.Name}}.csr -subj "/CN={{$node.Name}}" -config ${SCRIPT_ROOT}/node-openssl.cnf
+NODE_IP={{$node.KubernetesNetwork.Address.Ip}} openssl x509 -req -in ${SCRIPT_ROOT}/{{$node.Name}}.csr -CA ${SCRIPT_ROOT}/ca.pem -CAkey ${SCRIPT_ROOT}/ca-key.pem -CAcreateserial -out ${SCRIPT_ROOT}/{{$node.Name}}.pem -days 365 -extensions v3_req -extfile ${SCRIPT_ROOT}/node-openssl.cnf
 {{end}}
 
 # Admin Key

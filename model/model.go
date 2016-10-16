@@ -135,6 +135,14 @@ func (a Address) String() string {
 	return fmt.Sprintf("%s/%d", a.Ip.String(), a.Mask)
 }
 
+func (a Address) Network() string {
+	ipnet := net.IPNet{
+		IP:   a.Ip.ip,
+		Mask: net.CIDRMask(a.Mask.Int(), 8*net.IPv4len),
+	}
+	return fmt.Sprintf("%s/%d", ipnet.IP.Mask(ipnet.Mask).String(), a.Mask.Int())
+}
+
 type Dns Ip
 
 func (d Dns) String() string {
@@ -144,9 +152,12 @@ func (d Dns) String() string {
 type Mask int
 
 func (m Mask) String() string {
-	return strconv.Itoa(int(m))
+	return strconv.Itoa(m.Int())
 }
 
+func (m Mask) Int() int {
+	return int(m)
+}
 func ParseMask(mask string) (*Mask, error) {
 	i, err := strconv.Atoi(mask)
 	if err != nil {
