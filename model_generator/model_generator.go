@@ -12,12 +12,6 @@ const K8S_DEFAULT_VERSION = "v1.3.5"
 func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 	cluster := new(model.Cluster)
 
-	dnsIp, err := model.IpByString("8.8.8.8")
-	if err != nil {
-		return nil, err
-	}
-	dns := model.Dns(*dnsIp)
-
 	cluster.UpdateRebootStrategy = config.UpdateRebootStrategy
 	if len(cluster.UpdateRebootStrategy) == 0 {
 		cluster.UpdateRebootStrategy = "etcd-lock"
@@ -54,8 +48,14 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 					panic("storage and nfsd at the same time is currently not supported")
 				}
 
+				dnsIp, err := model.IpByString(configHost.KubernetesDns)
+				if err != nil {
+					return nil, err
+				}
+				dns := model.Dns(*dnsIp)
+
 				address := *kubernetesNetwork
-				address.Ip.Set(15, byte(counter+10))
+				address.Ip.Set(15, byte(counter + 10))
 				glog.V(2).Infof("kubernetes address: %s", address.String())
 				mac, err := address.Ip.Mac()
 				if err != nil {
@@ -74,8 +74,6 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 					Name:       generateNodeName(configNode, i),
 					VolumeName: generateVolumeName(configHost, configNode, i),
 					VmName:     generateVmName(configHost, configNode, i),
-					//Ip:  fmt.Sprintf("%s.%d", configHost.KubernetesNetwork, counter + 10),
-					//Mac: fmt.Sprintf("%s%02x", configHost.KubernetesNetwork, counter + 10),
 					Etcd:        configNode.Etcd,
 					Worker:      configNode.Worker,
 					Master:      configNode.Master,

@@ -1,6 +1,8 @@
 package config
 
-import "github.com/bborbe/kubernetes_tools/model"
+import (
+	"github.com/bborbe/kubernetes_tools/model"
+)
 
 type Cluster struct {
 	UpdateRebootStrategy model.UpdateRebootStrategy `json:"update-reboot-strategy"`
@@ -20,6 +22,7 @@ type Host struct {
 	BackupDevice      model.Device         `json:"backup-device"`
 	KubernetesNetwork string               `json:"kubernetes-network"`
 	KubernetesDevice  model.Device         `json:"kubernetes-device"`
+	KubernetesDns     string         `json:"kubernetes-dns"`
 	Nodes             []Node               `json:"nodes"`
 }
 
