@@ -1,10 +1,11 @@
 package config
 
 import (
-	"os"
-	"github.com/golang/glog"
 	"encoding/json"
+	"os"
+
 	io_util "github.com/bborbe/io/util"
+	"github.com/golang/glog"
 )
 
 type ConfigPath string

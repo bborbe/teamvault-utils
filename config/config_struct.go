@@ -22,7 +22,7 @@ type Host struct {
 	BackupDevice      model.Device         `json:"backup-device"`
 	KubernetesNetwork string               `json:"kubernetes-network"`
 	KubernetesDevice  model.Device         `json:"kubernetes-device"`
-	KubernetesDns     string         `json:"kubernetes-dns"`
+	KubernetesDns     string               `json:"kubernetes-dns"`
 	Nodes             []Node               `json:"nodes"`
 }
 

@@ -2,6 +2,7 @@ package model_generator
 
 import (
 	"fmt"
+
 	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/kubernetes_tools/model"
 	"github.com/golang/glog"
@@ -55,7 +56,7 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 				dns := model.Dns(*dnsIp)
 
 				address := *kubernetesNetwork
-				address.Ip.Set(15, byte(counter + 10))
+				address.Ip.Set(15, byte(counter+10))
 				glog.V(2).Infof("kubernetes address: %s", address.String())
 				mac, err := address.Ip.Mac()
 				if err != nil {
@@ -71,9 +72,9 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 						Gateway: gateway,
 						Dns:     dns,
 					},
-					Name:       generateNodeName(configNode, i),
-					VolumeName: generateVolumeName(configHost, configNode, i),
-					VmName:     generateVmName(configHost, configNode, i),
+					Name:        generateNodeName(configNode, i),
+					VolumeName:  generateVolumeName(configHost, configNode, i),
+					VmName:      generateVmName(configHost, configNode, i),
 					Etcd:        configNode.Etcd,
 					Worker:      configNode.Worker,
 					Master:      configNode.Master,

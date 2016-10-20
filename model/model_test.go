@@ -1,9 +1,10 @@
 package model
 
 import (
-	. "github.com/bborbe/assert"
 	"os"
 	"testing"
+
+	. "github.com/bborbe/assert"
 
 	"github.com/golang/glog"
 )

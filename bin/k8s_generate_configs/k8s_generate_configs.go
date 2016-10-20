@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/kubernetes_tools/file_generator"
 	"github.com/bborbe/kubernetes_tools/model_generator"
 	"github.com/golang/glog"
-	"github.com/bborbe/kubernetes_tools/config"
 )
 
 const (

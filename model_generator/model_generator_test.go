@@ -3,8 +3,9 @@ package model_generator
 import (
 	"testing"
 
-	"github.com/golang/glog"
 	"os"
+
+	"github.com/golang/glog"
 )
 
 func TestMain(m *testing.M) {
