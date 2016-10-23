@@ -115,7 +115,7 @@ func (a *Address) Validate() error {
 func ParseAddress(address string) (*Address, error) {
 	parts := strings.Split(address, "/")
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("parse address failed")
+		return nil, fmt.Errorf("parse address %v failed", address)
 	}
 	mask, err := ParseMask(parts[1])
 	if err != nil {

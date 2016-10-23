@@ -31,7 +31,8 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 
 		kubernetesNetwork, err := model.ParseAddress(configHost.KubernetesNetwork)
 		if err != nil {
-			return nil, err
+			glog.V(2).Infof("parse kubernetes network failed: %v")
+			return nil, fmt.Errorf("parse kubernetes network failed: %v")
 		}
 		glog.V(2).Infof("kubernetes network: %s", kubernetesNetwork.String())
 		glog.V(2).Infof("kubernetes ip: %s", kubernetesNetwork.Ip.String())
@@ -46,12 +47,13 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 			for i := 0; i < configNode.Amount; i++ {
 
 				if configNode.Storage && configNode.Nfsd {
-					panic("storage and nfsd at the same time is currently not supported")
+					return nil, fmt.Errorf("storage and nfsd at the same time is currently not supported")
 				}
 
 				dnsIp, err := model.IpByString(configHost.KubernetesDns)
 				if err != nil {
-					return nil, err
+					glog.V(2).Infof("parse dns failed: %v", err)
+					return nil, fmt.Errorf("parse dns failed: %v", err)
 				}
 				dns := model.Dns(*dnsIp)
 
@@ -60,7 +62,8 @@ func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
 				glog.V(2).Infof("kubernetes address: %s", address.String())
 				mac, err := address.Ip.Mac()
 				if err != nil {
-					return nil, err
+					glog.V(2).Infof("get mac failed: %v", err)
+					return nil, fmt.Errorf("get mac failed: %v", err)
 				}
 				glog.V(2).Infof("kubernetes mac: %s", mac.String())
 				node := model.Node{

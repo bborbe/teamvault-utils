@@ -14,11 +14,3 @@ func TestMain(m *testing.M) {
 	glog.Flush()
 	os.Exit(exit)
 }
-
-func TestImplementsConfigWriter(t *testing.T) {
-	object := New()
-	var expected *ConfigWriter
-	if err := AssertThat(object, Implements(expected)); err != nil {
-		t.Fatal(err)
-	}
-}

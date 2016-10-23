@@ -48,7 +48,6 @@ func do() error {
 		glog.Warningf("parse config '%s' failed: %v", config, err)
 		return err
 	}
-	configWriter := file_generator.New()
 	cluster, err := model_generator.GenerateModel(config)
 	if err != nil {
 		glog.Warningf("generate model failed: %v", err)
@@ -58,7 +57,7 @@ func do() error {
 		glog.Warningf("validate model failed: %v", err)
 		return err
 	}
-	if err := configWriter.Write(*cluster); err != nil {
+	if err := file_generator.Write(*cluster); err != nil {
 		glog.Warningf("write configs failed: %v", err)
 		return err
 	}

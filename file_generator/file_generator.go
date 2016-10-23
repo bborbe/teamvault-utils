@@ -14,28 +14,17 @@ import (
 	"github.com/golang/glog"
 )
 
-type generator struct {
-}
-
-type ConfigWriter interface {
-	Write(config model.Cluster) error
-}
-
-func New() *generator {
-	return new(generator)
-}
-
-func (c *generator) Write(cluster model.Cluster) error {
+func Write(cluster model.Cluster) error {
 	glog.V(2).Infof("write config")
 	for _, host := range cluster.Hosts {
-		if err := c.createHost(cluster, host); err != nil {
+		if err := createHost(cluster, host); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (c *generator) createHost(cluster model.Cluster, host model.Host) error {
+func createHost(cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("write config")
 
 	if err := createStructur(cluster, host); err != nil {
