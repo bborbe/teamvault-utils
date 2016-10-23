@@ -6,9 +6,9 @@ import (
 	"runtime"
 
 	"github.com/bborbe/kubernetes_tools/config"
-	"github.com/bborbe/kubernetes_tools/file_generator"
-	"github.com/bborbe/kubernetes_tools/model_generator"
+	model_generator "github.com/bborbe/kubernetes_tools/model/generator"
 	"github.com/golang/glog"
+	"github.com/bborbe/kubernetes_tools/file"
 )
 
 const (
@@ -48,7 +48,7 @@ func do() error {
 		glog.Warningf("parse config '%s' failed: %v", config, err)
 		return err
 	}
-	cluster, err := model_generator.GenerateModel(config)
+	cluster, err := model_generator.Generate(config)
 	if err != nil {
 		glog.Warningf("generate model failed: %v", err)
 		return err
@@ -57,7 +57,7 @@ func do() error {
 		glog.Warningf("validate model failed: %v", err)
 		return err
 	}
-	if err := file_generator.Write(*cluster); err != nil {
+	if err := file.Generate(*cluster); err != nil {
 		glog.Warningf("write configs failed: %v", err)
 		return err
 	}

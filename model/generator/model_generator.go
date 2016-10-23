@@ -1,4 +1,4 @@
-package model_generator
+package generator
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 const K8S_DEFAULT_VERSION = "v1.3.5"
 
-func GenerateModel(config *config.Cluster) (*model.Cluster, error) {
+func Generate(config *config.Cluster) (*model.Cluster, error) {
 	cluster := new(model.Cluster)
 
 	cluster.UpdateRebootStrategy = config.UpdateRebootStrategy

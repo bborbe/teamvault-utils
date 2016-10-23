@@ -1,11 +1,10 @@
-package file_generator
+package generator
 
 import (
 	"testing"
 
 	"os"
 
-	. "github.com/bborbe/assert"
 	"github.com/golang/glog"
 )
 

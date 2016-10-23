@@ -1,4 +1,4 @@
-package file_generator
+package file
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/golang/glog"
 )
 
-func Write(cluster model.Cluster) error {
+func Generate(cluster model.Cluster) error {
 	glog.V(2).Infof("write config")
 	for _, host := range cluster.Hosts {
 		if err := createHost(cluster, host); err != nil {

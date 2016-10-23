@@ -1,10 +1,8 @@
-package model_generator
+package file
 
 import (
 	"testing"
-
 	"os"
-
 	"github.com/golang/glog"
 )
 
