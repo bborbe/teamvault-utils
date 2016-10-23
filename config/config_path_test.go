@@ -1,8 +1,9 @@
 package config
 
 import (
-	"testing"
 	"os"
+	"testing"
+
 	. "github.com/bborbe/assert"
 	"github.com/golang/glog"
 )

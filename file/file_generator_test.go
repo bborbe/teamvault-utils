@@ -1,8 +1,9 @@
 package file
 
 import (
-	"testing"
 	"os"
+	"testing"
+
 	"github.com/golang/glog"
 )
 

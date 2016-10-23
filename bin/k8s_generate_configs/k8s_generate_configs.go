@@ -6,9 +6,9 @@ import (
 	"runtime"
 
 	"github.com/bborbe/kubernetes_tools/config"
+	"github.com/bborbe/kubernetes_tools/file"
 	model_generator "github.com/bborbe/kubernetes_tools/model/generator"
 	"github.com/golang/glog"
-	"github.com/bborbe/kubernetes_tools/file"
 )
 
 const (
