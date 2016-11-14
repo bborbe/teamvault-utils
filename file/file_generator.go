@@ -202,6 +202,8 @@ coreos:
     proxy: "on"
 {{end}}
   units:
+    - name: systemd-sysctl.service
+      command: restart
     - name: etc-kubernetes-ssl.mount
       command: start
       content: |
@@ -368,6 +370,7 @@ coreos:
         ExecStart=/usr/bin/docker run \
           --volume=/:/rootfs:ro \
           --volume=/sys:/sys:ro \
+          --volume=/var/log/:/var/log:rw \
           --volume=/var/lib/docker/:/var/lib/docker:rw \
           --volume=/var/lib/kubelet/:/var/lib/kubelet:rw,rslave \
           --volume=/var/run:/var/run:rw \
