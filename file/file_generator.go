@@ -435,6 +435,9 @@ coreos:
         WantedBy=multi-user.target
 {{end}}
 write_files:
+  - path: /etc/sysctl.d/vm_max_map_count.conf
+    content: |
+      vm.max_map_count=262144
   - path: /etc/environment
     permissions: 0644
     content: |
