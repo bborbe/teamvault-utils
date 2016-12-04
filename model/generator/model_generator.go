@@ -31,8 +31,8 @@ func Generate(config *config.Cluster) (*model.Cluster, error) {
 
 		kubernetesNetwork, err := model.ParseAddress(configHost.KubernetesNetwork)
 		if err != nil {
-			glog.V(2).Infof("parse kubernetes network failed: %v")
-			return nil, fmt.Errorf("parse kubernetes network failed: %v")
+			glog.V(2).Infof("parse kubernetes network failed: %v", err)
+			return nil, fmt.Errorf("parse kubernetes network failed: %v", err)
 		}
 		glog.V(2).Infof("kubernetes network: %s", kubernetesNetwork.String())
 		glog.V(2).Infof("kubernetes ip: %s", kubernetesNetwork.Ip.String())
