@@ -166,6 +166,7 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 		ApiServerPort        int
 		Kvm                  bool
 		Iptables             bool
+		IptablesRules        []string
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
@@ -185,6 +186,7 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 	data.ApiServerPort = node.ApiServerPort
 	data.Kvm = features.Kvm
 	data.Iptables = features.Iptables
+	data.IptablesRules = node.IptablesRules
 
 	content, err := generateTemplate("cloud-config", `#cloud-config
 ssh_authorized_keys:
@@ -498,6 +500,9 @@ write_files:
       -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
       -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT
       -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+{{range $rule := .IptablesRules}}
+      {{$rule}}
+{{end}}
       COMMIT
 {{end}}
   - path: /etc/sysctl.d/vm_max_map_count.conf

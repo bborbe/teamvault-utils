@@ -70,6 +70,7 @@ func createHost(configHost config.Host) (*model.Host, error) {
 				DockerSize:    valueOfSize(configNode.DockerSize, "10G"),
 				KubeletSize:   valueOfSize(configNode.KubeletSize, "10G"),
 				ApiServerPort: valueOfInt(configNode.ApiServerPort, 443),
+				IptablesRules: configNode.IptablesRules,
 			}
 
 			dns, err := createDns(configHost, configNode)

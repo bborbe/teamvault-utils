@@ -52,4 +52,5 @@ type Node struct {
 	Gateway       string         `json:"gateway"`
 	Dns           string         `json:"dns"`
 	ApiServerPort int            `json:"apiserver-port"`
+	IptablesRules []string       `json:"iptables-rules"`
 }

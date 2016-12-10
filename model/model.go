@@ -238,6 +238,7 @@ type Node struct {
 	DockerSize        Size
 	KubeletSize       Size
 	ApiServerPort     int
+	IptablesRules     []string
 }
 
 func (n *Node) Validate(features Features) error {
