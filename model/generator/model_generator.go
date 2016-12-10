@@ -24,7 +24,7 @@ func Generate(configCluster *config.Cluster) (*model.Cluster, error) {
 	}
 	cluster.Region = configCluster.Region
 	for _, configHost := range configCluster.Hosts {
-		host, err := createHost(*configCluster, configHost)
+		host, err := createHost(configHost)
 		if err != nil {
 			return nil, fmt.Errorf("create host failed: %v", err)
 		}
@@ -33,7 +33,7 @@ func Generate(configCluster *config.Cluster) (*model.Cluster, error) {
 	return cluster, nil
 }
 
-func createHost(configCluster config.Cluster, configHost config.Host) (*model.Host, error) {
+func createHost(configHost config.Host) (*model.Host, error) {
 	host := model.Host{}
 	host.Name = configHost.Name
 	host.LvmVolumeGroup = configHost.LvmVolumeGroup
@@ -54,21 +54,22 @@ func createHost(configCluster config.Cluster, configHost config.Host) (*model.Ho
 					Number: 3,
 					Device: configHost.KubernetesDevice,
 				},
-				Name:        generateNodeName(configNode, i),
-				VolumeName:  generateVolumeName(configHost, configNode, i),
-				VmName:      generateVmName(configHost, configNode, i),
-				Etcd:        configNode.Etcd,
-				Worker:      configNode.Worker,
-				Master:      configNode.Master,
-				Storage:     configNode.Storage,
-				Nfsd:        configNode.Nfsd,
-				Cores:       configNode.Cores,
-				Memory:      configNode.Memory,
-				NfsSize:     configNode.NfsSize,
-				StorageSize: configNode.StorageSize,
-				RootSize:    valueOfSize(configNode.RootSize, "10G"),
-				DockerSize:  valueOfSize(configNode.DockerSize, "10G"),
-				KubeletSize: valueOfSize(configNode.KubeletSize, "10G"),
+				Name:          generateNodeName(configNode, i),
+				VolumeName:    generateVolumeName(configHost, configNode, i),
+				VmName:        generateVmName(configHost, configNode, i),
+				Etcd:          configNode.Etcd,
+				Worker:        configNode.Worker,
+				Master:        configNode.Master,
+				Storage:       configNode.Storage,
+				Nfsd:          configNode.Nfsd,
+				Cores:         configNode.Cores,
+				Memory:        configNode.Memory,
+				NfsSize:       configNode.NfsSize,
+				StorageSize:   configNode.StorageSize,
+				RootSize:      valueOfSize(configNode.RootSize, "10G"),
+				DockerSize:    valueOfSize(configNode.DockerSize, "10G"),
+				KubeletSize:   valueOfSize(configNode.KubeletSize, "10G"),
+				ApiServerPort: valueOfInt(configNode.ApiServerPort, 443),
 			}
 
 			dns, err := createDns(configHost, configNode)
@@ -184,6 +185,13 @@ func valueOfSize(size model.Size, defaultSize model.Size) model.Size {
 		return defaultSize
 	}
 	return size
+}
+
+func valueOfInt(value int, defaultValue int) int {
+	if value == 0 {
+		return defaultValue
+	}
+	return value
 }
 
 func generateNodeName(node config.Node, number int) model.NodeName {

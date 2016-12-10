@@ -32,22 +32,23 @@ type Host struct {
 }
 
 type Node struct {
-	Name        model.NodeName `json:"name"`
-	Master      bool           `json:"master"`
-	Etcd        bool           `json:"etcd"`
-	Worker      bool           `json:"worker"`
-	Storage     bool           `json:"storage"`
-	Nfsd        bool           `json:"nfsd"`
-	Cores       int            `json:"cores"`
-	Memory      int            `json:"memory"`
-	Amount      int            `json:"number"`
-	NfsSize     model.Size     `json:"nfssize"`
-	StorageSize model.Size     `json:"storagesize"`
-	RootSize    model.Size     `json:"rootsize"`
-	DockerSize  model.Size     `json:"dockersize"`
-	KubeletSize model.Size     `json:"kubeletsize"`
-	Mac         string         `json:"mac"`
-	Address     string         `json:"address"`
-	Gateway     string         `json:"gateway"`
-	Dns         string         `json:"dns"`
+	Name          model.NodeName `json:"name"`
+	Master        bool           `json:"master"`
+	Etcd          bool           `json:"etcd"`
+	Worker        bool           `json:"worker"`
+	Storage       bool           `json:"storage"`
+	Nfsd          bool           `json:"nfsd"`
+	Cores         int            `json:"cores"`
+	Memory        int            `json:"memory"`
+	Amount        int            `json:"number"`
+	NfsSize       model.Size     `json:"nfssize"`
+	StorageSize   model.Size     `json:"storagesize"`
+	RootSize      model.Size     `json:"rootsize"`
+	DockerSize    model.Size     `json:"dockersize"`
+	KubeletSize   model.Size     `json:"kubeletsize"`
+	Mac           string         `json:"mac"`
+	Address       string         `json:"address"`
+	Gateway       string         `json:"gateway"`
+	Dns           string         `json:"dns"`
+	ApiServerPort int            `json:"apiserver-port"`
 }

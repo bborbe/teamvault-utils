@@ -164,6 +164,7 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 		KubernetesNetwork    model.Network
 		UpdateRebootStrategy model.UpdateRebootStrategy
 		Kvm                  bool
+		ApiServerPort        int
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
@@ -181,6 +182,7 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 	data.Networks = node.Networks()
 	data.KubernetesNetwork = *node.KubernetesNetwork
 	data.Kvm = features.Kvm
+	data.ApiServerPort = node.ApiServerPort
 
 	content, err := generateTemplate("cloud-config", `#cloud-config
 ssh_authorized_keys:
@@ -344,11 +346,13 @@ coreos:
             [Unit]
             Requires=flanneld.service
             After=flanneld.service
+{{if .Kvm}}
         - name: 10-wait-docker.conf
           content: |
             [Unit]
             After=var-lib-docker.mount
             Requires=var-lib-docker.mount
+{{end}}
     - name: docker-cleanup.service
       content: |
         [Unit]
@@ -504,7 +508,7 @@ write_files:
           - --etcd-servers={{.EtcdEndpoints}}
           - --allow-privileged=true
           - --service-cluster-ip-range=10.103.0.0/16
-          - --secure-port=443
+          - --secure-port={{.ApiServerPort}}
           - --advertise-address={{.KubernetesNetwork.Address.Ip}}
           - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
           - --tls-cert-file=/etc/kubernetes/ssl/node.pem
@@ -512,8 +516,8 @@ write_files:
           - --client-ca-file=/etc/kubernetes/ssl/ca.pem
           - --service-account-key-file=/etc/kubernetes/ssl/node-key.pem
           ports:
-          - containerPort: 443
-            hostPort: 443
+          - containerPort: {{.ApiServerPort}}
+            hostPort: {{.ApiServerPort}}
             name: https
           - containerPort: 8080
             hostPort: 8080
@@ -768,11 +772,13 @@ scp {{.User}}@{{.Host}}:/var/lib/libvirt/images/kubernetes/scripts/admin-key.pem
 
 func writeAdminKubectlConfigure(cluster model.Cluster, host model.Host) error {
 	var data struct {
-		Region   model.Region
-		MasterIp model.Ip
+		Region        model.Region
+		MasterIp      model.Ip
+		ApiServerPort int
 	}
 	data.Region = cluster.Region
 	data.MasterIp = host.MasterNodes()[0].KubernetesNetwork.Address.Ip
+	data.ApiServerPort = host.MasterNodes()[0].ApiServerPort
 
 	return writeTemplate("scripts/admin-kubectl-configure.sh", `#!/usr/bin/env bash
 
@@ -784,7 +790,7 @@ set -o errtrace
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})
 
 mkdir -p $HOME/.kube/{{.Region}}
-kubectl config set-cluster {{.Region}}-cluster --server=https://{{.MasterIp}}:443 --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem
+kubectl config set-cluster {{.Region}}-cluster --server=https://{{.MasterIp}}:{{.ApiServerPort}} --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem
 kubectl config set-credentials {{.Region}}-admin --certificate-authority=$HOME/.kube/{{.Region}}/ca.pem --client-key=$HOME/.kube/{{.Region}}/admin-key.pem --client-certificate=$HOME/.kube/{{.Region}}/admin.pem
 kubectl config set-context {{.Region}}-system --cluster={{.Region}}-cluster --user={{.Region}}-admin
 kubectl config use-context {{.Region}}-system

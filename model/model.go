@@ -237,6 +237,7 @@ type Node struct {
 	RootSize          Size
 	DockerSize        Size
 	KubeletSize       Size
+	ApiServerPort     int
 }
 
 func (n *Node) Validate(features Features) error {
