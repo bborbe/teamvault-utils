@@ -14,28 +14,28 @@ import (
 	"github.com/golang/glog"
 )
 
-func Generate(cluster model.Cluster) error {
+func Generate(features model.Features, cluster model.Cluster) error {
 	glog.V(2).Infof("write config")
 	for _, host := range cluster.Hosts {
-		if err := createHost(cluster, host); err != nil {
+		if err := createHost(features, cluster, host); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func createHost(cluster model.Cluster, host model.Host) error {
+func createHost(features model.Features, cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("write config")
 
 	if err := createStructur(cluster, host); err != nil {
 		return err
 	}
 
-	if err := writeUserDatas(cluster, host); err != nil {
+	if err := writeUserDatas(features, cluster, host); err != nil {
 		return err
 	}
 
-	if err := createScripts(cluster, host); err != nil {
+	if err := createScripts(features, cluster, host); err != nil {
 		return err
 	}
 
@@ -58,14 +58,10 @@ func createStructur(cluster model.Cluster, host model.Host) error {
 	return nil
 }
 
-func createScripts(cluster model.Cluster, host model.Host) error {
+func createScripts(features model.Features, cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("create scripts")
 
 	if err := mkdir("scripts"); err != nil {
-		return err
-	}
-
-	if err := writeAdminCopyKeys(cluster, host); err != nil {
 		return err
 	}
 
@@ -73,24 +69,54 @@ func createScripts(cluster model.Cluster, host model.Host) error {
 		return err
 	}
 
-	if err := writeClusterCreate(cluster, host); err != nil {
-		return err
-	}
+	if features.Kvm {
+		if err := writeAdminCopyKeys(cluster, host); err != nil {
+			return err
+		}
 
-	if err := writeClusterDestroy(cluster, host); err != nil {
-		return err
-	}
+		if err := writeClusterCreate(cluster, host); err != nil {
+			return err
+		}
 
-	if err := writeStorageDataCreate(cluster, host); err != nil {
-		return err
-	}
+		if err := writeClusterDestroy(cluster, host); err != nil {
+			return err
+		}
 
-	if err := writeStorageDestroy(cluster, host); err != nil {
-		return err
-	}
+		if err := writeStorageDataCreate(cluster, host); err != nil {
+			return err
+		}
 
-	if err := writeSSLCopyKeys(cluster, host); err != nil {
-		return err
+		if err := writeStorageDestroy(cluster, host); err != nil {
+			return err
+		}
+
+		if err := writeSSLCopyKeys(cluster, host); err != nil {
+			return err
+		}
+
+		if err := writeVirshCreate(cluster, host); err != nil {
+			return err
+		}
+
+		if err := writeVirsh(cluster, host, "start"); err != nil {
+			return err
+		}
+
+		if err := writeVirsh(cluster, host, "reboot"); err != nil {
+			return err
+		}
+
+		if err := writeVirsh(cluster, host, "destroy"); err != nil {
+			return err
+		}
+
+		if err := writeVirsh(cluster, host, "shutdown"); err != nil {
+			return err
+		}
+
+		if err := writeVirsh(cluster, host, "undefine"); err != nil {
+			return err
+		}
 	}
 
 	if err := writeSSLGenerateKeys(cluster, host); err != nil {
@@ -105,44 +131,20 @@ func createScripts(cluster model.Cluster, host model.Host) error {
 		return err
 	}
 
-	if err := writeVirshCreate(cluster, host); err != nil {
-		return err
-	}
-
-	if err := writeVirsh(cluster, host, "start"); err != nil {
-		return err
-	}
-
-	if err := writeVirsh(cluster, host, "reboot"); err != nil {
-		return err
-	}
-
-	if err := writeVirsh(cluster, host, "destroy"); err != nil {
-		return err
-	}
-
-	if err := writeVirsh(cluster, host, "shutdown"); err != nil {
-		return err
-	}
-
-	if err := writeVirsh(cluster, host, "undefine"); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func writeUserDatas(cluster model.Cluster, host model.Host) error {
+func writeUserDatas(features model.Features, cluster model.Cluster, host model.Host) error {
 	glog.V(2).Infof("create user data")
 	for _, node := range host.Nodes {
-		if err := writeUserData(cluster, host, node); err != nil {
+		if err := writeUserData(features, cluster, host, node); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func writeUserData(cluster model.Cluster, host model.Host, node model.Node) error {
+func writeUserData(features model.Features, cluster model.Cluster, host model.Host, node model.Node) error {
 	glog.V(2).Infof("write node %s", node.Name)
 
 	var data struct {
@@ -161,6 +163,7 @@ func writeUserData(cluster model.Cluster, host model.Host, node model.Node) erro
 		Networks             []model.Network
 		KubernetesNetwork    model.Network
 		UpdateRebootStrategy model.UpdateRebootStrategy
+		Kvm                  bool
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
@@ -177,6 +180,7 @@ func writeUserData(cluster model.Cluster, host model.Host, node model.Node) erro
 	data.Master = node.Master
 	data.Networks = node.Networks()
 	data.KubernetesNetwork = *node.KubernetesNetwork
+	data.Kvm = features.Kvm
 
 	content, err := generateTemplate("cloud-config", `#cloud-config
 ssh_authorized_keys:
@@ -204,6 +208,7 @@ coreos:
   units:
     - name: systemd-sysctl.service
       command: restart
+{{if .Kvm}}
     - name: etc-kubernetes-ssl.mount
       command: start
       content: |
@@ -220,6 +225,7 @@ coreos:
         Where=/etc/kubernetes/ssl
         Options=ro,trans=virtio,version=9p2000.L
         Type=9p
+{{end}}
 {{range $network := .Networks}}
     - name: 10-ens{{$network.Number}}.network
       content: |
@@ -230,6 +236,7 @@ coreos:
         Gateway={{$network.Gateway}}
         DNS={{$network.Dns}}
 {{end}}
+{{if .Kvm}}
     - name: format-ephemeral.service
       command: start
       content: |
@@ -242,6 +249,8 @@ coreos:
         RemainAfterExit=yes
         ExecStart=/usr/sbin/wipefs -f /dev/vdb
         ExecStart=/usr/sbin/mkfs.ext4 -i 4096 -F /dev/vdb
+{{end}}
+{{if .Kvm}}
     - name: var-lib-docker.mount
       command: start
       content: |
@@ -253,6 +262,8 @@ coreos:
         What=/dev/vdb
         Where=/var/lib/docker
         Type=ext4
+{{end}}
+{{if .Kvm}}
     - name: format-kubelet.service
       command: start
       content: |
@@ -265,6 +276,8 @@ coreos:
         RemainAfterExit=yes
         ExecStart=/usr/sbin/wipefs -f /dev/vdc
         ExecStart=/usr/sbin/mkfs.ext4 -i 4096 -F /dev/vdc
+{{end}}
+{{if .Kvm}}
     - name: var-lib-kubelet.mount
       command: start
       content: |
@@ -276,7 +289,8 @@ coreos:
         What=/dev/vdc
         Where=/var/lib/kubelet
         Type=ext4
-{{if .Nfsd}}
+{{end}}
+{{if and .Kvm .Nfsd}}
     - name: data.mount
       command: start
       content: |

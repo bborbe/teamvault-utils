@@ -7,6 +7,7 @@ import (
 
 	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/kubernetes_tools/file"
+	"github.com/bborbe/kubernetes_tools/model"
 	model_generator "github.com/bborbe/kubernetes_tools/model/generator"
 	"github.com/golang/glog"
 )
@@ -53,11 +54,14 @@ func do() error {
 		glog.Warningf("generate model failed: %v", err)
 		return err
 	}
-	if err := cluster.Validate(); err != nil {
+	features := model.Features{
+		Kvm: config.Features.Kvm,
+	}
+	if err := cluster.Validate(features); err != nil {
 		glog.Warningf("validate model failed: %v", err)
 		return err
 	}
-	if err := file.Generate(*cluster); err != nil {
+	if err := file.Generate(features, *cluster); err != nil {
 		glog.Warningf("write configs failed: %v", err)
 		return err
 	}

@@ -174,7 +174,7 @@ type Cluster struct {
 	Hosts                []Host
 }
 
-func (c *Cluster) Validate() error {
+func (c *Cluster) Validate(features Features) error {
 	if len(c.UpdateRebootStrategy) == 0 {
 		return fmt.Errorf("Cluster.UpdateRebootStrategy missing")
 	}
@@ -188,7 +188,7 @@ func (c *Cluster) Validate() error {
 		return fmt.Errorf("Cluster.Hosts missing")
 	}
 	for _, host := range c.Hosts {
-		if err := host.Validate(); err != nil {
+		if err := host.Validate(features); err != nil {
 			return err
 		}
 	}
@@ -203,15 +203,15 @@ type Host struct {
 	Nodes          []Node
 }
 
-func (h *Host) Validate() error {
+func (h *Host) Validate(features Features) error {
 	if len(h.Name) == 0 {
 		return fmt.Errorf("Host.Name missing")
 	}
-	if len(h.LvmVolumeGroup) == 0 {
+	if features.Kvm && len(h.LvmVolumeGroup) == 0 {
 		return fmt.Errorf("Host.LvmVolumeGroup missing")
 	}
 	for _, node := range h.Nodes {
-		if err := node.Validate(); err != nil {
+		if err := node.Validate(features); err != nil {
 			return err
 		}
 	}
@@ -239,12 +239,12 @@ type Node struct {
 	KubeletSize       Size
 }
 
-func (n *Node) Validate() error {
-	if len(n.Networks()) == 0 {
+func (n *Node) Validate(features Features) error {
+	if features.Kvm && len(n.Networks()) == 0 {
 		return fmt.Errorf("Node.Networks missing")
 	}
 	for _, network := range n.Networks() {
-		if err := network.Validate(); err != nil {
+		if err := network.Validate(features); err != nil {
 			return err
 		}
 	}
@@ -257,10 +257,10 @@ func (n *Node) Validate() error {
 	if len(n.VmName) == 0 {
 		return fmt.Errorf("Node.VmName missing")
 	}
-	if n.Cores <= 0 {
+	if features.Kvm && n.Cores <= 0 {
 		return fmt.Errorf("Node.Cores missing")
 	}
-	if n.Memory <= 0 {
+	if features.Kvm && n.Memory <= 0 {
 		return fmt.Errorf("Node.Memory missing")
 	}
 	return nil
@@ -289,7 +289,13 @@ type Network struct {
 	Dns     Dns
 }
 
-func (n *Network) Validate() error {
+func (n *Network) Validate(features Features) error {
+	if err := n.Address.Validate(); err != nil {
+		return err
+	}
+	if !features.Kvm {
+		return nil
+	}
 	if len(n.Device) == 0 {
 		return fmt.Errorf("Network.Device missing")
 	}
@@ -301,9 +307,6 @@ func (n *Network) Validate() error {
 	}
 	if len(n.Dns.String()) == 0 {
 		return fmt.Errorf("Network.Dns missing")
-	}
-	if err := n.Address.Validate(); err != nil {
-		return err
 	}
 	return nil
 }
@@ -444,4 +447,8 @@ func (n *Node) Labels() string {
 		labels = append(labels, "master=true")
 	}
 	return strings.Join(labels, ",")
+}
+
+type Features struct {
+	Kvm bool
 }

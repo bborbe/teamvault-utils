@@ -9,6 +9,11 @@ type Cluster struct {
 	KubernetesVersion    model.KubernetesVersion    `json:"kuberntes-version"`
 	Region               model.Region               `json:"region"`
 	Hosts                []Host                     `json:"hosts"`
+	Features             Features                   `json:"features"`
+}
+
+type Features struct {
+	Kvm bool `json:"kvm"`
 }
 
 type Host struct {
@@ -41,4 +46,8 @@ type Node struct {
 	RootSize    model.Size     `json:"rootsize"`
 	DockerSize  model.Size     `json:"dockersize"`
 	KubeletSize model.Size     `json:"kubeletsize"`
+	Mac         string         `json:"mac"`
+	Address     string         `json:"address"`
+	Gateway     string         `json:"gateway"`
+	Dns         string         `json:"dns"`
 }
