@@ -451,5 +451,6 @@ func (n *Node) Labels() string {
 }
 
 type Features struct {
-	Kvm bool
+	Kvm      bool
+	Iptables bool
 }

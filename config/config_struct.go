@@ -13,7 +13,8 @@ type Cluster struct {
 }
 
 type Features struct {
-	Kvm bool `json:"kvm"`
+	Kvm      bool `json:"kvm"`
+	Iptables bool `json:"iptables"`
 }
 
 type Host struct {

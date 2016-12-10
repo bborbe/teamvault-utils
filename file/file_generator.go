@@ -163,8 +163,9 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 		Networks             []model.Network
 		KubernetesNetwork    model.Network
 		UpdateRebootStrategy model.UpdateRebootStrategy
-		Kvm                  bool
 		ApiServerPort        int
+		Kvm                  bool
+		Iptables             bool
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
@@ -181,8 +182,9 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 	data.Master = node.Master
 	data.Networks = node.Networks()
 	data.KubernetesNetwork = *node.KubernetesNetwork
-	data.Kvm = features.Kvm
 	data.ApiServerPort = node.ApiServerPort
+	data.Kvm = features.Kvm
+	data.Iptables = features.Iptables
 
 	content, err := generateTemplate("cloud-config", `#cloud-config
 ssh_authorized_keys:
@@ -210,6 +212,10 @@ coreos:
   units:
     - name: systemd-sysctl.service
       command: restart
+{{if .Iptables}}
+    - name: iptables-restore.service
+      enable: true
+{{end}}
 {{if .Kvm}}
     - name: etc-kubernetes-ssl.mount
       command: start
@@ -353,6 +359,13 @@ coreos:
             After=var-lib-docker.mount
             Requires=var-lib-docker.mount
 {{end}}
+{{if .Iptables}}
+        - name: 20-wait-iptables.conf
+          content: |
+            [Unit]
+            After=iptables-restore.service
+            Requires=iptables-restore.service
+{{end}}
     - name: docker-cleanup.service
       content: |
         [Unit]
@@ -456,6 +469,37 @@ coreos:
         WantedBy=multi-user.target
 {{end}}
 write_files:
+{{if .Iptables}}
+  - path: /var/lib/iptables/rules-save
+    permissions: 0644
+    owner: root:root
+    content: |
+      *mangle
+      :PREROUTING ACCEPT [0:0]
+      :INPUT ACCEPT [0:0]
+      :FORWARD ACCEPT [0:0]
+      :OUTPUT ACCEPT [0:0]
+      :POSTROUTING ACCEPT [0:0]
+      COMMIT
+      *nat
+      :PREROUTING ACCEPT [0:0]
+      :INPUT ACCEPT [0:0]
+      :OUTPUT ACCEPT [0:0]
+      :POSTROUTING ACCEPT [0:0]
+      COMMIT
+      *filter
+      :INPUT DROP [0:0]
+      :FORWARD DROP [0:0]
+      :OUTPUT DROP [0:0]
+      -A INPUT -i lo -j ACCEPT
+      -A OUTPUT -o lo -j ACCEPT
+      -A OUTPUT -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT
+      -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+      -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+      -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT
+      -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+      COMMIT
+{{end}}
   - path: /etc/sysctl.d/vm_max_map_count.conf
     content: |
       vm.max_map_count=262144

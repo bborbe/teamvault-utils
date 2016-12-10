@@ -55,7 +55,8 @@ func do() error {
 		return err
 	}
 	features := model.Features{
-		Kvm: config.Features.Kvm,
+		Kvm:      config.Features.Kvm,
+		Iptables: config.Features.Iptables,
 	}
 	if err := cluster.Validate(features); err != nil {
 		glog.Warningf("validate model failed: %v", err)
