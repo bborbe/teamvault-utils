@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 
-	"bitbucket.org/bborbe/streamcache/math"
 	"github.com/bborbe/kubernetes_tools/config"
 	"github.com/bborbe/kubernetes_tools/model"
 	"github.com/golang/glog"
@@ -47,7 +46,7 @@ func createHost(configHost config.Host) (*model.Host, error) {
 			return nil, fmt.Errorf("storage and nfsd at the same time is currently not supported")
 		}
 
-		for i := 0; i < math.Max(configNode.Amount, 1); i++ {
+		for i := 0; i < max(configNode.Amount, 1); i++ {
 
 			node := model.Node{
 				KubernetesNetwork: &model.Network{
@@ -208,4 +207,14 @@ func generateVolumeName(host config.Host, node config.Node, number int) model.Vo
 
 func generateVmName(host config.Host, node config.Node, number int) model.VmName {
 	return model.VmName(fmt.Sprintf("%s%s", host.VmPrefix, generateNodeName(node, number)))
+}
+
+func max(a int, bs ...int) int {
+	result := a
+	for _, b := range bs {
+		if b > result {
+			result = b
+		}
+	}
+	return result
 }
