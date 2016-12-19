@@ -219,26 +219,27 @@ func (h *Host) Validate(features Features) error {
 }
 
 type Node struct {
-	Name              NodeName
-	HostNetwork       *Network
-	KubernetesNetwork *Network
-	BackupNetwork     *Network
-	VolumeName        VolumeName
-	VmName            VmName
-	Etcd              bool
-	Worker            bool
-	Master            bool
-	Nfsd              bool
-	Storage           bool
-	Cores             int
-	Memory            int
-	NfsSize           Size
-	StorageSize       Size
-	RootSize          Size
-	DockerSize        Size
-	KubeletSize       Size
-	ApiServerPort     int
-	IptablesRules     []string
+	Name                NodeName
+	HostNetwork         *Network
+	KubernetesNetwork   *Network
+	BackupNetwork       *Network
+	VolumeName          VolumeName
+	VmName              VmName
+	Etcd                bool
+	Worker              bool
+	Master              bool
+	Nfsd                bool
+	Storage             bool
+	Cores               int
+	Memory              int
+	NfsSize             Size
+	StorageSize         Size
+	RootSize            Size
+	DockerSize          Size
+	KubeletSize         Size
+	ApiServerPort       int
+	IptablesFilterRules []string
+	IptablesNatRules    []string
 }
 
 func (n *Node) Validate(features Features) error {

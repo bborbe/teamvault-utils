@@ -166,7 +166,8 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 		ApiServerPort        int
 		Kvm                  bool
 		Iptables             bool
-		IptablesRules        []string
+		IptablesFilterRules  []string
+		IptablesNatRules     []string
 	}
 	data.UpdateRebootStrategy = cluster.UpdateRebootStrategy
 	data.Version = cluster.Version
@@ -186,7 +187,8 @@ func writeUserData(features model.Features, cluster model.Cluster, host model.Ho
 	data.ApiServerPort = node.ApiServerPort
 	data.Kvm = features.Kvm
 	data.Iptables = features.Iptables
-	data.IptablesRules = node.IptablesRules
+	data.IptablesFilterRules = node.IptablesFilterRules
+	data.IptablesNatRules = node.IptablesNatRules
 
 	content, err := generateTemplate("cloud-config", `#cloud-config
 ssh_authorized_keys:
@@ -488,6 +490,9 @@ write_files:
       :INPUT ACCEPT [0:0]
       :OUTPUT ACCEPT [0:0]
       :POSTROUTING ACCEPT [0:0]
+{{range $rule := .IptablesNatRules}}
+      {{$rule}}
+{{end}}
       COMMIT
       *filter
       :INPUT DROP [0:0]
@@ -500,7 +505,7 @@ write_files:
       -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
       -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT
       -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
-{{range $rule := .IptablesRules}}
+{{range $rule := .IptablesFilterRules}}
       {{$rule}}
 {{end}}
       COMMIT
