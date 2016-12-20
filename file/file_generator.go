@@ -564,11 +564,20 @@ write_files:
           - --service-cluster-ip-range=10.103.0.0/16
           - --secure-port={{.ApiServerPort}}
           - --advertise-address={{.KubernetesNetwork.Address.Ip}}
-          - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
+          - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota
           - --tls-cert-file=/etc/kubernetes/ssl/node.pem
           - --tls-private-key-file=/etc/kubernetes/ssl/node-key.pem
           - --client-ca-file=/etc/kubernetes/ssl/ca.pem
           - --service-account-key-file=/etc/kubernetes/ssl/node-key.pem
+          - --runtime-config=extensions/v1beta1/networkpolicies=true,batch/v2alpha1=true
+          - --anonymous-auth=false
+          livenessProbe:
+            httpGet:
+              host: 127.0.0.1
+              port: 8080
+              path: /healthz
+            initialDelaySeconds: 15
+            timeoutSeconds: 15
           ports:
           - containerPort: {{.ApiServerPort}}
             hostPort: {{.ApiServerPort}}
