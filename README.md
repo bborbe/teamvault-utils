@@ -4,7 +4,7 @@ Package some Kubernetes
 
 ## Continuous integration
 
-[Jenkins](https://www.benjamin-borbe.de/jenkins/job/Go-Kubernetes-Tools/)
+[Jenkins](https://jenkins.benjamin-borbe.de/job/Go-Kubernetes-Tools/)
 
 ## Copyright and license
 
