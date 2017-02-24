@@ -441,7 +441,7 @@ coreos:
             --tls-private-key-file=/etc/kubernetes/ssl/node-key.pem \
 {{end}}
             --node-labels={{.Labels}} \
-            --v=2
+            --v=0
         [Install]
         WantedBy=multi-user.target
 {{if .Master}}
