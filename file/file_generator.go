@@ -403,11 +403,13 @@ coreos:
         EnvironmentFile=/etc/environment
         TimeoutStartSec=0
         ExecStart=/usr/bin/docker run \
+          --memory=2048m \
           --volume=/:/rootfs:ro \
           --volume=/sys:/sys:ro \
           --volume=/var/log/:/var/log:rw \
           --volume=/var/lib/docker/:/var/lib/docker:rw \
           --volume=/var/lib/kubelet/:/var/lib/kubelet:rw,rslave \
+          --volume=/run:/run:rw \
           --volume=/var/run:/var/run:rw \
 {{if .Master}}
           --volume=/etc/kubernetes:/etc/kubernetes \
