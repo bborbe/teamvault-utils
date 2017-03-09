@@ -3,8 +3,8 @@ package generator
 import (
 	"fmt"
 
-	"github.com/bborbe/kubernetes_tools/config"
-	"github.com/bborbe/kubernetes_tools/model"
+	"github.com/bborbe/kubernetes_tools/cluster/config"
+	"github.com/bborbe/kubernetes_tools/cluster/model"
 	"github.com/golang/glog"
 )
 
