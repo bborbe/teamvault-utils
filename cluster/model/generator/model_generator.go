@@ -8,7 +8,7 @@ import (
 	"github.com/golang/glog"
 )
 
-const K8S_DEFAULT_VERSION = "v1.4.6"
+const K8S_DEFAULT_VERSION = "v1.5.6"
 
 func Generate(configCluster *config.Cluster) (*model.Cluster, error) {
 	cluster := new(model.Cluster)
