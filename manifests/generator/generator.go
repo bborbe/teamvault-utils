@@ -4,26 +4,35 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"github.com/alecthomas/template"
-	"github.com/bborbe/kubernetes_tools/manifests/model"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/alecthomas/template"
+	"github.com/seibert-media/kubernetes_tools/manifests/model"
+	"github.com/golang/glog"
 )
 
 type configGenerator struct {
+	userForKey     userForKey
 	passwordForKey passwordForKey
+	urlForKey      urlForKey
 }
 
+type userForKey func(key model.TeamvaultKey) (model.TeamvaultUser, error)
 type passwordForKey func(key model.TeamvaultKey) (model.TeamvaultPassword, error)
+type urlForKey func(key model.TeamvaultKey) (model.TeamvaultUrl, error)
 
 func New(
+	userForKey userForKey,
 	passwordForKey passwordForKey,
+	urlForKey urlForKey,
 ) *configGenerator {
 	c := new(configGenerator)
+	c.userForKey = userForKey
 	c.passwordForKey = passwordForKey
+	c.urlForKey = urlForKey
 	return c
 }
 
@@ -67,7 +76,20 @@ func (c *configGenerator) Generate(sourceDirectory model.SourceDirectory, target
 
 func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 	funcs := template.FuncMap{
-		"teamvault": func(val interface{}) (interface{}, error) {
+		"teamvault-user": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("get teamvault value for %v", val)
+			if val == nil {
+				return "", nil
+			}
+			pass, err := c.userForKey(model.TeamvaultKey(val.(string)))
+			if err != nil {
+				glog.V(2).Infof("get user from teamvault failed: %v", err)
+				return "", err
+			}
+			glog.V(4).Infof("return value %s", pass.String())
+			return pass.String(), nil
+		},
+		"teamvault-password": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
 			if val == nil {
 				return "", nil
@@ -75,6 +97,19 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			pass, err := c.passwordForKey(model.TeamvaultKey(val.(string)))
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault failed: %v", err)
+				return "", err
+			}
+			glog.V(4).Infof("return value %s", pass.String())
+			return pass.String(), nil
+		},
+		"teamvault-url": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("get teamvault value for %v", val)
+			if val == nil {
+				return "", nil
+			}
+			pass, err := c.urlForKey(model.TeamvaultKey(val.(string)))
+			if err != nil {
+				glog.V(2).Infof("get url from teamvault failed: %v", err)
 				return "", err
 			}
 			glog.V(4).Infof("return value %s", pass.String())

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/io/reader_nop_close"
-	"github.com/bborbe/kubernetes_tools/manifests/model"
+	"github.com/seibert-media/kubernetes_tools/manifests/model"
 	"github.com/golang/glog"
 	"net/http"
 	"os"

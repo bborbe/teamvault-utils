@@ -10,7 +10,7 @@ import (
 
 	"os/user"
 
-	"github.com/bborbe/kubernetes_tools/cluster/model"
+	"github.com/seibert-media/kubernetes_tools/cluster/model"
 	"github.com/golang/glog"
 )
 

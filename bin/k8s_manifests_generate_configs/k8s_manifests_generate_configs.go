@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"github.com/bborbe/http/client_builder"
-	"github.com/bborbe/kubernetes_tools/manifests/generator"
-	"github.com/bborbe/kubernetes_tools/manifests/model"
-	"github.com/bborbe/kubernetes_tools/manifests/teamvault"
+	"github.com/seibert-media/kubernetes_tools/manifests/generator"
+	"github.com/seibert-media/kubernetes_tools/manifests/model"
+	"github.com/seibert-media/kubernetes_tools/manifests/teamvault"
 	"github.com/golang/glog"
 	"runtime"
 	"time"

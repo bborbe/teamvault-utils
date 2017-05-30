@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SOURCEDIRECTORY="github.com/bborbe/kubernetes_tools"
+SOURCEDIRECTORY="github.com/seibert-media/kubernetes_tools"
 
 ################################################################################
 
