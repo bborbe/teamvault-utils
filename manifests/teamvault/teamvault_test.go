@@ -3,13 +3,6 @@ package teamvault
 import (
 	"bytes"
 	"fmt"
-<<<<<<< Updated upstream
-	. "github.com/bborbe/assert"
-	"github.com/bborbe/io/reader_nop_close"
-	"github.com/seibert-media/kubernetes_tools/manifests/model"
-	"github.com/golang/glog"
-=======
->>>>>>> Stashed changes
 	"net/http"
 	"os"
 	"testing"

@@ -18,14 +18,14 @@ func New() *dummyPasswordProvider {
 func (t *dummyPasswordProvider) Password(key model.TeamvaultKey) (model.TeamvaultPassword, error) {
 	h := sha256.New()
 	h.Write([]byte(key + "-password"))
-	result := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	result := base64.URLEncoding.EncodeToString(h.Sum(nil))
 	return model.TeamvaultPassword(result), nil
 }
 
 func (t *dummyPasswordProvider) File(key model.TeamvaultKey) (model.TeamvaultPassword, error) {
 	h := sha256.New()
 	h.Write([]byte(key + "-file"))
-	result := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	result := base64.URLEncoding.EncodeToString(h.Sum(nil))
 	return model.TeamvaultPassword(result), nil
 }
 
@@ -36,6 +36,6 @@ func (t *dummyPasswordProvider) User(key model.TeamvaultKey) (model.TeamvaultUse
 func (t *dummyPasswordProvider) URL(key model.TeamvaultKey) (model.TeamvaultUrl, error) {
 	h := sha256.New()
 	h.Write([]byte(key + "-url"))
-	result := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	result := base64.URLEncoding.EncodeToString(h.Sum(nil))
 	return model.TeamvaultUrl(result), nil
 }

@@ -67,13 +67,13 @@ func do() error {
 	httpClient := client_builder.New().WithTimeout(5 * time.Second).Build()
 	if !staging {
 		tv := teamvault.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
-		manifestsGenerator := generator.New(tv.User, tv.Password, tv.Url, tv.File)
+		manifestsGenerator := generator.New(tv.User, tv.Password, tv.Url)
 		if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
 			return err
 		}
 	} else {
 		tv := dummy.New()
-		manifestsGenerator := generator.New(tv.User, tv.Password, tv.URL, tv.File)
+		manifestsGenerator := generator.New(tv.User, tv.Password, tv.URL)
 		if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
 			return err
 		}

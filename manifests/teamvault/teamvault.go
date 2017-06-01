@@ -1,7 +1,6 @@
 package teamvault
 
 import (
-	"encoding/base64"
 	"fmt"
 	"net/http"
 
