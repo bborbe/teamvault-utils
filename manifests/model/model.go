@@ -2,10 +2,11 @@ package model
 
 import (
 	"encoding/json"
-	io_util "github.com/bborbe/io/util"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"os"
+
+	io_util "github.com/bborbe/io/util"
+	"github.com/golang/glog"
 )
 
 type VariableName string
@@ -30,6 +31,12 @@ type TargetDirectory string
 
 func (t TargetDirectory) String() string {
 	return string(t)
+}
+
+type Staging bool
+
+func (s Staging) Bool() bool {
+	return bool(s)
 }
 
 type TeamvaultUrl string

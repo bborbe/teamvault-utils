@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/alecthomas/template"
-	"github.com/seibert-media/kubernetes_tools/manifests/model"
 	"github.com/golang/glog"
+	"github.com/seibert-media/kubernetes_tools/manifests/model"
 )
 
 type configGenerator struct {
@@ -76,7 +76,7 @@ func (c *configGenerator) Generate(sourceDirectory model.SourceDirectory, target
 
 func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 	funcs := template.FuncMap{
-		"teamvault-user": func(val interface{}) (interface{}, error) {
+		"teamvaultUser": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
 			if val == nil {
 				return "", nil
@@ -89,7 +89,7 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			glog.V(4).Infof("return value %s", pass.String())
 			return pass.String(), nil
 		},
-		"teamvault-password": func(val interface{}) (interface{}, error) {
+		"teamvaultPassword": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
 			if val == nil {
 				return "", nil
@@ -102,7 +102,7 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			glog.V(4).Infof("return value %s", pass.String())
 			return pass.String(), nil
 		},
-		"teamvault-url": func(val interface{}) (interface{}, error) {
+		"teamvaultUrl": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
 			if val == nil {
 				return "", nil

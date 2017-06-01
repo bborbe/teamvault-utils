@@ -1,6 +1,7 @@
 package teamvault
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 
@@ -52,6 +53,16 @@ func (t *teamvaultPasswordProvider) User(key model.TeamvaultKey) (model.Teamvaul
 		return "", err
 	}
 	return response.User, nil
+}
+
+func (t *teamvaultPasswordProvider) Url(key model.TeamvaultKey) (model.TeamvaultUrl, error) {
+	var response struct {
+		Url model.TeamvaultUrl `json:"url"`
+	}
+	if err := t.rest.Call(fmt.Sprintf("%s/api/secrets/%s/", t.url.String(), key.String()), nil, http.MethodGet, nil, &response, t.createHeader()); err != nil {
+		return "", err
+	}
+	return response.Url, nil
 }
 
 func (t *teamvaultPasswordProvider) CurrentRevision(key model.TeamvaultKey) (model.TeamvaultCurrentRevision, error) {
