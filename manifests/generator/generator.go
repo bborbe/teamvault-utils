@@ -11,7 +11,7 @@ import (
 
 	"github.com/alecthomas/template"
 	"github.com/golang/glog"
-	"github.com/seibert-media/kubernetes_tools/manifests/model"
+	"github.com/bborbe/kubernetes_tools/manifests/model"
 )
 
 type configGenerator struct {

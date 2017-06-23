@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/seibert-media/kubernetes_tools/cluster/model"
+	"github.com/bborbe/kubernetes_tools/cluster/model"
 )
 
 type Cluster struct {

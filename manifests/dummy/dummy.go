@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/seibert-media/kubernetes_tools/manifests/model"
+	"github.com/bborbe/kubernetes_tools/manifests/model"
 )
 
 type dummyPasswordProvider struct {

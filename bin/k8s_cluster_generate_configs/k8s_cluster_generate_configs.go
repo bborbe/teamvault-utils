@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/seibert-media/kubernetes_tools/cluster/config"
-	"github.com/seibert-media/kubernetes_tools/cluster/file"
-	"github.com/seibert-media/kubernetes_tools/cluster/model"
-	model_generator "github.com/seibert-media/kubernetes_tools/cluster/model/generator"
+	"github.com/bborbe/kubernetes_tools/cluster/config"
+	"github.com/bborbe/kubernetes_tools/cluster/file"
+	"github.com/bborbe/kubernetes_tools/cluster/model"
+	model_generator "github.com/bborbe/kubernetes_tools/cluster/model/generator"
 	"github.com/golang/glog"
 )
 
