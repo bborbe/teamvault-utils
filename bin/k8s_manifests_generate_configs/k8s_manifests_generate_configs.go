@@ -2,13 +2,15 @@ package main
 
 import (
 	"flag"
+	"runtime"
+	"time"
+
 	"github.com/bborbe/http/client_builder"
+	"github.com/bborbe/kubernetes_tools/manifests/dummy"
 	"github.com/bborbe/kubernetes_tools/manifests/generator"
 	"github.com/bborbe/kubernetes_tools/manifests/model"
 	"github.com/bborbe/kubernetes_tools/manifests/teamvault"
 	"github.com/golang/glog"
-	"runtime"
-	"time"
 )
 
 const (
@@ -18,6 +20,7 @@ const (
 	PARAMETER_TEAMVAULT_CONFIG = "teamvault-config"
 	PARAMETER_SOURCE_DIRECTORY = "source-dir"
 	PARAMETER_TARGET_DIRECTORY = "target-dir"
+	PARAMETER_STAGING          = "staging"
 )
 
 var (
@@ -27,6 +30,7 @@ var (
 	teamvaultConfigPathPtr = flag.String(PARAMETER_TEAMVAULT_CONFIG, "", "teamvault config")
 	sourceDirectoryPtr     = flag.String(PARAMETER_SOURCE_DIRECTORY, "", "source directory")
 	targetDirectoryPtr     = flag.String(PARAMETER_TARGET_DIRECTORY, "", "target directory")
+	stagingPtr             = flag.Bool(PARAMETER_STAGING, false, "staging status")
 )
 
 func main() {
@@ -48,6 +52,7 @@ func do() error {
 	teamvaultConfigPath := model.TeamvaultConfigPath(*teamvaultConfigPathPtr)
 	sourceDirectory := model.SourceDirectory(*sourceDirectoryPtr)
 	targetDirectory := model.TargetDirectory(*targetDirectoryPtr)
+	staging := model.Staging(*stagingPtr)
 	if teamvaultConfigPath.Exists() {
 		teamvaultConfig, err := teamvaultConfigPath.Parse()
 		if err != nil {
@@ -60,10 +65,18 @@ func do() error {
 	}
 
 	httpClient := client_builder.New().WithTimeout(5 * time.Second).Build()
-	tv := teamvault.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
-	manifestsGenerator := generator.New(tv.Password)
-	if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
-		return err
+	if !staging {
+		tv := teamvault.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
+		manifestsGenerator := generator.New(tv.User, tv.Password, tv.Url)
+		if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
+			return err
+		}
+	} else {
+		tv := dummy.New()
+		manifestsGenerator := generator.New(tv.User, tv.Password, tv.URL)
+		if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
+			return err
+		}
 	}
 
 	return nil

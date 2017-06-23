@@ -2,10 +2,11 @@ package teamvault
 
 import (
 	"fmt"
+	"net/http"
+
 	http_header "github.com/bborbe/http/header"
 	"github.com/bborbe/http/rest"
 	"github.com/bborbe/kubernetes_tools/manifests/model"
-	"net/http"
 )
 
 type teamvaultPasswordProvider struct {
@@ -41,6 +42,26 @@ func (t *teamvaultPasswordProvider) Password(key model.TeamvaultKey) (model.Team
 		return "", err
 	}
 	return response.Password, nil
+}
+
+func (t *teamvaultPasswordProvider) User(key model.TeamvaultKey) (model.TeamvaultUser, error) {
+	var response struct {
+		User model.TeamvaultUser `json:"username"`
+	}
+	if err := t.rest.Call(fmt.Sprintf("%s/api/secrets/%s/", t.url.String(), key.String()), nil, http.MethodGet, nil, &response, t.createHeader()); err != nil {
+		return "", err
+	}
+	return response.User, nil
+}
+
+func (t *teamvaultPasswordProvider) Url(key model.TeamvaultKey) (model.TeamvaultUrl, error) {
+	var response struct {
+		Url model.TeamvaultUrl `json:"url"`
+	}
+	if err := t.rest.Call(fmt.Sprintf("%s/api/secrets/%s/", t.url.String(), key.String()), nil, http.MethodGet, nil, &response, t.createHeader()); err != nil {
+		return "", err
+	}
+	return response.Url, nil
 }
 
 func (t *teamvaultPasswordProvider) CurrentRevision(key model.TeamvaultKey) (model.TeamvaultCurrentRevision, error) {

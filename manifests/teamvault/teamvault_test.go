@@ -3,13 +3,14 @@ package teamvault
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"os"
+	"testing"
+
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/io/reader_nop_close"
 	"github.com/bborbe/kubernetes_tools/manifests/model"
 	"github.com/golang/glog"
-	"net/http"
-	"os"
-	"testing"
 )
 
 func TestMain(m *testing.M) {
@@ -46,6 +47,58 @@ func TestPassword(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := AssertThat(password.String(), Is("S3CR3T")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestUser(t *testing.T) {
+	key := model.TeamvaultKey("key123")
+	tv := New(func(req *http.Request) (resp *http.Response, err error) {
+
+		user, pass, _ := req.BasicAuth()
+		if user != "user" && pass != "pass" {
+			return &http.Response{StatusCode: 403}, fmt.Errorf("invalid user/pass")
+		}
+
+		if req.URL.String() == "http://teamvault.example.com/api/secrets/key123/" {
+			return &http.Response{
+				StatusCode: 200,
+				Body:       reader_nop_close.New(bytes.NewBufferString(`{"username":"user"}`)),
+			}, nil
+		}
+		return &http.Response{StatusCode: 404}, fmt.Errorf("invalid url %v", req.URL.String())
+	}, "http://teamvault.example.com", "user", "pass")
+	user, err := tv.User(key)
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(user.String(), Is("user")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestUrl(t *testing.T) {
+	key := model.TeamvaultKey("key123")
+	tv := New(func(req *http.Request) (resp *http.Response, err error) {
+
+		user, pass, _ := req.BasicAuth()
+		if user != "user" && pass != "pass" {
+			return &http.Response{StatusCode: 403}, fmt.Errorf("invalid user/pass")
+		}
+
+		if req.URL.String() == "http://teamvault.example.com/api/secrets/key123/" {
+			return &http.Response{
+				StatusCode: 200,
+				Body:       reader_nop_close.New(bytes.NewBufferString(`{"url":"https://example.com"}`)),
+			}, nil
+		}
+		return &http.Response{StatusCode: 404}, fmt.Errorf("invalid url %v", req.URL.String())
+	}, "http://teamvault.example.com", "user", "pass")
+	url, err := tv.Url(key)
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(url.String(), Is("https://example.com")); err != nil {
 		t.Fatal(err)
 	}
 }
