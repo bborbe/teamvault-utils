@@ -22,13 +22,6 @@ func (t *dummyPasswordProvider) Password(key model.TeamvaultKey) (model.Teamvaul
 	return model.TeamvaultPassword(result), nil
 }
 
-func (t *dummyPasswordProvider) File(key model.TeamvaultKey) (model.TeamvaultPassword, error) {
-	h := sha256.New()
-	h.Write([]byte(key + "-file"))
-	result := base64.URLEncoding.EncodeToString(h.Sum(nil))
-	return model.TeamvaultPassword(result), nil
-}
-
 func (t *dummyPasswordProvider) User(key model.TeamvaultKey) (model.TeamvaultUser, error) {
 	return model.TeamvaultUser(key.String()), nil
 }

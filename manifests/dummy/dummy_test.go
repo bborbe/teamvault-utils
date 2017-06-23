@@ -39,18 +39,6 @@ func TestPassword(t *testing.T) {
 	}
 }
 
-func TestFile(t *testing.T) {
-	key := model.TeamvaultKey("key123")
-	du := New()
-	password, err := du.File(key)
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(password, Is(model.TeamvaultPassword("YTJWNU1USXpMV1pwYkdVSwo="))); err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestURL(t *testing.T) {
 	key := model.TeamvaultKey("key123")
 	du := New()
