@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/alecthomas/template"
-	"github.com/golang/glog"
 	"github.com/bborbe/kubernetes_tools/manifests/model"
+	"github.com/golang/glog"
 )
 
 type configGenerator struct {

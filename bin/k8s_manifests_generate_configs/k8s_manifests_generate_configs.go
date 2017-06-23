@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/bborbe/http/client_builder"
-	"github.com/golang/glog"
 	"github.com/bborbe/kubernetes_tools/manifests/dummy"
 	"github.com/bborbe/kubernetes_tools/manifests/generator"
 	"github.com/bborbe/kubernetes_tools/manifests/model"
 	"github.com/bborbe/kubernetes_tools/manifests/teamvault"
+	"github.com/golang/glog"
 )
 
 const (

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	. "github.com/bborbe/assert"
-	"github.com/golang/glog"
 	"github.com/bborbe/kubernetes_tools/manifests/model"
+	"github.com/golang/glog"
 )
 
 func TestMain(m *testing.M) {
