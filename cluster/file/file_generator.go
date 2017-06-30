@@ -423,22 +423,18 @@ coreos:
           gcr.io/google_containers/hyperkube-amd64:{{.Version}} \
           /hyperkube kubelet \
             --containerized \
-{{if .Master}}
-            --api_servers=http://127.0.0.1:8080 \
-{{else}}
-            --api_servers={{.ApiServers}} \
-{{end}}
             --register-node=true \
 {{if not .Schedulable}}
             --register-schedulable=false \
 {{end}}
             --allow-privileged=true \
-            --config=/etc/kubernetes/manifests \
+            --pod-manifest-path=/etc/kubernetes/manifests \
             --hostname-override={{.KubernetesNetwork.Address.Ip}} \
             --cluster-dns=10.103.0.10 \
             --cluster-domain=cluster.local \
-{{if not .Master}}
+            --require-kubeconfig=true \
             --kubeconfig=/etc/kubernetes/node-kubeconfig.yaml \
+{{if not .Master}}
             --tls-cert-file=/etc/kubernetes/ssl/node.pem \
             --tls-private-key-file=/etc/kubernetes/ssl/node-key.pem \
 {{end}}
@@ -562,6 +558,7 @@ write_files:
           - apiserver
           - --bind-address=0.0.0.0
           - --etcd-servers={{.EtcdEndpoints}}
+          - --storage-backend=etcd2
           - --allow-privileged=true
           - --service-cluster-ip-range=10.103.0.0/16
           - --secure-port={{.ApiServerPort}}
@@ -650,7 +647,7 @@ write_files:
         - hostPath:
             path: /etc/kubernetes/manifests
           name: manifest-dst
-{{else}}
+{{end}}
   - path: /etc/kubernetes/node-kubeconfig.yaml
     permissions: 0644
     content: |
@@ -660,6 +657,11 @@ write_files:
       - name: local
         cluster:
           certificate-authority: /etc/kubernetes/ssl/ca.pem
+{{if .Master}}
+          server: http://127.0.0.1:8080
+{{else}}
+          server: {{.ApiServers}}
+{{end}}
       users:
       - name: kubelet
         user:
@@ -671,7 +673,6 @@ write_files:
           user: kubelet
         name: kubelet-context
       current-context: kubelet-context
-{{end}}
   - path: /etc/kubernetes/manifests/kube-proxy.yaml
     permissions: 0644
     content: |
@@ -786,7 +787,7 @@ write_files:
         - name: ssl-certs-host 
           hostPath:
             path: /usr/share/ca-certificates
-          
+
 {{end}}
 `, data)
 	if err != nil {
