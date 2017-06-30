@@ -558,6 +558,7 @@ write_files:
           - apiserver
           - --bind-address=0.0.0.0
           - --etcd-servers={{.EtcdEndpoints}}
+          - --storage-backend=etcd2
           - --allow-privileged=true
           - --service-cluster-ip-range=10.103.0.0/16
           - --secure-port={{.ApiServerPort}}
