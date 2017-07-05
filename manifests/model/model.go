@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"encoding/base64"
+
 	io_util "github.com/bborbe/io/util"
 	"github.com/golang/glog"
 )
@@ -61,6 +63,16 @@ type TeamvaultCurrentRevision string
 
 func (t TeamvaultCurrentRevision) String() string {
 	return string(t)
+}
+
+type TeamvaultFile string
+
+func (t TeamvaultFile) String() string {
+	return string(t)
+}
+
+func (t TeamvaultFile) Content() ([]byte, error) {
+	return base64.StdEncoding.DecodeString(t.String())
 }
 
 type TeamvaultConfig struct {

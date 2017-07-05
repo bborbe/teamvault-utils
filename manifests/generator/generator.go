@@ -18,21 +18,25 @@ type configGenerator struct {
 	userForKey     userForKey
 	passwordForKey passwordForKey
 	urlForKey      urlForKey
+	fileForKey     fileForKey
 }
 
 type userForKey func(key model.TeamvaultKey) (model.TeamvaultUser, error)
 type passwordForKey func(key model.TeamvaultKey) (model.TeamvaultPassword, error)
 type urlForKey func(key model.TeamvaultKey) (model.TeamvaultUrl, error)
+type fileForKey func(key model.TeamvaultKey) (model.TeamvaultFile, error)
 
 func New(
 	userForKey userForKey,
 	passwordForKey passwordForKey,
 	urlForKey urlForKey,
+	fileForKey fileForKey,
 ) *configGenerator {
 	c := new(configGenerator)
 	c.userForKey = userForKey
 	c.passwordForKey = passwordForKey
 	c.urlForKey = urlForKey
+	c.fileForKey = fileForKey
 	return c
 }
 
@@ -114,6 +118,19 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			}
 			glog.V(4).Infof("return value %s", pass.String())
 			return pass.String(), nil
+		},
+		"teamvaultFile": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("get teamvault value for %v", val)
+			if val == nil {
+				return "", nil
+			}
+			file, err := c.fileForKey(model.TeamvaultKey(val.(string)))
+			if err != nil {
+				glog.V(2).Infof("get file from teamvault failed: %v", err)
+				return "", err
+			}
+			glog.V(4).Infof("return value %s", file.String())
+			return file.String(), nil
 		},
 		"env": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get env value for %v", val)

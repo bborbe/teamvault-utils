@@ -74,6 +74,20 @@ func (t *teamvaultPasswordProvider) CurrentRevision(key model.TeamvaultKey) (mod
 	return response.CurrentRevision, nil
 }
 
+func (t *teamvaultPasswordProvider) File(key model.TeamvaultKey) (model.TeamvaultFile, error) {
+	rev, err := t.CurrentRevision(key)
+	if err != nil {
+		return "", fmt.Errorf("get current revision failed: %v", err)
+	}
+	var response struct {
+		File model.TeamvaultFile `json:"file"`
+	}
+	if err := t.rest.Call(fmt.Sprintf("%sdata", rev.String()), nil, http.MethodGet, nil, &response, t.createHeader()); err != nil {
+		return "", err
+	}
+	return response.File, nil
+}
+
 func (t *teamvaultPasswordProvider) createHeader() http.Header {
 	header := make(http.Header)
 	header.Add("Authorization", fmt.Sprintf("Basic %s", http_header.CreateAuthorizationToken(t.user.String(), t.pass.String())))

@@ -32,3 +32,10 @@ func (t *dummyPasswordProvider) URL(key model.TeamvaultKey) (model.TeamvaultUrl,
 	result := base64.URLEncoding.EncodeToString(h.Sum(nil))
 	return model.TeamvaultUrl(result), nil
 }
+
+func (t *dummyPasswordProvider) File(key model.TeamvaultKey) (model.TeamvaultFile, error) {
+	h := sha256.New()
+	h.Write([]byte(key + "-file"))
+	result := base64.URLEncoding.EncodeToString(h.Sum(nil))
+	return model.TeamvaultFile(result), nil
+}
