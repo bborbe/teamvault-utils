@@ -66,7 +66,7 @@ func (c *configGenerator) Generate(sourceDirectory model.SourceDirectory, target
 			}
 			content, err = c.replaceContent(content)
 			if err != nil {
-				glog.V(2).Infof("replace variables failed: %v", path, err)
+				glog.V(2).Infof("replace variables failed: %v", err)
 				return err
 			}
 			if err := ioutil.WriteFile(target, content, 0644); err != nil {
@@ -130,7 +130,28 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 				return "", err
 			}
 			glog.V(4).Infof("return value %s", file.String())
-			return file.String(), nil
+			content, err := file.Content()
+			if err != nil {
+				return "", err
+			}
+			return string(content), nil
+		},
+		"teamvaultFileBase64": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("get teamvault value for %v", val)
+			if val == nil {
+				return "", nil
+			}
+			file, err := c.fileForKey(model.TeamvaultKey(val.(string)))
+			if err != nil {
+				glog.V(2).Infof("get file from teamvault failed: %v", err)
+				return "", err
+			}
+			glog.V(4).Infof("return value %s", file.String())
+			content, err := file.Content()
+			if err != nil {
+				return "", err
+			}
+			return base64.StdEncoding.EncodeToString(content), nil
 		},
 		"env": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get env value for %v", val)
