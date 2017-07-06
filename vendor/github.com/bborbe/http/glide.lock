@@ -1,0 +1,18 @@
+hash: 973618b023af8fb89d7692d50bdf62e2266cee4845174b4974d2d72a83584666
+updated: 2016-11-10T11:38:45.294280008+01:00
+imports:
+- name: github.com/bborbe/crawler
+  version: 17935e007ce462091a5b2487a4f3a2e44b249c62
+  subpackages:
+  - linkparser
+- name: github.com/bborbe/io
+  version: a11fbd04dece7d16d80e69884526dafdea697648
+  subpackages:
+  - file_writer
+  - reader_shadow_copy
+  - util
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+testImports:
+- name: github.com/bborbe/assert
+  version: d2b3a7c4c731ac8cc63c6f5a1ea7d401e7547d42

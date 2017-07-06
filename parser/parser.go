@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"encoding/base64"
 	"os"
-
-	"github.com/alecthomas/template"
 	"github.com/bborbe/teamvault_utils/connector"
 	"github.com/bborbe/teamvault_utils/model"
 	"github.com/golang/glog"
+	"text/template"
 )
 
 type Parser interface {

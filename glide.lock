@@ -1,10 +1,6 @@
-hash: e0c7afa47d6511fb6e2798532428f7fabf653ab64e1ae6e715f5bbc4ffdd73c7
-updated: 2017-07-06T11:46:54.47481566+02:00
+hash: 98b479bbe15a38ad874b27ae8309353ad8b7d8751f2cb7af0ae9bb2d2c1d949d
+updated: 2017-07-06T13:28:18.982004329+02:00
 imports:
-- name: github.com/alecthomas/template
-  version: a0175ee3bccc567396460bf5acd36800cb10c49c
-  subpackages:
-  - parse
 - name: github.com/bborbe/http
   version: 0af97ef0fa27c72d7ad65a5e3a15ec1aebcfe695
   subpackages:
