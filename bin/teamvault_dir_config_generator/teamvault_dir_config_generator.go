@@ -66,6 +66,5 @@ func do() error {
 			return err
 		}
 	}
-
 	return nil
 }

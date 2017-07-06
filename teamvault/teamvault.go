@@ -9,6 +9,13 @@ import (
 	"github.com/bborbe/teamvault_utils/model"
 )
 
+type  Connector interface {
+	Password(key model.TeamvaultKey) (model.TeamvaultPassword, error)
+	User(key model.TeamvaultKey) (model.TeamvaultUser, error)
+	Url(key model.TeamvaultKey) (model.TeamvaultUrl, error)
+	File(key model.TeamvaultKey) (model.TeamvaultFile, error)
+}
+
 type teamvaultPasswordProvider struct {
 	url  model.TeamvaultUrl
 	user model.TeamvaultUser
@@ -17,10 +24,10 @@ type teamvaultPasswordProvider struct {
 }
 
 func New(
-	executeRequest func(req *http.Request) (resp *http.Response, err error),
-	url model.TeamvaultUrl,
-	user model.TeamvaultUser,
-	pass model.TeamvaultPassword,
+executeRequest func(req *http.Request) (resp *http.Response, err error),
+url model.TeamvaultUrl,
+user model.TeamvaultUser,
+pass model.TeamvaultPassword,
 ) *teamvaultPasswordProvider {
 	t := new(teamvaultPasswordProvider)
 	t.rest = rest.New(executeRequest)
