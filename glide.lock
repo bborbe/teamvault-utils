@@ -1,0 +1,23 @@
+hash: e0c7afa47d6511fb6e2798532428f7fabf653ab64e1ae6e715f5bbc4ffdd73c7
+updated: 2017-07-06T11:46:54.47481566+02:00
+imports:
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/bborbe/http
+  version: 0af97ef0fa27c72d7ad65a5e3a15ec1aebcfe695
+  subpackages:
+  - client_builder
+  - header
+  - rest
+- name: github.com/bborbe/io
+  version: 8c22cf733cf166b247318b0786eec0c7cad9208a
+  subpackages:
+  - reader_nop_close
+  - util
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+testImports:
+- name: github.com/bborbe/assert
+  version: 2448f69a8cb98ee9e5744f678477959100ceb9d4

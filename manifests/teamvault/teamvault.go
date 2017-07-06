@@ -6,7 +6,7 @@ import (
 
 	http_header "github.com/bborbe/http/header"
 	"github.com/bborbe/http/rest"
-	"github.com/bborbe/kubernetes_tools/manifests/model"
+	"github.com/bborbe/teamvault_utils/manifests/model"
 )
 
 type teamvaultPasswordProvider struct {

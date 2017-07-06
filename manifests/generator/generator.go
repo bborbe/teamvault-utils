@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/alecthomas/template"
-	"github.com/bborbe/kubernetes_tools/manifests/model"
+	"github.com/bborbe/teamvault_utils/manifests/model"
 	"github.com/golang/glog"
 )
 
