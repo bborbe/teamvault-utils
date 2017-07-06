@@ -12,24 +12,14 @@ import (
 	"github.com/golang/glog"
 )
 
-const (
-	PARAMETER_TEAMVAULT_URL    = "teamvault-url"
-	PARAMETER_TEAMVAULT_USER   = "teamvault-user"
-	PARAMETER_TEAMVAULT_PASS   = "teamvault-pass"
-	PARAMETER_TEAMVAULT_CONFIG = "teamvault-config"
-	PARAMETER_SOURCE_DIRECTORY = "source-dir"
-	PARAMETER_TARGET_DIRECTORY = "target-dir"
-	PARAMETER_STAGING          = "staging"
-)
-
 var (
-	teamvaultUrlPtr        = flag.String(PARAMETER_TEAMVAULT_URL, "", "teamvault url")
-	teamvaultUserPtr       = flag.String(PARAMETER_TEAMVAULT_USER, "", "teamvault user")
-	teamvaultPassPtr       = flag.String(PARAMETER_TEAMVAULT_PASS, "", "teamvault password")
-	teamvaultConfigPathPtr = flag.String(PARAMETER_TEAMVAULT_CONFIG, "", "teamvault config")
-	sourceDirectoryPtr     = flag.String(PARAMETER_SOURCE_DIRECTORY, "", "source directory")
-	targetDirectoryPtr     = flag.String(PARAMETER_TARGET_DIRECTORY, "", "target directory")
-	stagingPtr             = flag.Bool(PARAMETER_STAGING, false, "staging status")
+	teamvaultUrlPtr = flag.String(model.PARAMETER_TEAMVAULT_URL, "", "teamvault url")
+	teamvaultUserPtr = flag.String(model.PARAMETER_TEAMVAULT_USER, "", "teamvault user")
+	teamvaultPassPtr = flag.String(model.PARAMETER_TEAMVAULT_PASS, "", "teamvault password")
+	teamvaultConfigPathPtr = flag.String(model.PARAMETER_TEAMVAULT_CONFIG, "", "teamvault config")
+	sourceDirectoryPtr = flag.String(model.PARAMETER_SOURCE_DIRECTORY, "", "source directory")
+	targetDirectoryPtr = flag.String(model.PARAMETER_TARGET_DIRECTORY, "", "target directory")
+	stagingPtr = flag.Bool(model.PARAMETER_STAGING, false, "staging status")
 )
 
 func main() {
@@ -62,7 +52,6 @@ func do() error {
 		teamvaultUser = teamvaultConfig.User
 		teamvaultPassword = teamvaultConfig.Password
 	}
-
 	httpClient := client_builder.New().WithTimeout(5 * time.Second).Build()
 	if !staging {
 		tv := teamvault.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
