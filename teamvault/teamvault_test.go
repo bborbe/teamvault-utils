@@ -8,7 +8,7 @@ import (
 
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/io/reader_nop_close"
-	"github.com/bborbe/teamvault_utils/manifests/model"
+	"github.com/bborbe/teamvault_utils/model"
 )
 
 func TestTeamvaultPassword(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/bborbe/http/client_builder"
 	"github.com/bborbe/teamvault_utils/teamvault"
-	"github.com/bborbe/teamvault_utils/manifests/generator"
-	"github.com/bborbe/teamvault_utils/manifests/model"
+	"github.com/bborbe/teamvault_utils/generator"
+	"github.com/bborbe/teamvault_utils/model"
 	"github.com/golang/glog"
 )
 

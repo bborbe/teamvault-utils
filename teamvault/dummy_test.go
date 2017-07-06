@@ -3,7 +3,7 @@ package teamvault
 import (
 	"testing"
 	. "github.com/bborbe/assert"
-	"github.com/bborbe/teamvault_utils/manifests/model"
+	"github.com/bborbe/teamvault_utils/model"
 )
 
 func TestDummyUser(t *testing.T) {

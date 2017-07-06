@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/bborbe/teamvault_utils/manifests/model"
+	"github.com/bborbe/teamvault_utils/model"
 )
 
 type dummyPasswordProvider struct {
