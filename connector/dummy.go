@@ -26,7 +26,7 @@ func (t *dummyPasswordProvider) User(key model.TeamvaultKey) (model.TeamvaultUse
 	return model.TeamvaultUser(key.String()), nil
 }
 
-func (t *dummyPasswordProvider) URL(key model.TeamvaultKey) (model.TeamvaultUrl, error) {
+func (t *dummyPasswordProvider) Url(key model.TeamvaultKey) (model.TeamvaultUrl, error) {
 	h := sha256.New()
 	h.Write([]byte(key + "-url"))
 	result := base64.URLEncoding.EncodeToString(h.Sum(nil))

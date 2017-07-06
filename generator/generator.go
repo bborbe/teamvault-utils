@@ -11,31 +11,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/bborbe/teamvault_utils/connector"
 )
 
 type configGenerator struct {
-	userForKey     userForKey
-	passwordForKey passwordForKey
-	urlForKey      urlForKey
-	fileForKey     fileForKey
+	teamvaultConnector connector.Connector
 }
 
-type userForKey func(key model.TeamvaultKey) (model.TeamvaultUser, error)
-type passwordForKey func(key model.TeamvaultKey) (model.TeamvaultPassword, error)
-type urlForKey func(key model.TeamvaultKey) (model.TeamvaultUrl, error)
-type fileForKey func(key model.TeamvaultKey) (model.TeamvaultFile, error)
-
 func New(
-	userForKey userForKey,
-	passwordForKey passwordForKey,
-	urlForKey urlForKey,
-	fileForKey fileForKey,
+teamvaultConnector connector.Connector,
 ) *configGenerator {
 	c := new(configGenerator)
-	c.userForKey = userForKey
-	c.passwordForKey = passwordForKey
-	c.urlForKey = urlForKey
-	c.fileForKey = fileForKey
+	c.teamvaultConnector = teamvaultConnector
 	return c
 }
 
@@ -84,7 +71,7 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			if val == nil {
 				return "", nil
 			}
-			pass, err := c.userForKey(model.TeamvaultKey(val.(string)))
+			pass, err := c.teamvaultConnector.User(model.TeamvaultKey(val.(string)))
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault failed: %v", err)
 				return "", err
@@ -97,7 +84,7 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			if val == nil {
 				return "", nil
 			}
-			pass, err := c.passwordForKey(model.TeamvaultKey(val.(string)))
+			pass, err := c.teamvaultConnector.Password(model.TeamvaultKey(val.(string)))
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault failed: %v", err)
 				return "", err
@@ -110,7 +97,7 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			if val == nil {
 				return "", nil
 			}
-			pass, err := c.urlForKey(model.TeamvaultKey(val.(string)))
+			pass, err := c.teamvaultConnector.Url(model.TeamvaultKey(val.(string)))
 			if err != nil {
 				glog.V(2).Infof("get url from teamvault failed: %v", err)
 				return "", err
@@ -123,7 +110,7 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			if val == nil {
 				return "", nil
 			}
-			file, err := c.fileForKey(model.TeamvaultKey(val.(string)))
+			file, err := c.teamvaultConnector.File(model.TeamvaultKey(val.(string)))
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault failed: %v", err)
 				return "", err
@@ -140,7 +127,7 @@ func (c *configGenerator) replaceContent(content []byte) ([]byte, error) {
 			if val == nil {
 				return "", nil
 			}
-			file, err := c.fileForKey(model.TeamvaultKey(val.(string)))
+			file, err :=c.teamvaultConnector.File(model.TeamvaultKey(val.(string)))
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault failed: %v", err)
 				return "", err

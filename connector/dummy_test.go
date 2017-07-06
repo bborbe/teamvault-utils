@@ -33,7 +33,7 @@ func TestDummyPassword(t *testing.T) {
 func TestDummyURL(t *testing.T) {
 	key := model.TeamvaultKey("key123")
 	du := NewDummy()
-	url, err := du.URL(key)
+	url, err := du.Url(key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}

@@ -53,18 +53,15 @@ func do() error {
 		teamvaultPassword = teamvaultConfig.Password
 	}
 	httpClient := client_builder.New().WithTimeout(5 * time.Second).Build()
+	var teamvaultConnector connector.Connector
 	if !staging {
-		tv := connector.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
-		manifestsGenerator := generator.New(tv.User, tv.Password, tv.Url, tv.File)
-		if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
-			return err
-		}
+		teamvaultConnector = connector.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
 	} else {
-		tv := connector.NewDummy()
-		manifestsGenerator := generator.New(tv.User, tv.Password, tv.URL, tv.File)
-		if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
-			return err
-		}
+		teamvaultConnector = connector.NewDummy()
+	}
+	manifestsGenerator := generator.New(teamvaultConnector)
+	if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
+		return err
 	}
 	return nil
 }
