@@ -1,13 +1,21 @@
 # Teamvault Utils
 
-## Generate Configs with Teamvault Secrets
+## Generate config directory with Teamvault secrets
 
 ```
 teamvault_config_dir_generator \
--teamvault-config="~/.teamvault-sm.json" \
+-teamvault-config="~/.teamvault.json" \
 -source-dir=templates \
 -target-dir=results \
--staging=${STAGING} \
+-logtostderr \
+-v=2
+```
+
+## Parse variable Teamvault secrets
+
+```
+cat my.config | teamvault_config_parser
+-teamvault-config="~/.teamvault.json" \
 -logtostderr \
 -v=2
 ```
