@@ -1,4 +1,4 @@
-package dummy
+package teamvault
 
 import (
 	"crypto/sha256"
@@ -10,7 +10,7 @@ import (
 type dummyPasswordProvider struct {
 }
 
-func New() *dummyPasswordProvider {
+func NewDummy() *dummyPasswordProvider {
 	t := new(dummyPasswordProvider)
 	return t
 }

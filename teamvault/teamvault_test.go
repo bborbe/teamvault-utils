@@ -4,22 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/io/reader_nop_close"
 	"github.com/bborbe/teamvault_utils/manifests/model"
-	"github.com/golang/glog"
 )
 
-func TestMain(m *testing.M) {
-	exit := m.Run()
-	glog.Flush()
-	os.Exit(exit)
-}
-
-func TestPassword(t *testing.T) {
+func TestTeamvaultPassword(t *testing.T) {
 	key := model.TeamvaultKey("key123")
 	tv := New(func(req *http.Request) (resp *http.Response, err error) {
 
@@ -51,7 +43,7 @@ func TestPassword(t *testing.T) {
 	}
 }
 
-func TestUser(t *testing.T) {
+func TestTeamvaultUser(t *testing.T) {
 	key := model.TeamvaultKey("key123")
 	tv := New(func(req *http.Request) (resp *http.Response, err error) {
 
@@ -77,7 +69,7 @@ func TestUser(t *testing.T) {
 	}
 }
 
-func TestUrl(t *testing.T) {
+func TestTeamvaultUrl(t *testing.T) {
 	key := model.TeamvaultKey("key123")
 	tv := New(func(req *http.Request) (resp *http.Response, err error) {
 

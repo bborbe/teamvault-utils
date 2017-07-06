@@ -1,23 +1,14 @@
-package dummy
+package teamvault
 
 import (
-	"os"
 	"testing"
-
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/teamvault_utils/manifests/model"
-	"github.com/golang/glog"
 )
 
-func TestMain(m *testing.M) {
-	exit := m.Run()
-	glog.Flush()
-	os.Exit(exit)
-}
-
-func TestUser(t *testing.T) {
+func TestDummyUser(t *testing.T) {
 	key := model.TeamvaultKey("key123")
-	du := New()
+	du := NewDummy()
 	user, err := du.User(key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -27,9 +18,9 @@ func TestUser(t *testing.T) {
 	}
 }
 
-func TestPassword(t *testing.T) {
+func TestDummyPassword(t *testing.T) {
 	key := model.TeamvaultKey("key123")
-	du := New()
+	du := NewDummy()
 	password, err := du.Password(key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -39,9 +30,9 @@ func TestPassword(t *testing.T) {
 	}
 }
 
-func TestURL(t *testing.T) {
+func TestDummyURL(t *testing.T) {
 	key := model.TeamvaultKey("key123")
-	du := New()
+	du := NewDummy()
 	url, err := du.URL(key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)

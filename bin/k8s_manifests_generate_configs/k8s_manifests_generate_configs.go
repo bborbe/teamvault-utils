@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/bborbe/http/client_builder"
-	"github.com/bborbe/teamvault_utils/manifests/dummy"
+	"github.com/bborbe/teamvault_utils/teamvault"
 	"github.com/bborbe/teamvault_utils/manifests/generator"
 	"github.com/bborbe/teamvault_utils/manifests/model"
-	"github.com/bborbe/teamvault_utils/manifests/teamvault"
 	"github.com/golang/glog"
 )
 
@@ -72,7 +71,7 @@ func do() error {
 			return err
 		}
 	} else {
-		tv := dummy.New()
+		tv := teamvault.NewDummy()
 		manifestsGenerator := generator.New(tv.User, tv.Password, tv.URL, tv.File)
 		if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
 			return err
