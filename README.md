@@ -1,10 +1,20 @@
-# Kubernetes Tools
+# Teamvault Utils
 
-Package some Kubernetes
+## Generate Configs with Teamvault Secrets
+
+```
+teamvault_dir_config_generator \
+-teamvault-config="~/.teamvault-sm.json" \
+-source-dir=templates \
+-target-dir=results \
+-staging=${STAGING} \
+-logtostderr \
+-v=2
+```
 
 ## Continuous integration
 
-[Jenkins](https://jenkins.benjamin-borbe.de/job/Go-Kubernetes-Tools/)
+[Jenkins](https://jenkins.benjamin-borbe.de/job/Go-Teamvault-Utils/)
 
 ## Copyright and license
 
