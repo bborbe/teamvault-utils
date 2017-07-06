@@ -9,17 +9,18 @@ import (
 	"github.com/bborbe/teamvault_utils/connector"
 	"github.com/bborbe/teamvault_utils/generator"
 	"github.com/bborbe/teamvault_utils/model"
+	"github.com/bborbe/teamvault_utils/parser"
 	"github.com/golang/glog"
 )
 
 var (
-	teamvaultUrlPtr = flag.String(model.PARAMETER_TEAMVAULT_URL, "", "teamvault url")
-	teamvaultUserPtr = flag.String(model.PARAMETER_TEAMVAULT_USER, "", "teamvault user")
-	teamvaultPassPtr = flag.String(model.PARAMETER_TEAMVAULT_PASS, "", "teamvault password")
+	teamvaultUrlPtr        = flag.String(model.PARAMETER_TEAMVAULT_URL, "", "teamvault url")
+	teamvaultUserPtr       = flag.String(model.PARAMETER_TEAMVAULT_USER, "", "teamvault user")
+	teamvaultPassPtr       = flag.String(model.PARAMETER_TEAMVAULT_PASS, "", "teamvault password")
 	teamvaultConfigPathPtr = flag.String(model.PARAMETER_TEAMVAULT_CONFIG, "", "teamvault config")
-	sourceDirectoryPtr = flag.String(model.PARAMETER_SOURCE_DIRECTORY, "", "source directory")
-	targetDirectoryPtr = flag.String(model.PARAMETER_TARGET_DIRECTORY, "", "target directory")
-	stagingPtr = flag.Bool(model.PARAMETER_STAGING, false, "staging status")
+	sourceDirectoryPtr     = flag.String(model.PARAMETER_SOURCE_DIRECTORY, "", "source directory")
+	targetDirectoryPtr     = flag.String(model.PARAMETER_TARGET_DIRECTORY, "", "target directory")
+	stagingPtr             = flag.Bool(model.PARAMETER_STAGING, false, "staging status")
 )
 
 func main() {
@@ -59,7 +60,8 @@ func do() error {
 	} else {
 		teamvaultConnector = connector.NewDummy()
 	}
-	manifestsGenerator := generator.New(teamvaultConnector)
+	configParser := parser.New(teamvaultConnector)
+	manifestsGenerator := generator.New(configParser)
 	if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
 		return err
 	}

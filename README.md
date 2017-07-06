@@ -3,7 +3,7 @@
 ## Generate Configs with Teamvault Secrets
 
 ```
-teamvault_dir_config_generator \
+teamvault_config_dir_generator \
 -teamvault-config="~/.teamvault-sm.json" \
 -source-dir=templates \
 -target-dir=results \

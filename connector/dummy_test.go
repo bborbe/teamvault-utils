@@ -2,6 +2,7 @@ package connector
 
 import (
 	"testing"
+
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/teamvault_utils/model"
 )

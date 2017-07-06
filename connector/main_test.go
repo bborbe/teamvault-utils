@@ -3,6 +3,7 @@ package connector
 import (
 	"os"
 	"testing"
+
 	"github.com/golang/glog"
 )
 
