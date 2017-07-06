@@ -2,6 +2,14 @@
 
 ## Generate config directory with Teamvault secrets
 
+Install
+
+```
+go get github.com/bborbe/teamvault_utils/bin/teamvault_config_dir_generator
+```
+
+Run:
+
 ```
 teamvault_config_dir_generator \
 -teamvault-config="~/.teamvault.json" \
@@ -12,6 +20,14 @@ teamvault_config_dir_generator \
 ```
 
 ## Parse variable Teamvault secrets
+
+Install
+
+```
+go get github.com/bborbe/teamvault_utils/bin/teamvault_config_parser
+```
+
+Run:
 
 ```
 cat my.config | teamvault_config_parser
