@@ -1,4 +1,4 @@
-package teamvault
+package connector
 
 import (
 	"bytes"
