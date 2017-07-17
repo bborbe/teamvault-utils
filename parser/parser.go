@@ -48,9 +48,10 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			pass, err := c.teamvaultConnector.User(model.TeamvaultKey(val.(string)))
+			key := model.TeamvaultKey(val.(string))
+			pass, err := c.teamvaultConnector.User(key)
 			if err != nil {
-				glog.V(2).Infof("get user from teamvault failed: %v", err)
+				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
 				return "", err
 			}
 			glog.V(4).Infof("return value %s", pass.String())
@@ -61,9 +62,10 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			pass, err := c.teamvaultConnector.Password(model.TeamvaultKey(val.(string)))
+			key := model.TeamvaultKey(val.(string))
+			pass, err := c.teamvaultConnector.Password(key)
 			if err != nil {
-				glog.V(2).Infof("get password from teamvault failed: %v", err)
+				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
 				return "", err
 			}
 			glog.V(4).Infof("return value %s", pass.String())
@@ -74,9 +76,10 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			pass, err := c.teamvaultConnector.Url(model.TeamvaultKey(val.(string)))
+			key := model.TeamvaultKey(val.(string))
+			pass, err := c.teamvaultConnector.Url(key)
 			if err != nil {
-				glog.V(2).Infof("get url from teamvault failed: %v", err)
+				glog.V(2).Infof("get url from teamvault for key %v failed: %v", key, err)
 				return "", err
 			}
 			glog.V(4).Infof("return value %s", pass.String())
@@ -87,9 +90,10 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			file, err := c.teamvaultConnector.File(model.TeamvaultKey(val.(string)))
+			key := model.TeamvaultKey(val.(string))
+			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
-				glog.V(2).Infof("get file from teamvault failed: %v", err)
+				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
 				return "", err
 			}
 			glog.V(4).Infof("return value %s", file.String())
@@ -104,9 +108,10 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			file, err := c.teamvaultConnector.File(model.TeamvaultKey(val.(string)))
+			key := model.TeamvaultKey(val.(string))
+			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
-				glog.V(2).Infof("get file from teamvault failed: %v", err)
+				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
 				return "", err
 			}
 			glog.V(4).Infof("return value %s", file.String())
