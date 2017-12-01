@@ -8,6 +8,7 @@ import:
 - package: github.com/bborbe/io
   subpackages:
   - util
+- package: github.com/foomo/htpasswd
 - package: github.com/golang/glog
 testImport:
 - package: github.com/bborbe/assert

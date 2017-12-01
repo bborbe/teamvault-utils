@@ -1,5 +1,5 @@
-hash: 98b479bbe15a38ad874b27ae8309353ad8b7d8751f2cb7af0ae9bb2d2c1d949d
-updated: 2017-07-06T13:28:18.982004329+02:00
+hash: 7eb989ddaf995cd05cd51e8d64b5b2a3d04e43180d86c4eec5859e0a7db19e81
+updated: 2017-12-01T11:38:59.171951009+01:00
 imports:
 - name: github.com/bborbe/http
   version: 0af97ef0fa27c72d7ad65a5e3a15ec1aebcfe695
@@ -12,8 +12,15 @@ imports:
   subpackages:
   - reader_nop_close
   - util
+- name: github.com/foomo/htpasswd
+  version: 5c693a30dfc9ed2dda015a0759a5572fa0f53fca
 - name: github.com/golang/glog
   version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: golang.org/x/crypto
+  version: 687d4b818545e443c8ba223cbef20b1721afd4db
+  subpackages:
+  - bcrypt
+  - blowfish
 testImports:
 - name: github.com/bborbe/assert
   version: 2448f69a8cb98ee9e5744f678477959100ceb9d4
