@@ -129,3 +129,18 @@ func TestParseEnv(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestParseTeamvaultHtpasswd(t *testing.T) {
+	teamvaultConnector := connector.NewDummy()
+	teamvaultParser := New(teamvaultConnector)
+	resultContent, err := teamvaultParser.Parse([]byte(`{{ "abc" | teamvaultHtpasswd}}`))
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(len(resultContent), Gt(0)); err != nil {
+		t.Fatal(err)
+	}
+}

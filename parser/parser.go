@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"os"
 	"text/template"
+	"github.com/foomo/htpasswd"
 
 	"github.com/bborbe/teamvault_utils/connector"
 	"github.com/bborbe/teamvault_utils/model"
@@ -49,13 +50,13 @@ func (c *configParser) createFuncMap() template.FuncMap {
 				return "", nil
 			}
 			key := model.TeamvaultKey(val.(string))
-			pass, err := c.teamvaultConnector.User(key)
+			user, err := c.teamvaultConnector.User(key)
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
 				return "", err
 			}
-			glog.V(4).Infof("return value %s", pass.String())
-			return pass.String(), nil
+			glog.V(4).Infof("return value %s", user.String())
+			return user.String(), nil
 		},
 		"teamvaultPassword": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
@@ -70,6 +71,32 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			}
 			glog.V(4).Infof("return value %s", pass.String())
 			return pass.String(), nil
+		},
+		"teamvaultHtpasswd": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("get teamvault value for %v", val)
+			if val == nil {
+				return "", nil
+			}
+			key := model.TeamvaultKey(val.(string))
+			pass, err := c.teamvaultConnector.Password(key)
+			if err != nil {
+				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
+				return "", err
+			}
+			user, err := c.teamvaultConnector.User(key)
+			if err != nil {
+				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
+				return "", err
+			}
+			pws := make(htpasswd.HashedPasswords)
+			err = pws.SetPassword(string(user), string(pass), htpasswd.HashBCrypt)
+			if err != nil {
+				glog.V(2).Infof("set password failed for key %v failed: %v", key, err)
+				return "", err
+			}
+			content := pws.Bytes()
+			glog.V(4).Infof("return value %s", string(content))
+			return string(content), nil
 		},
 		"teamvaultUrl": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
