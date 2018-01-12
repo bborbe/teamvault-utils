@@ -2,10 +2,20 @@
 
 ## Generate config directory with Teamvault secrets
 
-Install
+Install:
 
 ```
 go get github.com/bborbe/teamvault_utils/bin/teamvault_config_dir_generator
+```
+
+Config:
+
+```
+{
+    "url": "https://teamvault.example.com",
+    "user": "my-user",
+    "pass": "my-pass"
+}
 ```
 
 Run:
@@ -21,10 +31,19 @@ teamvault_config_dir_generator \
 
 ## Parse variable Teamvault secrets
 
-Install
+Install:
 
 ```
 go get github.com/bborbe/teamvault_utils/bin/teamvault_config_parser
+```
+
+Sample config:
+
+```
+foo=bar
+username={{ "vLVLbm" | teamvaultUser }}
+password={{ "vLVLbm" | teamvaultPassword }}
+bar=foo 
 ```
 
 Run:
@@ -38,7 +57,7 @@ cat my.config | teamvault_config_parser
 
 ## Teamvault Get Username
 
-Install
+Install:
 
 ```
 go get github.com/bborbe/teamvault_utils/bin/teamvault_username
@@ -54,7 +73,7 @@ teamvault_username \
 
 ## Teamvault Get Password
 
-Install
+Install:
 
 ```
 go get github.com/bborbe/teamvault_utils/bin/teamvault_password
@@ -70,7 +89,7 @@ teamvault_password \
 
 ## Teamvault Get Url
 
-Install
+Install:
 
 ```
 go get github.com/bborbe/teamvault_utils/bin/teamvault_url
