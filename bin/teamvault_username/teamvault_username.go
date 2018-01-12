@@ -56,7 +56,7 @@ func do() error {
 	} else {
 		teamvaultConnector = connector.NewDummy()
 	}
-	result, err := teamvaultConnector.Password(model.TeamvaultKey(*teamvaultKeyPtr))
+	result, err := teamvaultConnector.User(model.TeamvaultKey(*teamvaultKeyPtr))
 	if err != nil {
 		return err
 	}
