@@ -36,6 +36,54 @@ cat my.config | teamvault_config_parser
 -v=2
 ```
 
+## Teamvault Get Username
+
+Install
+
+```
+go get github.com/bborbe/teamvault_utils/bin/teamvault_username
+```
+
+Run:
+
+```
+teamvault_username \
+--teamvault-config ~/.teamvault-sm.json \
+--teamvault-key vLVLbm
+```
+
+## Teamvault Get Password
+
+Install
+
+```
+go get github.com/bborbe/teamvault_utils/bin/teamvault_password
+```
+
+Run:
+
+```
+teamvault_password \
+--teamvault-config ~/.teamvault-sm.json \
+--teamvault-key vLVLbm
+```
+
+## Teamvault Get Url
+
+Install
+
+```
+go get github.com/bborbe/teamvault_utils/bin/teamvault_url
+```
+
+Run:
+
+```
+teamvault_url \
+--teamvault-config ~/.teamvault-sm.json \
+--teamvault-key vLVLbm
+```
+
 ## Continuous integration
 
 [Jenkins](https://jenkins.benjamin-borbe.de/job/Go-Teamvault-Utils/)
