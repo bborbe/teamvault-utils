@@ -1,11 +1,10 @@
 package model
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
 	"os"
-
-	"encoding/base64"
 
 	io_util "github.com/bborbe/io/util"
 	"github.com/golang/glog"

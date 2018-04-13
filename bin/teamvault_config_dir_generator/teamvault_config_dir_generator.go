@@ -18,8 +18,8 @@ var (
 	teamvaultUserPtr       = flag.String("teamvault-user", "", "teamvault user")
 	teamvaultPassPtr       = flag.String("teamvault-pass", "", "teamvault password")
 	teamvaultConfigPathPtr = flag.String("teamvault-config", "", "teamvault config")
-	sourceDirectoryPtr     = flag.String(model.PARAMETER_SOURCE_DIRECTORY, "", "source directory")
-	targetDirectoryPtr     = flag.String(model.PARAMETER_TARGET_DIRECTORY, "", "target directory")
+	sourceDirectoryPtr     = flag.String("source-dir", "", "source directory")
+	targetDirectoryPtr     = flag.String("target-dir", "", "target directory")
 	stagingPtr             = flag.Bool("staging", false, "staging status")
 )
 

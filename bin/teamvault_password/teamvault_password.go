@@ -19,7 +19,7 @@ var (
 	teamvaultPassPtr       = flag.String("teamvault-pass", "", "teamvault password")
 	teamvaultConfigPathPtr = flag.String("teamvault-config", "", "teamvault config")
 	stagingPtr             = flag.Bool("staging", false, "staging status")
-	teamvaultKeyPtr        = flag.String(model.PARAMETER_TEAMVAULT_KEY, "", "teamvault key")
+	teamvaultKeyPtr        = flag.String("teamvault-key", "", "teamvault key")
 )
 
 func main() {
