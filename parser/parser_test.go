@@ -3,9 +3,10 @@ package parser
 import (
 	"testing"
 
+	"os"
+
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/teamvault_utils/connector"
-	"os"
 )
 
 func TestParseContentWithoutPlaceholder(t *testing.T) {

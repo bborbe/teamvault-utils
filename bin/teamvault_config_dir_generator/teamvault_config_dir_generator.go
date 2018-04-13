@@ -14,13 +14,13 @@ import (
 )
 
 var (
-	teamvaultUrlPtr        = flag.String(model.PARAMETER_TEAMVAULT_URL, "", "teamvault url")
-	teamvaultUserPtr       = flag.String(model.PARAMETER_TEAMVAULT_USER, "", "teamvault user")
-	teamvaultPassPtr       = flag.String(model.PARAMETER_TEAMVAULT_PASS, "", "teamvault password")
-	teamvaultConfigPathPtr = flag.String(model.PARAMETER_TEAMVAULT_CONFIG, "", "teamvault config")
+	teamvaultUrlPtr        = flag.String("teamvault-url", "", "teamvault url")
+	teamvaultUserPtr       = flag.String("teamvault-user", "", "teamvault user")
+	teamvaultPassPtr       = flag.String("teamvault-pass", "", "teamvault password")
+	teamvaultConfigPathPtr = flag.String("teamvault-config", "", "teamvault config")
 	sourceDirectoryPtr     = flag.String(model.PARAMETER_SOURCE_DIRECTORY, "", "source directory")
 	targetDirectoryPtr     = flag.String(model.PARAMETER_TARGET_DIRECTORY, "", "target directory")
-	stagingPtr             = flag.Bool(model.PARAMETER_STAGING, false, "staging status")
+	stagingPtr             = flag.Bool("staging", false, "staging status")
 )
 
 func main() {

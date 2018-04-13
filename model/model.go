@@ -111,6 +111,10 @@ func (t TeamvaultConfigPath) Exists() bool {
 		glog.V(2).Infof("file %v empty => false", t)
 		return false
 	}
+	if fileInfo.IsDir() {
+		glog.V(2).Infof("file %v is dir => false", t)
+		return false
+	}
 	glog.V(2).Infof("file %v exists and not empty => true", t)
 	return true
 }
