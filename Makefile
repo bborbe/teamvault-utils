@@ -8,11 +8,8 @@ install:
 	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install cmd/teamvault-username/*.go
 	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install cmd/teamvault-url/*.go
 
-glide:
-	go get github.com/Masterminds/glide
-
-test: glide
-	GO15VENDOREXPERIMENT=1 go test -cover `glide novendor`
+test:
+	go test -cover -race $(shell go list ./... | grep -v /vendor/)
 
 vet:
 	go tool vet .
