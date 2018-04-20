@@ -2,11 +2,11 @@
 all: test install
 
 install:
-	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install bin/teamvault_config_dir_generator/*.go
-	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install bin/teamvault_config_parser/*.go
-	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install bin/teamvault_password/*.go
-	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install bin/teamvault_username/*.go
-	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install bin/teamvault_url/*.go
+	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install cmd/teamvault-config-dir-generator/*.go
+	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install cmd/teamvault-config-parser/*.go
+	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install cmd/teamvault-password/*.go
+	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install cmd/teamvault-username/*.go
+	GOBIN=$(GOPATH)/bin GO15VENDOREXPERIMENT=1 go install cmd/teamvault-url/*.go
 
 glide:
 	go get github.com/Masterminds/glide
