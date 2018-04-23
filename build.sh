@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SOURCEDIRECTORY="github.com/bborbe/teamvault_utils"
+SOURCEDIRECTORY="github.com/bborbe/teamvault-utils"
 
 ################################################################################
 

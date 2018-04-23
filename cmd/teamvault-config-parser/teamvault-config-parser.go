@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/bborbe/http/client_builder"
-	"github.com/bborbe/teamvault_utils/connector"
-	"github.com/bborbe/teamvault_utils/model"
-	"github.com/bborbe/teamvault_utils/parser"
+	"github.com/bborbe/teamvault-utils/connector"
+	"github.com/bborbe/teamvault-utils/model"
+	"github.com/bborbe/teamvault-utils/parser"
 	"github.com/golang/glog"
 )
 

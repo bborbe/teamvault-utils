@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bborbe/teamvault_utils/model"
-	"github.com/bborbe/teamvault_utils/parser"
+	"github.com/bborbe/teamvault-utils/model"
+	"github.com/bborbe/teamvault-utils/parser"
 	"github.com/golang/glog"
 )
 

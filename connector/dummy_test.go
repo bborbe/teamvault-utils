@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	. "github.com/bborbe/assert"
-	"github.com/bborbe/teamvault_utils/model"
+	"github.com/bborbe/teamvault-utils/model"
 )
 
 func TestDummyUser(t *testing.T) {

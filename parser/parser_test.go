@@ -6,7 +6,7 @@ import (
 	"os"
 
 	. "github.com/bborbe/assert"
-	"github.com/bborbe/teamvault_utils/connector"
+	"github.com/bborbe/teamvault-utils/connector"
 )
 
 func TestParseContentWithoutPlaceholder(t *testing.T) {

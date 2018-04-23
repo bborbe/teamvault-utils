@@ -6,4 +6,4 @@
 /*
 Command line tools for easy access Teamvault.
  */
-package teamvault_utils
+package teamvault-utils
