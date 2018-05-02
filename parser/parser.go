@@ -6,10 +6,9 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/foomo/htpasswd"
-
 	"github.com/bborbe/teamvault-utils/connector"
 	"github.com/bborbe/teamvault-utils/model"
+	"github.com/foomo/htpasswd"
 	"github.com/golang/glog"
 )
 

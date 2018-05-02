@@ -1,9 +1,8 @@
 package parser
 
 import (
-	"testing"
-
 	"os"
+	"testing"
 
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/teamvault-utils/connector"
