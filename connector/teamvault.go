@@ -94,3 +94,7 @@ func (t *teamvaultPasswordProvider) createHeader() http.Header {
 	header.Add("Content-Type", "application/json")
 	return header
 }
+
+func (t *teamvaultPasswordProvider) Search(search string) ([]model.TeamvaultKey, error) {
+	return nil, nil
+}
