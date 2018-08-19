@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.1.1
+
+- Create fallback dirs
+
 ## 3.1.0
 
 - Add disk fallback connector

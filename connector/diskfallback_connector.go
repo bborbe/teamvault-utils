@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"os"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 type DiskFallback struct {
@@ -76,14 +77,22 @@ func (d *DiskFallback) Search(key string) ([]teamvault.Key, error) {
 	return d.Connector.Search(key)
 }
 
-func path(key teamvault.Key, kind string) (string) {
+func cachefile(key teamvault.Key, kind string) (string) {
 	return filepath.Join(os.Getenv("HOME"), ".teamvault-cache", key.String(), kind)
 }
 
+func cachedir(key teamvault.Key) (string) {
+	return filepath.Join(os.Getenv("HOME"), ".teamvault-cache", key.String())
+}
+
 func read(key teamvault.Key, kind string) ([]byte, error) {
-	return ioutil.ReadFile(path(key, kind))
+	return ioutil.ReadFile(cachefile(key, kind))
 }
 
 func write(key teamvault.Key, kind string, content []byte) (error) {
-	return ioutil.WriteFile(path(key, kind), content, 0600)
+	err := os.MkdirAll(cachedir(key), 0700)
+	if err != nil {
+		return errors.Wrap(err, "mkdir %s failed")
+	}
+	return errors.Wrap(ioutil.WriteFile(cachefile(key, kind), content, 0600), "write cache file failed")
 }
