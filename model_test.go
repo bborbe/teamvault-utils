@@ -1,20 +1,20 @@
-package model_test
+package teamvault_test
 
 import (
 	"testing"
 
 	. "github.com/bborbe/assert"
-	"github.com/bborbe/teamvault-utils/model"
+	"github.com/bborbe/teamvault-utils"
 )
 
 func TestTeamvaultApiUrlString(t *testing.T) {
-	apiUrl := model.TeamvaultApiUrl("foo")
+	apiUrl := teamvault.TeamvaultApiUrl("foo")
 	if err := AssertThat(apiUrl.String(), Is("foo")); err != nil {
 		t.Fatal(err)
 	}
 }
 func TestTeamvaultApiUrlKey(t *testing.T) {
-	apiUrl := model.TeamvaultApiUrl("foo")
+	apiUrl := teamvault.TeamvaultApiUrl("foo")
 	if err := AssertThat(apiUrl.String(), Is("foo")); err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func TestTeamvaultApiUrlKey(t *testing.T) {
 		name          string
 		url           string
 		expectedError bool
-		expectedKey   model.TeamvaultKey
+		expectedKey   teamvault.TeamvaultKey
 	}{
 		{"empty", "", true, ""},
 		{"slash", "/", true, ""},
@@ -32,7 +32,7 @@ func TestTeamvaultApiUrlKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			apiUrl := model.TeamvaultApiUrl(tt.url)
+			apiUrl := teamvault.TeamvaultApiUrl(tt.url)
 			key, err := apiUrl.Key()
 			if (err != nil) != tt.expectedError {
 				t.Fatalf("expected error %v got %v", tt.expectedError, err)

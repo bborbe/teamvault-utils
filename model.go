@@ -1,12 +1,11 @@
-package model
+package teamvault
 
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
-
-	"fmt"
 	"strings"
 
 	io_util "github.com/bborbe/io/util"

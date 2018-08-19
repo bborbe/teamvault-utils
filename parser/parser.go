@@ -6,8 +6,7 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/bborbe/teamvault-utils/connector"
-	"github.com/bborbe/teamvault-utils/model"
+	"github.com/bborbe/teamvault-utils"
 	"github.com/foomo/htpasswd"
 	"github.com/golang/glog"
 )
@@ -17,11 +16,11 @@ type Parser interface {
 }
 
 type configParser struct {
-	teamvaultConnector connector.Connector
+	teamvaultConnector teamvault.Connector
 }
 
 func New(
-	teamvaultConnector connector.Connector,
+	teamvaultConnector teamvault.Connector,
 ) *configParser {
 	c := new(configParser)
 	c.teamvaultConnector = teamvaultConnector
@@ -49,7 +48,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := model.TeamvaultKey(val.(string))
+			key := teamvault.TeamvaultKey(val.(string))
 			user, err := c.teamvaultConnector.User(key)
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
@@ -63,7 +62,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := model.TeamvaultKey(val.(string))
+			key := teamvault.TeamvaultKey(val.(string))
 			pass, err := c.teamvaultConnector.Password(key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
@@ -77,7 +76,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := model.TeamvaultKey(val.(string))
+			key := teamvault.TeamvaultKey(val.(string))
 			pass, err := c.teamvaultConnector.Password(key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
@@ -103,7 +102,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := model.TeamvaultKey(val.(string))
+			key := teamvault.TeamvaultKey(val.(string))
 			pass, err := c.teamvaultConnector.Url(key)
 			if err != nil {
 				glog.V(2).Infof("get url from teamvault for key %v failed: %v", key, err)
@@ -117,7 +116,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := model.TeamvaultKey(val.(string))
+			key := teamvault.TeamvaultKey(val.(string))
 			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
@@ -135,7 +134,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := model.TeamvaultKey(val.(string))
+			key := teamvault.TeamvaultKey(val.(string))
 			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)

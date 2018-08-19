@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bborbe/teamvault-utils/model"
+	"github.com/bborbe/teamvault-utils"
 	"github.com/bborbe/teamvault-utils/parser"
 	"github.com/golang/glog"
 )
@@ -24,7 +24,7 @@ func New(
 	return c
 }
 
-func (c *configGenerator) Generate(sourceDirectory model.SourceDirectory, targetDirectory model.TargetDirectory) error {
+func (c *configGenerator) Generate(sourceDirectory teamvault.SourceDirectory, targetDirectory teamvault.TargetDirectory) error {
 	glog.V(4).Infof("generate config from %s to %s", sourceDirectory.String(), targetDirectory.String())
 	return filepath.Walk(sourceDirectory.String(), func(path string, info os.FileInfo, err error) error {
 		glog.V(4).Infof("generate path %s info %v", path, info)

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/bborbe/http/client_builder"
+	"github.com/bborbe/teamvault-utils"
 	"github.com/bborbe/teamvault-utils/connector"
-	"github.com/bborbe/teamvault-utils/model"
 	"github.com/bborbe/teamvault-utils/parser"
 	"github.com/golang/glog"
 )
@@ -35,11 +35,11 @@ func main() {
 }
 
 func do() error {
-	teamvaultUrl := model.TeamvaultUrl(*teamvaultUrlPtr)
-	teamvaultUser := model.TeamvaultUser(*teamvaultUserPtr)
-	teamvaultPassword := model.TeamvaultPassword(*teamvaultPassPtr)
-	teamvaultConfigPath := model.TeamvaultConfigPath(*teamvaultConfigPathPtr)
-	staging := model.Staging(*stagingPtr)
+	teamvaultUrl := teamvault.TeamvaultUrl(*teamvaultUrlPtr)
+	teamvaultUser := teamvault.TeamvaultUser(*teamvaultUserPtr)
+	teamvaultPassword := teamvault.TeamvaultPassword(*teamvaultPassPtr)
+	teamvaultConfigPath := teamvault.TeamvaultConfigPath(*teamvaultConfigPathPtr)
+	staging := teamvault.Staging(*stagingPtr)
 	if teamvaultConfigPath.Exists() {
 		teamvaultConfig, err := teamvaultConfigPath.Parse()
 		if err != nil {
@@ -51,7 +51,7 @@ func do() error {
 		teamvaultPassword = teamvaultConfig.Password
 	}
 	httpClient := client_builder.New().WithTimeout(5 * time.Second).Build()
-	var teamvaultConnector connector.Connector
+	var teamvaultConnector teamvault.Connector
 	if !staging {
 		teamvaultConnector = connector.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
 	} else {
