@@ -1,19 +1,27 @@
-package connector
+package connector_test
 
 import (
 	"bytes"
 	"fmt"
 	"net/http"
 	"testing"
-
 	. "github.com/bborbe/assert"
 	"github.com/bborbe/io/reader_nop_close"
 	"github.com/bborbe/teamvault-utils"
+	"github.com/bborbe/teamvault-utils/connector"
 )
 
+func TestRemoteConnctorImplementsConnector(t *testing.T) {
+	c := connector.NewRemote(nil, "", "", "")
+	var i *teamvault.Connector
+	if err := AssertThat(c, Implements(i)); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestTeamvaultPassword(t *testing.T) {
-	key := teamvault.TeamvaultKey("key123")
-	tv := New(func(req *http.Request) (resp *http.Response, err error) {
+	key := teamvault.Key("key123")
+	tv := connector.NewRemote(func(req *http.Request) (resp *http.Response, err error) {
 
 		user, pass, _ := req.BasicAuth()
 		if user != "user" && pass != "pass" {
@@ -44,8 +52,8 @@ func TestTeamvaultPassword(t *testing.T) {
 }
 
 func TestTeamvaultUser(t *testing.T) {
-	key := teamvault.TeamvaultKey("key123")
-	tv := New(createRequest(`{"username":"user"}`, "http://teamvault.example.com/api/secrets/key123/"), "http://teamvault.example.com", "user", "pass")
+	key := teamvault.Key("key123")
+	tv := connector.NewRemote(createRequest(`{"username":"user"}`, "http://teamvault.example.com/api/secrets/key123/"), "http://teamvault.example.com", "user", "pass")
 	user, err := tv.User(key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -56,8 +64,8 @@ func TestTeamvaultUser(t *testing.T) {
 }
 
 func TestTeamvaultUrl(t *testing.T) {
-	key := teamvault.TeamvaultKey("key123")
-	tv := New(createRequest(`{"url":"https://example.com"}`, "http://teamvault.example.com/api/secrets/key123/"), "http://teamvault.example.com", "user", "pass")
+	key := teamvault.Key("key123")
+	tv := connector.NewRemote(createRequest(`{"url":"https://example.com"}`, "http://teamvault.example.com/api/secrets/key123/"), "http://teamvault.example.com", "user", "pass")
 	url, err := tv.Url(key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
@@ -68,7 +76,7 @@ func TestTeamvaultUrl(t *testing.T) {
 }
 
 func TestSearch(t *testing.T) {
-	tv := New(createRequest(`{
+	tv := connector.NewRemote(createRequest(`{
   "count": 1,
   "next": null,
   "previous": null,

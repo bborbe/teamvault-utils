@@ -48,7 +48,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := teamvault.TeamvaultKey(val.(string))
+			key := teamvault.Key(val.(string))
 			user, err := c.teamvaultConnector.User(key)
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
@@ -62,7 +62,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := teamvault.TeamvaultKey(val.(string))
+			key := teamvault.Key(val.(string))
 			pass, err := c.teamvaultConnector.Password(key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
@@ -76,7 +76,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := teamvault.TeamvaultKey(val.(string))
+			key := teamvault.Key(val.(string))
 			pass, err := c.teamvaultConnector.Password(key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
@@ -102,7 +102,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := teamvault.TeamvaultKey(val.(string))
+			key := teamvault.Key(val.(string))
 			pass, err := c.teamvaultConnector.Url(key)
 			if err != nil {
 				glog.V(2).Infof("get url from teamvault for key %v failed: %v", key, err)
@@ -116,7 +116,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := teamvault.TeamvaultKey(val.(string))
+			key := teamvault.Key(val.(string))
 			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
@@ -134,7 +134,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := teamvault.TeamvaultKey(val.(string))
+			key := teamvault.Key(val.(string))
 			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)

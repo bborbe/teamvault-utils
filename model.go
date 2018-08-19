@@ -18,9 +18,9 @@ func (v VariableName) String() string {
 	return string(v)
 }
 
-type TeamvaultKey string
+type Key string
 
-func (t TeamvaultKey) String() string {
+func (t Key) String() string {
 	return string(t)
 }
 
@@ -42,21 +42,21 @@ func (s Staging) Bool() bool {
 	return bool(s)
 }
 
-type TeamvaultUrl string
+type Url string
 
-func (t TeamvaultUrl) String() string {
+func (t Url) String() string {
 	return string(t)
 }
 
-type TeamvaultUser string
+type User string
 
-func (t TeamvaultUser) String() string {
+func (t User) String() string {
 	return string(t)
 }
 
-type TeamvaultPassword string
+type Password string
 
-func (t TeamvaultPassword) String() string {
+func (t Password) String() string {
 	return string(t)
 }
 
@@ -66,20 +66,20 @@ func (t TeamvaultCurrentRevision) String() string {
 	return string(t)
 }
 
-type TeamvaultFile string
+type File string
 
-func (t TeamvaultFile) String() string {
+func (t File) String() string {
 	return string(t)
 }
 
-func (t TeamvaultFile) Content() ([]byte, error) {
+func (t File) Content() ([]byte, error) {
 	return base64.StdEncoding.DecodeString(t.String())
 }
 
 type TeamvaultConfig struct {
-	Url      TeamvaultUrl      `json:"url"`
-	User     TeamvaultUser     `json:"user"`
-	Password TeamvaultPassword `json:"pass"`
+	Url      Url      `json:"url"`
+	User     User     `json:"user"`
+	Password Password `json:"pass"`
 }
 
 type TeamvaultConfigPath string
@@ -149,10 +149,10 @@ func (t TeamvaultApiUrl) String() string {
 	return string(t)
 }
 
-func (t TeamvaultApiUrl) Key() (TeamvaultKey, error) {
+func (t TeamvaultApiUrl) Key() (Key, error) {
 	parts := strings.Split(t.String(), "/")
 	if len(parts) < 3 {
 		return "", fmt.Errorf("parse key form api-url failed")
 	}
-	return TeamvaultKey(parts[len(parts)-2]), nil
+	return Key(parts[len(parts)-2]), nil
 }

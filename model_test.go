@@ -23,7 +23,7 @@ func TestTeamvaultApiUrlKey(t *testing.T) {
 		name          string
 		url           string
 		expectedError bool
-		expectedKey   teamvault.TeamvaultKey
+		expectedKey   teamvault.Key
 	}{
 		{"empty", "", true, ""},
 		{"slash", "/", true, ""},

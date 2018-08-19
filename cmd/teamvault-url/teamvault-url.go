@@ -34,9 +34,9 @@ func main() {
 }
 
 func do() error {
-	teamvaultUrl := teamvault.TeamvaultUrl(*teamvaultUrlPtr)
-	teamvaultUser := teamvault.TeamvaultUser(*teamvaultUserPtr)
-	teamvaultPassword := teamvault.TeamvaultPassword(*teamvaultPassPtr)
+	teamvaultUrl := teamvault.Url(*teamvaultUrlPtr)
+	teamvaultUser := teamvault.User(*teamvaultUserPtr)
+	teamvaultPassword := teamvault.Password(*teamvaultPassPtr)
 	teamvaultConfigPath := teamvault.TeamvaultConfigPath(*teamvaultConfigPathPtr)
 	staging := teamvault.Staging(*stagingPtr)
 	if teamvaultConfigPath.Exists() {
@@ -52,11 +52,11 @@ func do() error {
 	httpClient := client_builder.New().WithTimeout(5 * time.Second).Build()
 	var teamvaultConnector teamvault.Connector
 	if !staging {
-		teamvaultConnector = connector.New(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
+		teamvaultConnector = connector.NewRemote(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
 	} else {
 		teamvaultConnector = connector.NewDummy()
 	}
-	result, err := teamvaultConnector.Url(teamvault.TeamvaultKey(*teamvaultKeyPtr))
+	result, err := teamvaultConnector.Url(teamvault.Key(*teamvaultKeyPtr))
 	if err != nil {
 		return err
 	}
