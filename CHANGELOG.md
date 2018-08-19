@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.0.1
+
+- Update deps
+
 ## 3.0.0
 
 - Move mode and Connector interface to root

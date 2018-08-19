@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/bborbe/assert"
   packages = ["."]
-  revision = "ab840eecbae389bab6d11872115ade11e687f88c"
+  revision = "3a020c059cab016822081063bb346b7481c6ebc2"
 
 [[projects]]
   branch = "master"
@@ -15,7 +15,7 @@
     "header",
     "rest"
   ]
-  revision = "b783a5e87f98911552ef543db3624f3ce52d79c1"
+  revision = "d0d8e291febd74ef570713bd2492380e953afdc1"
 
 [[projects]]
   branch = "master"
@@ -24,13 +24,13 @@
     "reader_nop_close",
     "util"
   ]
-  revision = "8c22cf733cf166b247318b0786eec0c7cad9208a"
+  revision = "c3edaab04ccf42ba167bebab1f91c1168b80447c"
 
 [[projects]]
   branch = "master"
   name = "github.com/foomo/htpasswd"
   packages = ["."]
-  revision = "e7f5c19025c3fae9edaa8de044abc9c5c219b39d"
+  revision = "cb63c4ac0e5029b961b3ac7dcc281ed2a9232e4e"
 
 [[projects]]
   branch = "master"
@@ -45,7 +45,7 @@
     "bcrypt",
     "blowfish"
   ]
-  revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
+  revision = "aabede6cba87e37f413b3e60ebfc214f8eeca1b0"
 
 [solve-meta]
   analyzer-name = "dep"
