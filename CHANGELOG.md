@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.3.0
+
+- Add Htpasswd generator 
+
 ## 3.2.0
 
 - Add cache connector

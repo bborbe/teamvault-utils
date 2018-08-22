@@ -7,8 +7,8 @@ import (
 	"text/template"
 
 	"github.com/bborbe/teamvault-utils"
-	"github.com/foomo/htpasswd"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 type Parser interface {
@@ -76,24 +76,13 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := teamvault.Key(val.(string))
-			pass, err := c.teamvaultConnector.Password(key)
-			if err != nil {
-				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
-				return "", err
+			htpasswd := teamvault.Htpasswd{
+				Connector: c.teamvaultConnector,
 			}
-			user, err := c.teamvaultConnector.User(key)
+			content, err := htpasswd.Generate(teamvault.Key(val.(string)))
 			if err != nil {
-				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
-				return "", err
+				return "", errors.Wrap(err, "generate htpasswd failed")
 			}
-			pws := make(htpasswd.HashedPasswords)
-			err = pws.SetPassword(string(user), string(pass), htpasswd.HashBCrypt)
-			if err != nil {
-				glog.V(2).Infof("set password failed for key %v failed: %v", key, err)
-				return "", err
-			}
-			content := pws.Bytes()
 			glog.V(4).Infof("return value %s", string(content))
 			return string(content), nil
 		},
