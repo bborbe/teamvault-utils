@@ -10,17 +10,17 @@ import (
 )
 
 func CreateAuthorizationToken(name string, value string) string {
-	glog.V(4).Infof("create bearer")
+	glog.V(8).Infof("create bearer")
 	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", name, value)))
 }
 
 func CreateAuthorizationTokenSimple(name string) string {
-	glog.V(4).Infof("create simple bearer")
+	glog.V(8).Infof("create simple bearer")
 	return base64.StdEncoding.EncodeToString([]byte(name))
 }
 
 func ParseAuthorizationToken(token string) (string, string, error) {
-	glog.V(4).Infof("parse token")
+	glog.V(8).Infof("parse token")
 	value, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
 		return "", "", err
@@ -33,7 +33,7 @@ func ParseAuthorizationToken(token string) (string, string, error) {
 }
 
 func ParseAuthorizationTokenSimple(token string) (string, error) {
-	glog.V(4).Infof("parse token")
+	glog.V(8).Infof("parse token")
 	value, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
 		return "", err
@@ -78,7 +78,7 @@ func ParseAuthorizationHttpRequestSimple(authtype string, req *http.Request) (st
 }
 
 func ParseAuthorizationHeader(authtype string, header string) (string, string, error) {
-	glog.V(4).Infof("parse %s", authtype)
+	glog.V(8).Infof("parse %s", authtype)
 	if strings.Index(header, fmt.Sprintf("%s ", authtype)) != 0 {
 		return "", "", fmt.Errorf("header Authorization invalid")
 	}
@@ -90,7 +90,7 @@ func ParseAuthorizationHeader(authtype string, header string) (string, string, e
 }
 
 func ParseAuthorizationHeaderSimple(authtype string, header string) (string, error) {
-	glog.V(4).Infof("parse %s", authtype)
+	glog.V(8).Infof("parse %s", authtype)
 	if strings.Index(header, fmt.Sprintf("%s ", authtype)) != 0 {
 		return "", fmt.Errorf("header Authorization invalid")
 	}

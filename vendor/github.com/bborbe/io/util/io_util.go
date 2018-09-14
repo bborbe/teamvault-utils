@@ -43,7 +43,7 @@ func NormalizePath(path string) (string, error) {
 			return "", fmt.Errorf("env HOME not found")
 		}
 		path = fmt.Sprintf("%s/%s", home, path[2:])
-		glog.V(2).Infof("replace ~/ with homedir. new path: %s", path)
+		glog.V(4).Infof("replace ~/ with homedir. new path: %s", path)
 	}
 	result, err := filepath.Abs(path)
 	if err != nil {

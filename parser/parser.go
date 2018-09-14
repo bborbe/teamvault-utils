@@ -3,7 +3,9 @@ package parser
 import (
 	"bytes"
 	"encoding/base64"
+	"io/ioutil"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/bborbe/teamvault-utils"
@@ -43,6 +45,23 @@ func (c *configParser) Parse(content []byte) ([]byte, error) {
 
 func (c *configParser) createFuncMap() template.FuncMap {
 	return template.FuncMap{
+		"indent": func(spaces int, v string) string {
+			pad := strings.Repeat(" ", spaces)
+			return pad + strings.Replace(v, "\n", "\n"+pad, -1)
+		},
+		"readfile": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("read file for %v", val)
+			if val == nil {
+				return "", nil
+			}
+			file, err := ioutil.ReadFile(val.(string))
+			if err != nil {
+				glog.V(2).Infof("read file %v failed: %v", val, err)
+				return "", errors.Wrapf(err, "read file %v failed", val)
+			}
+			glog.V(4).Infof("return value %s", file)
+			return string(file), nil
+		},
 		"teamvaultUser": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
 			if val == nil {
@@ -52,7 +71,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			user, err := c.teamvaultConnector.User(key)
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
-				return "", err
+				return "", errors.Wrapf(err, "get user from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("return value %s", user.String())
 			return user.String(), nil
@@ -66,7 +85,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			pass, err := c.teamvaultConnector.Password(key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
-				return "", err
+				return "", errors.Wrapf(err, "get password from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("return value %s", pass.String())
 			return pass.String(), nil
@@ -81,7 +100,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			}
 			content, err := htpasswd.Generate(teamvault.Key(val.(string)))
 			if err != nil {
-				return "", errors.Wrap(err, "generate htpasswd failed")
+				return "", errors.Wrapf(err, "generate htpasswd failed")
 			}
 			glog.V(4).Infof("return value %s", string(content))
 			return string(content), nil
@@ -95,7 +114,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			pass, err := c.teamvaultConnector.Url(key)
 			if err != nil {
 				glog.V(2).Infof("get url from teamvault for key %v failed: %v", key, err)
-				return "", err
+				return "", errors.Wrapf(err, "get url from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("return value %s", pass.String())
 			return pass.String(), nil
@@ -109,12 +128,12 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
-				return "", err
+				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("return value %s", file.String())
 			content, err := file.Content()
 			if err != nil {
-				return "", err
+				return "", errors.Wrapf(err, "get content from teamvault file for key %v failed", key)
 			}
 			return string(content), nil
 		},
@@ -127,12 +146,12 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			file, err := c.teamvaultConnector.File(key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
-				return "", err
+				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("return value %s", file.String())
 			content, err := file.Content()
 			if err != nil {
-				return "", err
+				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)
 			}
 			return base64.StdEncoding.EncodeToString(content), nil
 		},

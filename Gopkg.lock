@@ -3,53 +3,83 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:3a140306d7151491c83a326c7af43598d4b4edcf30ffd74c7c1b43f6bcbf283c"
   name = "github.com/bborbe/assert"
   packages = ["."]
-  revision = "3a020c059cab016822081063bb346b7481c6ebc2"
+  pruneopts = "UT"
+  revision = "2380757c64e19114afcb9bebe6e724c2026fae6a"
 
 [[projects]]
   branch = "master"
+  digest = "1:feeadcb352e56d7891086940a256dac1d9e91d906f550da1052c7a676698c3b5"
   name = "github.com/bborbe/http"
   packages = [
     "client_builder",
     "header",
-    "rest"
+    "rest",
   ]
-  revision = "d0d8e291febd74ef570713bd2492380e953afdc1"
+  pruneopts = "UT"
+  revision = "efee63a8d109311e9e85d69c3d49e3f99fb70996"
 
 [[projects]]
   branch = "master"
+  digest = "1:9285d1ebb73023ceddae94535760018de704daff159770efc25e5964f61034e3"
   name = "github.com/bborbe/io"
   packages = [
     "reader_nop_close",
-    "util"
+    "util",
   ]
-  revision = "c3edaab04ccf42ba167bebab1f91c1168b80447c"
+  pruneopts = "UT"
+  revision = "54b762caaee8af23d13c8b5a58fdfdb481ce5816"
 
 [[projects]]
   branch = "master"
+  digest = "1:a8b78968e7cbc9ca9fd02d2d251702ce5936cb5a1b61a3ee3242629d4961b40e"
   name = "github.com/foomo/htpasswd"
   packages = ["."]
+  pruneopts = "UT"
   revision = "cb63c4ac0e5029b961b3ac7dcc281ed2a9232e4e"
 
 [[projects]]
   branch = "master"
+  digest = "1:1ba1d79f2810270045c328ae5d674321db34e3aae468eb4233883b473c5c0467"
   name = "github.com/golang/glog"
   packages = ["."]
+  pruneopts = "UT"
   revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
 
 [[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   branch = "master"
+  digest = "1:1ecf2a49df33be51e757d0033d5d51d5f784f35f68e5a38f797b2d3f03357d71"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
-    "blowfish"
+    "blowfish",
   ]
-  revision = "aabede6cba87e37f413b3e60ebfc214f8eeca1b0"
+  pruneopts = "UT"
+  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7520de486f89451074ef368a11fd2c8762a35209b7e79c71e97d1f6364b19960"
+  input-imports = [
+    "github.com/bborbe/assert",
+    "github.com/bborbe/http/client_builder",
+    "github.com/bborbe/http/header",
+    "github.com/bborbe/http/rest",
+    "github.com/bborbe/io/reader_nop_close",
+    "github.com/bborbe/io/util",
+    "github.com/foomo/htpasswd",
+    "github.com/golang/glog",
+    "github.com/pkg/errors",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

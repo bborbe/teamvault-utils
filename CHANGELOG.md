@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 3.4.0
+
+- add readfile to read content from file
+- add indent method
+
 ## 3.3.0
 
 - Add Htpasswd generator 

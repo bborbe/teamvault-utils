@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -141,6 +143,31 @@ func TestParseTeamvaultHtpasswd(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := AssertThat(len(resultContent), Gt(0)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestParseFile(t *testing.T) {
+	f, err := ioutil.TempFile("", "")
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	path := f.Name()
+	defer os.Remove(path)
+	content := "hello world"
+	f.WriteString(content)
+	f.Close()
+
+	teamvaultConnector := connector.NewDummy()
+	teamvaultParser := New(teamvaultConnector)
+	resultContent, err := teamvaultParser.Parse([]byte(fmt.Sprintf(`{{ "%s" | readfile }}`, path)))
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(string(resultContent), Is(content)); err != nil {
 		t.Fatal(err)
 	}
 }

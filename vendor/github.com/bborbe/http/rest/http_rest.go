@@ -36,10 +36,10 @@ func (r *rest) Call(url string, values url.Values, method string, request interf
 	if values != nil {
 		url = fmt.Sprintf("%s?%s", url, values.Encode())
 	}
-	glog.V(4).Infof("call %s on path %s", method, url)
+	glog.V(4).Infof("rest %s to %s", method, url)
 	start := time.Now()
-	defer glog.V(4).Infof("create completed in %dms", time.Now().Sub(start)/time.Millisecond)
-	glog.V(4).Infof("send message to %s", url)
+	defer glog.V(8).Infof("create completed in %dms", time.Now().Sub(start)/time.Millisecond)
+	glog.V(8).Infof("send message to %s", url)
 
 	var body io.Reader
 	if request != nil {
@@ -48,7 +48,7 @@ func (r *rest) Call(url string, values url.Values, method string, request interf
 			glog.V(2).Infof("marhal request failed: %v", err)
 			return err
 		}
-		if glog.V(4) {
+		if glog.V(8) {
 			glog.Infof("send request to %s: %s", url, string(content))
 		}
 		body = bytes.NewBuffer(content)
@@ -70,7 +70,7 @@ func (r *rest) Call(url string, values url.Values, method string, request interf
 		return err
 	}
 	if resp.StatusCode/100 != 2 {
-		glog.V(2).Infof("status %d not 2xx", resp.StatusCode)
+		glog.V(2).Infof("request to %s failed with status: %d", url, resp.StatusCode)
 		return fmt.Errorf("request to %s failed with status: %d", url, resp.StatusCode)
 	}
 	if response != nil {
@@ -79,6 +79,6 @@ func (r *rest) Call(url string, values url.Values, method string, request interf
 			return err
 		}
 	}
-	glog.V(4).Infof("rest call successful")
+	glog.V(8).Infof("rest call successful")
 	return nil
 }
