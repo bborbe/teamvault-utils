@@ -31,5 +31,5 @@ lint:
 
 errcheck:
 	@go get github.com/kisielk/errcheck
-	@errcheck -ignore '(Close|Write|Fprintf)' $(shell go list ./... | grep -v /vendor/)
+	@errcheck -ignore '(Close|Write|Fprint)' $(shell go list ./... | grep -v /vendor/)
 
