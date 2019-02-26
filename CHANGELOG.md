@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0
+
+- add teamvault-file command
+- remove subpackages
+- use go modules instead dep
+
 ## 3.4.0
 
 - add readfile to read content from file
