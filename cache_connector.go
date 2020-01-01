@@ -1,5 +1,7 @@
 package teamvault
 
+import "context"
+
 type Cache struct {
 	Connector Connector
 	Passwords map[Key]Password
@@ -18,54 +20,54 @@ func NewCache(connector Connector) Connector {
 	}
 }
 
-func (c *Cache) Password(key Key) (Password, error) {
+func (c *Cache) Password(ctx context.Context, key Key) (Password, error) {
 	value, ok := c.Passwords[key]
 	if ok {
 		return value, nil
 	}
-	value, err := c.Connector.Password(key)
+	value, err := c.Connector.Password(ctx, key)
 	if err == nil {
 		c.Passwords[key] = value
 	}
 	return value, err
 }
 
-func (c *Cache) User(key Key) (User, error) {
+func (c *Cache) User(ctx context.Context, key Key) (User, error) {
 	value, ok := c.Users[key]
 	if ok {
 		return value, nil
 	}
-	value, err := c.Connector.User(key)
+	value, err := c.Connector.User(ctx, key)
 	if err == nil {
 		c.Users[key] = value
 	}
 	return value, err
 }
 
-func (c *Cache) Url(key Key) (Url, error) {
+func (c *Cache) Url(ctx context.Context, key Key) (Url, error) {
 	value, ok := c.Urls[key]
 	if ok {
 		return value, nil
 	}
-	value, err := c.Connector.Url(key)
+	value, err := c.Connector.Url(ctx, key)
 	if err == nil {
 		c.Urls[key] = value
 	}
 	return value, err
 }
 
-func (c *Cache) File(key Key) (File, error) {
+func (c *Cache) File(ctx context.Context, key Key) (File, error) {
 	value, ok := c.Files[key]
 	if ok {
 		return value, nil
 	}
-	value, err := c.Connector.File(key)
+	value, err := c.Connector.File(ctx, key)
 	if err == nil {
 		c.Files[key] = value
 	}
 	return value, err
 }
 
-func (c *Cache) Search(key string) ([]Key, error) {
-	return c.Connector.Search(key)
+func (c *Cache) Search(ctx context.Context, key string) ([]Key, error) {
+	return c.Connector.Search(ctx, key)
 }

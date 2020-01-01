@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"runtime"
@@ -26,13 +27,13 @@ func main() {
 	flag.Parse()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	err := do()
+	err := do(context.Background())
 	if err != nil {
 		glog.Exit(err)
 	}
 }
 
-func do() error {
+func do(ctx context.Context) error {
 	teamvaultUrl := teamvault.Url(*teamvaultURLPtr)
 	teamvaultUser := teamvault.User(*teamvaultUserPtr)
 	teamvaultPassword := teamvault.Password(*teamvaultPassPtr)
@@ -55,7 +56,7 @@ func do() error {
 	} else {
 		teamvaultConnector = teamvault.NewDummyConnector()
 	}
-	result, err := teamvaultConnector.File(teamvault.Key(*teamvaultKeyPtr))
+	result, err := teamvaultConnector.File(ctx, teamvault.Key(*teamvaultKeyPtr))
 	if err != nil {
 		return err
 	}

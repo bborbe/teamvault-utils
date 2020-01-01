@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -26,13 +27,13 @@ func main() {
 	flag.Parse()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	err := do()
+	err := do(context.Background())
 	if err != nil {
 		glog.Exit(err)
 	}
 }
 
-func do() error {
+func do(ctx context.Context) error {
 	teamvaultUrl := teamvault.Url(*teamvaultUrlPtr)
 	teamvaultUser := teamvault.User(*teamvaultUserPtr)
 	teamvaultPassword := teamvault.Password(*teamvaultPassPtr)
@@ -60,7 +61,7 @@ func do() error {
 	if err != nil {
 		return err
 	}
-	output, err := configParser.Parse(content)
+	output, err := configParser.Parse(ctx, content)
 	if err != nil {
 		return err
 	}

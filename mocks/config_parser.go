@@ -2,16 +2,18 @@
 package mocks
 
 import (
+	"context"
 	"sync"
 
 	teamvault "github.com/bborbe/teamvault-utils"
 )
 
 type ConfigParser struct {
-	ParseStub        func([]byte) ([]byte, error)
+	ParseStub        func(context.Context, []byte) ([]byte, error)
 	parseMutex       sync.RWMutex
 	parseArgsForCall []struct {
-		arg1 []byte
+		arg1 context.Context
+		arg2 []byte
 	}
 	parseReturns struct {
 		result1 []byte
@@ -25,21 +27,22 @@ type ConfigParser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *ConfigParser) Parse(arg1 []byte) ([]byte, error) {
-	var arg1Copy []byte
-	if arg1 != nil {
-		arg1Copy = make([]byte, len(arg1))
-		copy(arg1Copy, arg1)
+func (fake *ConfigParser) Parse(arg1 context.Context, arg2 []byte) ([]byte, error) {
+	var arg2Copy []byte
+	if arg2 != nil {
+		arg2Copy = make([]byte, len(arg2))
+		copy(arg2Copy, arg2)
 	}
 	fake.parseMutex.Lock()
 	ret, specificReturn := fake.parseReturnsOnCall[len(fake.parseArgsForCall)]
 	fake.parseArgsForCall = append(fake.parseArgsForCall, struct {
-		arg1 []byte
-	}{arg1Copy})
-	fake.recordInvocation("Parse", []interface{}{arg1Copy})
+		arg1 context.Context
+		arg2 []byte
+	}{arg1, arg2Copy})
+	fake.recordInvocation("Parse", []interface{}{arg1, arg2Copy})
 	fake.parseMutex.Unlock()
 	if fake.ParseStub != nil {
-		return fake.ParseStub(arg1)
+		return fake.ParseStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -54,17 +57,17 @@ func (fake *ConfigParser) ParseCallCount() int {
 	return len(fake.parseArgsForCall)
 }
 
-func (fake *ConfigParser) ParseCalls(stub func([]byte) ([]byte, error)) {
+func (fake *ConfigParser) ParseCalls(stub func(context.Context, []byte) ([]byte, error)) {
 	fake.parseMutex.Lock()
 	defer fake.parseMutex.Unlock()
 	fake.ParseStub = stub
 }
 
-func (fake *ConfigParser) ParseArgsForCall(i int) []byte {
+func (fake *ConfigParser) ParseArgsForCall(i int) (context.Context, []byte) {
 	fake.parseMutex.RLock()
 	defer fake.parseMutex.RUnlock()
 	argsForCall := fake.parseArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *ConfigParser) ParseReturns(result1 []byte, result2 error) {

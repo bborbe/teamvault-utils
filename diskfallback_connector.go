@@ -1,6 +1,7 @@
 package teamvault
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -20,9 +21,9 @@ type diskFallback struct {
 	connector Connector
 }
 
-func (d *diskFallback) Password(key Key) (Password, error) {
+func (d *diskFallback) Password(ctx context.Context, key Key) (Password, error) {
 	kind := "password"
-	content, err := d.connector.Password(key)
+	content, err := d.connector.Password(ctx, key)
 	if err != nil {
 		content, err := read(key, kind)
 		if err == nil {
@@ -35,9 +36,9 @@ func (d *diskFallback) Password(key Key) (Password, error) {
 	return content, err
 }
 
-func (d *diskFallback) User(key Key) (User, error) {
+func (d *diskFallback) User(ctx context.Context, key Key) (User, error) {
 	kind := "user"
-	content, err := d.connector.User(key)
+	content, err := d.connector.User(ctx, key)
 	if err != nil {
 		content, err := read(key, kind)
 		if err == nil {
@@ -50,9 +51,9 @@ func (d *diskFallback) User(key Key) (User, error) {
 	return content, err
 }
 
-func (d *diskFallback) Url(key Key) (Url, error) {
+func (d *diskFallback) Url(ctx context.Context, key Key) (Url, error) {
 	kind := "url"
-	content, err := d.connector.Url(key)
+	content, err := d.connector.Url(ctx, key)
 	if err != nil {
 		content, err := read(key, kind)
 		if err == nil {
@@ -65,9 +66,9 @@ func (d *diskFallback) Url(key Key) (Url, error) {
 	return content, err
 }
 
-func (d *diskFallback) File(key Key) (File, error) {
+func (d *diskFallback) File(ctx context.Context, key Key) (File, error) {
 	kind := "file"
-	content, err := d.connector.File(key)
+	content, err := d.connector.File(ctx, key)
 	if err != nil {
 		content, err := read(key, kind)
 		if err == nil {
@@ -80,8 +81,8 @@ func (d *diskFallback) File(key Key) (File, error) {
 	return content, err
 }
 
-func (d *diskFallback) Search(key string) ([]Key, error) {
-	return d.connector.Search(key)
+func (d *diskFallback) Search(ctx context.Context, key string) ([]Key, error) {
+	return d.connector.Search(ctx, key)
 }
 
 func cachefile(key Key, kind string) string {

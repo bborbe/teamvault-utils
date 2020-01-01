@@ -2,6 +2,7 @@ package teamvault
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"io/ioutil"
 	"os"
@@ -14,7 +15,7 @@ import (
 
 //go:generate counterfeiter -o mocks/config_parser.go --fake-name ConfigParser . ConfigParser
 type ConfigParser interface {
-	Parse(content []byte) ([]byte, error)
+	Parse(ctx context.Context, content []byte) ([]byte, error)
 }
 
 type configParser struct {
@@ -29,8 +30,8 @@ func NewParser(
 	}
 }
 
-func (c *configParser) Parse(content []byte) ([]byte, error) {
-	t, err := template.New("config").Funcs(c.createFuncMap()).Parse(string(content))
+func (c *configParser) Parse(ctx context.Context, content []byte) ([]byte, error) {
+	t, err := template.New("config").Funcs(c.createFuncMap(ctx)).Parse(string(content))
 	if err != nil {
 		glog.V(2).Infof("parse config failed: %v", err)
 		return nil, err
@@ -43,7 +44,7 @@ func (c *configParser) Parse(content []byte) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (c *configParser) createFuncMap() template.FuncMap {
+func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 	return template.FuncMap{
 		"indent": func(spaces int, v string) string {
 			pad := strings.Repeat(" ", spaces)
@@ -68,7 +69,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
-			user, err := c.teamvaultConnector.User(key)
+			user, err := c.teamvaultConnector.User(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
 				return "", errors.Wrapf(err, "get user from teamvault for key %v failed", key)
@@ -82,7 +83,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
-			pass, err := c.teamvaultConnector.Password(key)
+			pass, err := c.teamvaultConnector.Password(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
 				return "", errors.Wrapf(err, "get password from teamvault for key %v failed", key)
@@ -98,7 +99,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 			htpasswd := Htpasswd{
 				Connector: c.teamvaultConnector,
 			}
-			content, err := htpasswd.Generate(Key(val.(string)))
+			content, err := htpasswd.Generate(ctx, Key(val.(string)))
 			if err != nil {
 				return "", errors.Wrapf(err, "generate htpasswd failed")
 			}
@@ -111,7 +112,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
-			pass, err := c.teamvaultConnector.Url(key)
+			pass, err := c.teamvaultConnector.Url(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get url from teamvault for key %v failed: %v", key, err)
 				return "", errors.Wrapf(err, "get url from teamvault for key %v failed", key)
@@ -125,7 +126,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
-			file, err := c.teamvaultConnector.File(key)
+			file, err := c.teamvaultConnector.File(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
 				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)
@@ -143,7 +144,7 @@ func (c *configParser) createFuncMap() template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
-			file, err := c.teamvaultConnector.File(key)
+			file, err := c.teamvaultConnector.File(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
 				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)

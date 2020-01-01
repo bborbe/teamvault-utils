@@ -1,6 +1,7 @@
 package teamvault
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -30,8 +31,8 @@ func NewRemoteConnector(
 	}
 }
 
-func (t *remoteConnector) Password(key Key) (Password, error) {
-	currentRevision, err := t.CurrentRevision(key)
+func (t *remoteConnector) Password(ctx context.Context, key Key) (Password, error) {
+	currentRevision, err := t.CurrentRevision(ctx, key)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +45,7 @@ func (t *remoteConnector) Password(key Key) (Password, error) {
 	return response.Password, nil
 }
 
-func (t *remoteConnector) User(key Key) (User, error) {
+func (t *remoteConnector) User(ctx context.Context, key Key) (User, error) {
 	var response struct {
 		User User `json:"username"`
 	}
@@ -54,7 +55,7 @@ func (t *remoteConnector) User(key Key) (User, error) {
 	return response.User, nil
 }
 
-func (t *remoteConnector) Url(key Key) (Url, error) {
+func (t *remoteConnector) Url(ctx context.Context, key Key) (Url, error) {
 	var response struct {
 		Url Url `json:"url"`
 	}
@@ -64,7 +65,7 @@ func (t *remoteConnector) Url(key Key) (Url, error) {
 	return response.Url, nil
 }
 
-func (t *remoteConnector) CurrentRevision(key Key) (TeamvaultCurrentRevision, error) {
+func (t *remoteConnector) CurrentRevision(ctx context.Context, key Key) (TeamvaultCurrentRevision, error) {
 	var response struct {
 		CurrentRevision TeamvaultCurrentRevision `json:"current_revision"`
 	}
@@ -74,8 +75,8 @@ func (t *remoteConnector) CurrentRevision(key Key) (TeamvaultCurrentRevision, er
 	return response.CurrentRevision, nil
 }
 
-func (t *remoteConnector) File(key Key) (File, error) {
-	rev, err := t.CurrentRevision(key)
+func (t *remoteConnector) File(ctx context.Context, key Key) (File, error) {
+	rev, err := t.CurrentRevision(ctx, key)
 	if err != nil {
 		return "", fmt.Errorf("get current revision failed: %v", err)
 	}
@@ -95,7 +96,7 @@ func (t *remoteConnector) createHeader() http.Header {
 	return httpHeader
 }
 
-func (t *remoteConnector) Search(search string) ([]Key, error) {
+func (t *remoteConnector) Search(ctx context.Context, search string) ([]Key, error) {
 	var response struct {
 		Results []struct {
 			ApiUrl TeamvaultApiUrl `json:"api_url"`

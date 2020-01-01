@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"runtime"
 	"time"
@@ -26,13 +27,13 @@ func main() {
 	flag.Parse()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	err := do()
+	err := do(context.Background())
 	if err != nil {
 		glog.Exit(err)
 	}
 }
 
-func do() error {
+func do(ctx context.Context) error {
 	teamvaultUrl := teamvault.Url(*teamvaultUrlPtr)
 	teamvaultUser := teamvault.User(*teamvaultUserPtr)
 	teamvaultPassword := teamvault.Password(*teamvaultPassPtr)
@@ -59,7 +60,7 @@ func do() error {
 	}
 	configParser := teamvault.NewParser(teamvaultConnector)
 	manifestsGenerator := teamvault.NewGenerator(configParser)
-	if err := manifestsGenerator.Generate(sourceDirectory, targetDirectory); err != nil {
+	if err := manifestsGenerator.Generate(ctx, sourceDirectory, targetDirectory); err != nil {
 		return err
 	}
 	return nil

@@ -2,16 +2,18 @@
 package mocks
 
 import (
+	"context"
 	"sync"
 
 	teamvault "github.com/bborbe/teamvault-utils"
 )
 
 type Connector struct {
-	FileStub        func(teamvault.Key) (teamvault.File, error)
+	FileStub        func(context.Context, teamvault.Key) (teamvault.File, error)
 	fileMutex       sync.RWMutex
 	fileArgsForCall []struct {
-		arg1 teamvault.Key
+		arg1 context.Context
+		arg2 teamvault.Key
 	}
 	fileReturns struct {
 		result1 teamvault.File
@@ -21,10 +23,11 @@ type Connector struct {
 		result1 teamvault.File
 		result2 error
 	}
-	PasswordStub        func(teamvault.Key) (teamvault.Password, error)
+	PasswordStub        func(context.Context, teamvault.Key) (teamvault.Password, error)
 	passwordMutex       sync.RWMutex
 	passwordArgsForCall []struct {
-		arg1 teamvault.Key
+		arg1 context.Context
+		arg2 teamvault.Key
 	}
 	passwordReturns struct {
 		result1 teamvault.Password
@@ -34,10 +37,11 @@ type Connector struct {
 		result1 teamvault.Password
 		result2 error
 	}
-	SearchStub        func(string) ([]teamvault.Key, error)
+	SearchStub        func(context.Context, string) ([]teamvault.Key, error)
 	searchMutex       sync.RWMutex
 	searchArgsForCall []struct {
-		arg1 string
+		arg1 context.Context
+		arg2 string
 	}
 	searchReturns struct {
 		result1 []teamvault.Key
@@ -47,10 +51,11 @@ type Connector struct {
 		result1 []teamvault.Key
 		result2 error
 	}
-	UrlStub        func(teamvault.Key) (teamvault.Url, error)
+	UrlStub        func(context.Context, teamvault.Key) (teamvault.Url, error)
 	urlMutex       sync.RWMutex
 	urlArgsForCall []struct {
-		arg1 teamvault.Key
+		arg1 context.Context
+		arg2 teamvault.Key
 	}
 	urlReturns struct {
 		result1 teamvault.Url
@@ -60,10 +65,11 @@ type Connector struct {
 		result1 teamvault.Url
 		result2 error
 	}
-	UserStub        func(teamvault.Key) (teamvault.User, error)
+	UserStub        func(context.Context, teamvault.Key) (teamvault.User, error)
 	userMutex       sync.RWMutex
 	userArgsForCall []struct {
-		arg1 teamvault.Key
+		arg1 context.Context
+		arg2 teamvault.Key
 	}
 	userReturns struct {
 		result1 teamvault.User
@@ -77,16 +83,17 @@ type Connector struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Connector) File(arg1 teamvault.Key) (teamvault.File, error) {
+func (fake *Connector) File(arg1 context.Context, arg2 teamvault.Key) (teamvault.File, error) {
 	fake.fileMutex.Lock()
 	ret, specificReturn := fake.fileReturnsOnCall[len(fake.fileArgsForCall)]
 	fake.fileArgsForCall = append(fake.fileArgsForCall, struct {
-		arg1 teamvault.Key
-	}{arg1})
-	fake.recordInvocation("File", []interface{}{arg1})
+		arg1 context.Context
+		arg2 teamvault.Key
+	}{arg1, arg2})
+	fake.recordInvocation("File", []interface{}{arg1, arg2})
 	fake.fileMutex.Unlock()
 	if fake.FileStub != nil {
-		return fake.FileStub(arg1)
+		return fake.FileStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -101,17 +108,17 @@ func (fake *Connector) FileCallCount() int {
 	return len(fake.fileArgsForCall)
 }
 
-func (fake *Connector) FileCalls(stub func(teamvault.Key) (teamvault.File, error)) {
+func (fake *Connector) FileCalls(stub func(context.Context, teamvault.Key) (teamvault.File, error)) {
 	fake.fileMutex.Lock()
 	defer fake.fileMutex.Unlock()
 	fake.FileStub = stub
 }
 
-func (fake *Connector) FileArgsForCall(i int) teamvault.Key {
+func (fake *Connector) FileArgsForCall(i int) (context.Context, teamvault.Key) {
 	fake.fileMutex.RLock()
 	defer fake.fileMutex.RUnlock()
 	argsForCall := fake.fileArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *Connector) FileReturns(result1 teamvault.File, result2 error) {
@@ -140,16 +147,17 @@ func (fake *Connector) FileReturnsOnCall(i int, result1 teamvault.File, result2 
 	}{result1, result2}
 }
 
-func (fake *Connector) Password(arg1 teamvault.Key) (teamvault.Password, error) {
+func (fake *Connector) Password(arg1 context.Context, arg2 teamvault.Key) (teamvault.Password, error) {
 	fake.passwordMutex.Lock()
 	ret, specificReturn := fake.passwordReturnsOnCall[len(fake.passwordArgsForCall)]
 	fake.passwordArgsForCall = append(fake.passwordArgsForCall, struct {
-		arg1 teamvault.Key
-	}{arg1})
-	fake.recordInvocation("Password", []interface{}{arg1})
+		arg1 context.Context
+		arg2 teamvault.Key
+	}{arg1, arg2})
+	fake.recordInvocation("Password", []interface{}{arg1, arg2})
 	fake.passwordMutex.Unlock()
 	if fake.PasswordStub != nil {
-		return fake.PasswordStub(arg1)
+		return fake.PasswordStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -164,17 +172,17 @@ func (fake *Connector) PasswordCallCount() int {
 	return len(fake.passwordArgsForCall)
 }
 
-func (fake *Connector) PasswordCalls(stub func(teamvault.Key) (teamvault.Password, error)) {
+func (fake *Connector) PasswordCalls(stub func(context.Context, teamvault.Key) (teamvault.Password, error)) {
 	fake.passwordMutex.Lock()
 	defer fake.passwordMutex.Unlock()
 	fake.PasswordStub = stub
 }
 
-func (fake *Connector) PasswordArgsForCall(i int) teamvault.Key {
+func (fake *Connector) PasswordArgsForCall(i int) (context.Context, teamvault.Key) {
 	fake.passwordMutex.RLock()
 	defer fake.passwordMutex.RUnlock()
 	argsForCall := fake.passwordArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *Connector) PasswordReturns(result1 teamvault.Password, result2 error) {
@@ -203,16 +211,17 @@ func (fake *Connector) PasswordReturnsOnCall(i int, result1 teamvault.Password, 
 	}{result1, result2}
 }
 
-func (fake *Connector) Search(arg1 string) ([]teamvault.Key, error) {
+func (fake *Connector) Search(arg1 context.Context, arg2 string) ([]teamvault.Key, error) {
 	fake.searchMutex.Lock()
 	ret, specificReturn := fake.searchReturnsOnCall[len(fake.searchArgsForCall)]
 	fake.searchArgsForCall = append(fake.searchArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("Search", []interface{}{arg1})
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("Search", []interface{}{arg1, arg2})
 	fake.searchMutex.Unlock()
 	if fake.SearchStub != nil {
-		return fake.SearchStub(arg1)
+		return fake.SearchStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -227,17 +236,17 @@ func (fake *Connector) SearchCallCount() int {
 	return len(fake.searchArgsForCall)
 }
 
-func (fake *Connector) SearchCalls(stub func(string) ([]teamvault.Key, error)) {
+func (fake *Connector) SearchCalls(stub func(context.Context, string) ([]teamvault.Key, error)) {
 	fake.searchMutex.Lock()
 	defer fake.searchMutex.Unlock()
 	fake.SearchStub = stub
 }
 
-func (fake *Connector) SearchArgsForCall(i int) string {
+func (fake *Connector) SearchArgsForCall(i int) (context.Context, string) {
 	fake.searchMutex.RLock()
 	defer fake.searchMutex.RUnlock()
 	argsForCall := fake.searchArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *Connector) SearchReturns(result1 []teamvault.Key, result2 error) {
@@ -266,16 +275,17 @@ func (fake *Connector) SearchReturnsOnCall(i int, result1 []teamvault.Key, resul
 	}{result1, result2}
 }
 
-func (fake *Connector) Url(arg1 teamvault.Key) (teamvault.Url, error) {
+func (fake *Connector) Url(arg1 context.Context, arg2 teamvault.Key) (teamvault.Url, error) {
 	fake.urlMutex.Lock()
 	ret, specificReturn := fake.urlReturnsOnCall[len(fake.urlArgsForCall)]
 	fake.urlArgsForCall = append(fake.urlArgsForCall, struct {
-		arg1 teamvault.Key
-	}{arg1})
-	fake.recordInvocation("Url", []interface{}{arg1})
+		arg1 context.Context
+		arg2 teamvault.Key
+	}{arg1, arg2})
+	fake.recordInvocation("Url", []interface{}{arg1, arg2})
 	fake.urlMutex.Unlock()
 	if fake.UrlStub != nil {
-		return fake.UrlStub(arg1)
+		return fake.UrlStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -290,17 +300,17 @@ func (fake *Connector) UrlCallCount() int {
 	return len(fake.urlArgsForCall)
 }
 
-func (fake *Connector) UrlCalls(stub func(teamvault.Key) (teamvault.Url, error)) {
+func (fake *Connector) UrlCalls(stub func(context.Context, teamvault.Key) (teamvault.Url, error)) {
 	fake.urlMutex.Lock()
 	defer fake.urlMutex.Unlock()
 	fake.UrlStub = stub
 }
 
-func (fake *Connector) UrlArgsForCall(i int) teamvault.Key {
+func (fake *Connector) UrlArgsForCall(i int) (context.Context, teamvault.Key) {
 	fake.urlMutex.RLock()
 	defer fake.urlMutex.RUnlock()
 	argsForCall := fake.urlArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *Connector) UrlReturns(result1 teamvault.Url, result2 error) {
@@ -329,16 +339,17 @@ func (fake *Connector) UrlReturnsOnCall(i int, result1 teamvault.Url, result2 er
 	}{result1, result2}
 }
 
-func (fake *Connector) User(arg1 teamvault.Key) (teamvault.User, error) {
+func (fake *Connector) User(arg1 context.Context, arg2 teamvault.Key) (teamvault.User, error) {
 	fake.userMutex.Lock()
 	ret, specificReturn := fake.userReturnsOnCall[len(fake.userArgsForCall)]
 	fake.userArgsForCall = append(fake.userArgsForCall, struct {
-		arg1 teamvault.Key
-	}{arg1})
-	fake.recordInvocation("User", []interface{}{arg1})
+		arg1 context.Context
+		arg2 teamvault.Key
+	}{arg1, arg2})
+	fake.recordInvocation("User", []interface{}{arg1, arg2})
 	fake.userMutex.Unlock()
 	if fake.UserStub != nil {
-		return fake.UserStub(arg1)
+		return fake.UserStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -353,17 +364,17 @@ func (fake *Connector) UserCallCount() int {
 	return len(fake.userArgsForCall)
 }
 
-func (fake *Connector) UserCalls(stub func(teamvault.Key) (teamvault.User, error)) {
+func (fake *Connector) UserCalls(stub func(context.Context, teamvault.Key) (teamvault.User, error)) {
 	fake.userMutex.Lock()
 	defer fake.userMutex.Unlock()
 	fake.UserStub = stub
 }
 
-func (fake *Connector) UserArgsForCall(i int) teamvault.Key {
+func (fake *Connector) UserArgsForCall(i int) (context.Context, teamvault.Key) {
 	fake.userMutex.RLock()
 	defer fake.userMutex.RUnlock()
 	argsForCall := fake.userArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *Connector) UserReturns(result1 teamvault.User, result2 error) {

@@ -1,6 +1,7 @@
 package teamvault_test
 
 import (
+	"context"
 	"testing"
 
 	. "github.com/bborbe/assert"
@@ -18,7 +19,7 @@ func TestDummyConnctorImplementsConnector(t *testing.T) {
 func TestDummyUser(t *testing.T) {
 	key := teamvault.Key("key123")
 	du := teamvault.NewDummyConnector()
-	user, err := du.User(key)
+	user, err := du.User(context.Background(), key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +31,7 @@ func TestDummyUser(t *testing.T) {
 func TestDummyPassword(t *testing.T) {
 	key := teamvault.Key("key123")
 	du := teamvault.NewDummyConnector()
-	password, err := du.Password(key)
+	password, err := du.Password(context.Background(), key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +43,7 @@ func TestDummyPassword(t *testing.T) {
 func TestDummyURL(t *testing.T) {
 	key := teamvault.Key("key123")
 	du := teamvault.NewDummyConnector()
-	url, err := du.Url(key)
+	url, err := du.Url(context.Background(), key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}

@@ -2,6 +2,7 @@ package teamvault_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -34,7 +35,7 @@ func TestTeamvaultPassword(t *testing.T) {
 		}
 		return &http.Response{StatusCode: 404}, fmt.Errorf("invalid url %v", req.URL.String())
 	}, "http://teamvault.example.com", "user", "pass")
-	password, err := tv.Password(key)
+	password, err := tv.Password(context.Background(), key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +47,7 @@ func TestTeamvaultPassword(t *testing.T) {
 func TestTeamvaultUser(t *testing.T) {
 	key := teamvault.Key("key123")
 	tv := teamvault.NewRemoteConnector(createRequest(`{"username":"user"}`, "http://teamvault.example.com/api/secrets/key123/"), "http://teamvault.example.com", "user", "pass")
-	user, err := tv.User(key)
+	user, err := tv.User(context.Background(), key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +59,7 @@ func TestTeamvaultUser(t *testing.T) {
 func TestTeamvaultUrl(t *testing.T) {
 	key := teamvault.Key("key123")
 	tv := teamvault.NewRemoteConnector(createRequest(`{"url":"https://example.com"}`, "http://teamvault.example.com/api/secrets/key123/"), "http://teamvault.example.com", "user", "pass")
-	url, err := tv.Url(key)
+	url, err := tv.Url(context.Background(), key)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +96,7 @@ func TestSearch(t *testing.T) {
     }
   ]
 }`, "http://teamvault.example.com/api/secrets/?search=searchString"), "http://teamvault.example.com", "user", "pass")
-	matches, err := tv.Search("searchString")
+	matches, err := tv.Search(context.Background(), "searchString")
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 
+default: precommit
+
 deps:
-	go get -u github.com/golang/dep/cmd/dep
 	go get -u golang.org/x/lint/golint
 	go get -u github.com/kisielk/errcheck
 	go get -u golang.org/x/tools/cmd/goimports
@@ -17,7 +18,7 @@ precommit: ensure format generate test check
 	@echo "ready to commit"
 
 ensure:
-	GO111MODULE=on go mod tidy
+	GO111MODULE=on go mod verify
 	GO111MODULE=on go mod vendor
 
 format:
@@ -26,7 +27,7 @@ format:
 	@find . -type f -name '*.go' -not -path './vendor/*' -exec goimports -w "{}" +
 
 generate:
-	go get github.com/maxbrunsfeld/counterfeiter
+	go get github.com/maxbrunsfeld/counterfeiter/v6
 	rm -rf mocks
 	go generate ./...
 

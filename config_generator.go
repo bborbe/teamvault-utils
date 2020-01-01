@@ -1,6 +1,7 @@
 package teamvault
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,7 +13,7 @@ import (
 
 //go:generate counterfeiter -o mocks/config_generator.go --fake-name ConfigGenerator . ConfigGenerator
 type ConfigGenerator interface {
-	Generate(sourceDirectory SourceDirectory, targetDirectory TargetDirectory) error
+	Generate(ctx context.Context, sourceDirectory SourceDirectory, targetDirectory TargetDirectory) error
 }
 
 type configGenerator struct {
@@ -25,7 +26,7 @@ func NewGenerator(configParser ConfigParser) ConfigGenerator {
 	}
 }
 
-func (c *configGenerator) Generate(sourceDirectory SourceDirectory, targetDirectory TargetDirectory) error {
+func (c *configGenerator) Generate(ctx context.Context, sourceDirectory SourceDirectory, targetDirectory TargetDirectory) error {
 	glog.V(4).Infof("generate config from %s to %s", sourceDirectory.String(), targetDirectory.String())
 	return filepath.Walk(sourceDirectory.String(), func(path string, info os.FileInfo, err error) error {
 		glog.V(4).Infof("generate path %s info %v", path, info)
@@ -48,7 +49,7 @@ func (c *configGenerator) Generate(sourceDirectory SourceDirectory, targetDirect
 			glog.V(2).Infof("read file %s failed: %v", path, err)
 			return err
 		}
-		content, err = c.configParser.Parse(content)
+		content, err = c.configParser.Parse(ctx, content)
 		if err != nil {
 			glog.V(2).Infof("replace variables failed: %v", err)
 			return err

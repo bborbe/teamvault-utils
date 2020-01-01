@@ -1,6 +1,8 @@
 package teamvault
 
 import (
+	"context"
+
 	"github.com/foomo/htpasswd"
 	"github.com/golang/glog"
 )
@@ -9,13 +11,13 @@ type Htpasswd struct {
 	Connector Connector
 }
 
-func (c *Htpasswd) Generate(key Key) ([]byte, error) {
-	pass, err := c.Connector.Password(key)
+func (c *Htpasswd) Generate(ctx context.Context, key Key) ([]byte, error) {
+	pass, err := c.Connector.Password(ctx, key)
 	if err != nil {
 		glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
 		return nil, err
 	}
-	user, err := c.Connector.User(key)
+	user, err := c.Connector.User(ctx, key)
 	if err != nil {
 		glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
 		return nil, err

@@ -1,6 +1,7 @@
 package teamvault_test
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -14,7 +15,7 @@ func TestParseContentWithoutPlaceholder(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
 	contentWithoutPlaceholder := []byte("hello world")
-	resultContent, err := teamvaultParser.Parse(contentWithoutPlaceholder)
+	resultContent, err := teamvaultParser.Parse(context.Background(), contentWithoutPlaceholder)
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +30,7 @@ func TestParseContentWithoutPlaceholder(t *testing.T) {
 func TestParseTeamvaultUsername(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "asdf" | teamvaultUser }}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultUser }}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +45,7 @@ func TestParseTeamvaultUsername(t *testing.T) {
 func TestParseTeamvaultPassword(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "asdf" | teamvaultPassword }}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultPassword }}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +60,7 @@ func TestParseTeamvaultPassword(t *testing.T) {
 func TestParseTeamvaultUrl(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "asdf" | teamvaultUrl}}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultUrl}}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +75,7 @@ func TestParseTeamvaultUrl(t *testing.T) {
 func TestParseTeamvaultFile(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "asdf" | teamvaultFile}}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultFile}}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +90,7 @@ func TestParseTeamvaultFile(t *testing.T) {
 func TestParseTeamvaultFileBase64(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "asdf" | teamvaultFileBase64}}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultFileBase64}}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +105,7 @@ func TestParseTeamvaultFileBase64(t *testing.T) {
 func TestParseBase64(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "abc" | base64}}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "abc" | base64}}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +121,7 @@ func TestParseEnv(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
 	_ = os.Setenv("testEnv", "hello")
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "testEnv" | env}}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "testEnv" | env}}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -135,7 +136,7 @@ func TestParseEnv(t *testing.T) {
 func TestParseTeamvaultHtpasswd(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(`{{ "abc" | teamvaultHtpasswd}}`))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "abc" | teamvaultHtpasswd}}`))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
@@ -162,7 +163,7 @@ func TestParseFile(t *testing.T) {
 
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse([]byte(fmt.Sprintf(`{{ "%s" | readfile }}`, path)))
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(fmt.Sprintf(`{{ "%s" | readfile }}`, path)))
 	if err := AssertThat(err, NilValue()); err != nil {
 		t.Fatal(err)
 	}
