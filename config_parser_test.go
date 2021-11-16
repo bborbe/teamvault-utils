@@ -117,6 +117,36 @@ func TestParseBase64(t *testing.T) {
 	}
 }
 
+func TestParseLower(t *testing.T) {
+	teamvaultConnector := teamvault.NewDummyConnector()
+	teamvaultParser := teamvault.NewParser(teamvaultConnector)
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "aBc" | lower}}`))
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(string(resultContent), Is("abc")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestParseUpper(t *testing.T) {
+	teamvaultConnector := teamvault.NewDummyConnector()
+	teamvaultParser := teamvault.NewParser(teamvaultConnector)
+	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "aBc" | upper}}`))
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(err, NilValue()); err != nil {
+		t.Fatal(err)
+	}
+	if err := AssertThat(string(resultContent), Is("ABC")); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestParseEnv(t *testing.T) {
 	teamvaultConnector := teamvault.NewDummyConnector()
 	teamvaultParser := teamvault.NewParser(teamvaultConnector)

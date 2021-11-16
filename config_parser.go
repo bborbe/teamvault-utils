@@ -172,5 +172,19 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			}
 			return base64.StdEncoding.EncodeToString([]byte(val.(string))), nil
 		},
+		"lower": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("lower value %v", val)
+			if val == nil {
+				return "", nil
+			}
+			return strings.ToLower(val.(string)), nil
+		},
+		"upper": func(val interface{}) (interface{}, error) {
+			glog.V(4).Infof("upper value %v", val)
+			if val == nil {
+				return "", nil
+			}
+			return strings.ToUpper(val.(string)), nil
+		},
 	}
 }

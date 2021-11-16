@@ -90,15 +90,16 @@ func (fake *Connector) File(arg1 context.Context, arg2 teamvault.Key) (teamvault
 		arg1 context.Context
 		arg2 teamvault.Key
 	}{arg1, arg2})
+	stub := fake.FileStub
+	fakeReturns := fake.fileReturns
 	fake.recordInvocation("File", []interface{}{arg1, arg2})
 	fake.fileMutex.Unlock()
-	if fake.FileStub != nil {
-		return fake.FileStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.fileReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -154,15 +155,16 @@ func (fake *Connector) Password(arg1 context.Context, arg2 teamvault.Key) (teamv
 		arg1 context.Context
 		arg2 teamvault.Key
 	}{arg1, arg2})
+	stub := fake.PasswordStub
+	fakeReturns := fake.passwordReturns
 	fake.recordInvocation("Password", []interface{}{arg1, arg2})
 	fake.passwordMutex.Unlock()
-	if fake.PasswordStub != nil {
-		return fake.PasswordStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.passwordReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -218,15 +220,16 @@ func (fake *Connector) Search(arg1 context.Context, arg2 string) ([]teamvault.Ke
 		arg1 context.Context
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.SearchStub
+	fakeReturns := fake.searchReturns
 	fake.recordInvocation("Search", []interface{}{arg1, arg2})
 	fake.searchMutex.Unlock()
-	if fake.SearchStub != nil {
-		return fake.SearchStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.searchReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -282,15 +285,16 @@ func (fake *Connector) Url(arg1 context.Context, arg2 teamvault.Key) (teamvault.
 		arg1 context.Context
 		arg2 teamvault.Key
 	}{arg1, arg2})
+	stub := fake.UrlStub
+	fakeReturns := fake.urlReturns
 	fake.recordInvocation("Url", []interface{}{arg1, arg2})
 	fake.urlMutex.Unlock()
-	if fake.UrlStub != nil {
-		return fake.UrlStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.urlReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -346,15 +350,16 @@ func (fake *Connector) User(arg1 context.Context, arg2 teamvault.Key) (teamvault
 		arg1 context.Context
 		arg2 teamvault.Key
 	}{arg1, arg2})
+	stub := fake.UserStub
+	fakeReturns := fake.userReturns
 	fake.recordInvocation("User", []interface{}{arg1, arg2})
 	fake.userMutex.Unlock()
-	if fake.UserStub != nil {
-		return fake.UserStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.userReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

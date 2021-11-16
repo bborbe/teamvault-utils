@@ -34,15 +34,16 @@ func (fake *ConfigGenerator) Generate(arg1 context.Context, arg2 teamvault.Sourc
 		arg2 teamvault.SourceDirectory
 		arg3 teamvault.TargetDirectory
 	}{arg1, arg2, arg3})
+	stub := fake.GenerateStub
+	fakeReturns := fake.generateReturns
 	fake.recordInvocation("Generate", []interface{}{arg1, arg2, arg3})
 	fake.generateMutex.Unlock()
-	if fake.GenerateStub != nil {
-		return fake.GenerateStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.generateReturns
 	return fakeReturns.result1
 }
 
