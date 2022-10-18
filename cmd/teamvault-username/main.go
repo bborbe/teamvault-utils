@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/bborbe/http/client_builder"
-	"github.com/bborbe/teamvault-utils"
 	"github.com/golang/glog"
+
+	"github.com/bborbe/teamvault-utils"
 )
 
 var (

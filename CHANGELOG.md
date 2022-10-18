@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.1
+
+- update all deps
+- go version to 1.19
+
 ## 4.0.0
 
 - add teamvault-file command
