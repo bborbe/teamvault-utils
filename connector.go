@@ -2,7 +2,7 @@ package teamvault
 
 import "context"
 
-//go:generate counterfeiter -o mocks/connector.go --fake-name Connector . Connector
+//counterfeiter:generate -o  mocks/connector.go --fake-name Connector . Connector
 type Connector interface {
 	Password(ctx context.Context, key Key) (Password, error)
 	User(ctx context.Context, key Key) (User, error)

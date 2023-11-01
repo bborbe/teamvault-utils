@@ -11,7 +11,7 @@ import (
 	"github.com/golang/glog"
 )
 
-//go:generate counterfeiter -o mocks/config_generator.go --fake-name ConfigGenerator . ConfigGenerator
+//counterfeiter:generate -o  mocks/config_generator.go --fake-name ConfigGenerator . ConfigGenerator
 type ConfigGenerator interface {
 	Generate(ctx context.Context, sourceDirectory SourceDirectory, targetDirectory TargetDirectory) error
 }

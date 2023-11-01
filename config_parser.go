@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:generate counterfeiter -o mocks/config_parser.go --fake-name ConfigParser . ConfigParser
+//counterfeiter:generate -o  mocks/config_parser.go --fake-name ConfigParser . ConfigParser
 type ConfigParser interface {
 	Parse(ctx context.Context, content []byte) ([]byte, error)
 }
