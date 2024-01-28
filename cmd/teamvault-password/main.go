@@ -20,6 +20,7 @@ var (
 	teamvaultConfigPathPtr = flag.String("teamvault-config", "", "teamvault config")
 	stagingPtr             = flag.Bool("staging", false, "staging status")
 	teamvaultKeyPtr        = flag.String("teamvault-key", "", "teamvault key")
+	cachePtr               = flag.Bool("cache", false, "enable teamvault secret cache")
 )
 
 func main() {
@@ -54,6 +55,9 @@ func do(ctx context.Context) error {
 	var teamvaultConnector teamvault.Connector
 	if !staging {
 		teamvaultConnector = teamvault.NewRemoteConnector(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
+		if *cachePtr {
+			teamvaultConnector = teamvault.NewDiskFallbackConnector(teamvaultConnector)
+		}
 	} else {
 		teamvaultConnector = teamvault.NewDummyConnector()
 	}
