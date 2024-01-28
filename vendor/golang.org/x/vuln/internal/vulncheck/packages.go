@@ -116,7 +116,7 @@ func (g *PackageGraph) GetPackage(path string) *packages.Package {
 
 // LoadPackages loads the packages specified by the patterns into the graph.
 // See golang.org/x/tools/go/packages.Load for details of how it works.
-func (g *PackageGraph) LoadPackages(cfg *packages.Config, tags []string, patterns []string) ([]*packages.Package, error) {
+func (g *PackageGraph) LoadPackagesAndMods(cfg *packages.Config, tags []string, patterns []string) ([]*packages.Package, []*packages.Module, error) {
 	if len(tags) > 0 {
 		cfg.BuildFlags = []string{fmt.Sprintf("-tags=%s", strings.Join(tags, ","))}
 	}
@@ -131,7 +131,7 @@ func (g *PackageGraph) LoadPackages(cfg *packages.Config, tags []string, pattern
 
 	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var perrs []packages.Error
 	packages.Visit(pkgs, nil, func(p *packages.Package) {
@@ -141,7 +141,40 @@ func (g *PackageGraph) LoadPackages(cfg *packages.Config, tags []string, pattern
 		err = &packageError{perrs}
 	}
 	g.AddPackages(pkgs...)
-	return pkgs, err
+	return pkgs, extractModules(pkgs), err
+}
+
+// extractModules collects modules in `pkgs` up to uniqueness of
+// module path and version.
+func extractModules(pkgs []*packages.Package) []*packages.Module {
+	modMap := map[string]*packages.Module{}
+	seen := map[*packages.Package]bool{}
+	var extract func(*packages.Package, map[string]*packages.Module)
+	extract = func(pkg *packages.Package, modMap map[string]*packages.Module) {
+		if pkg == nil || seen[pkg] {
+			return
+		}
+		if pkg.Module != nil {
+			if pkg.Module.Replace != nil {
+				modMap[pkg.Module.Replace.Path] = pkg.Module
+			} else {
+				modMap[pkg.Module.Path] = pkg.Module
+			}
+		}
+		seen[pkg] = true
+		for _, imp := range pkg.Imports {
+			extract(imp, modMap)
+		}
+	}
+	for _, pkg := range pkgs {
+		extract(pkg, modMap)
+	}
+
+	modules := []*packages.Module{}
+	for _, mod := range modMap {
+		modules = append(modules, mod)
+	}
+	return modules
 }
 
 // packageError contains errors from loading a set of packages.

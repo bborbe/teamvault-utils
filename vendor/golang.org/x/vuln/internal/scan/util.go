@@ -6,11 +6,11 @@ package scan
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 
 	"golang.org/x/vuln/internal"
 	"golang.org/x/vuln/internal/govulncheck"
-	"golang.org/x/vuln/internal/osv"
-	isem "golang.org/x/vuln/internal/semver"
 )
 
 // validateFindings checks that the supplied findings all obey the protocol
@@ -38,35 +38,6 @@ func validateFindings(findings ...*govulncheck.Finding) error {
 	return nil
 }
 
-// latestFixed returns the latest fixed version in the list of affected ranges,
-// or the empty string if there are no fixed versions.
-func latestFixed(modulePath string, as []osv.Affected) string {
-	v := ""
-	for _, a := range as {
-		if modulePath != a.Module.Path {
-			continue
-		}
-		fixed := isem.LatestFixedVersion(a.Ranges)
-		// Special case: if there is any affected block for this module
-		// with no fix, the module is considered unfixed.
-		if fixed == "" {
-			return ""
-		}
-		if isem.Less(v, fixed) {
-			v = fixed
-		}
-	}
-	return v
-}
-
-func fixedVersion(modulePath string, affected []osv.Affected) string {
-	fixed := latestFixed(modulePath, affected)
-	if fixed != "" {
-		fixed = "v" + fixed
-	}
-	return fixed
-}
-
 func moduleVersionString(modulePath, version string) string {
 	if version == "" {
 		return ""
@@ -75,4 +46,14 @@ func moduleVersionString(modulePath, version string) string {
 		version = semverToGoTag(version)
 	}
 	return version
+}
+
+func gomodExists(dir string) bool {
+	cmd := exec.Command("go", "env", "GOMOD")
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	output := string(out)
+	// If module-aware mode is enabled, but there is no go.mod, GOMOD will be os.DevNull
+	// If module-aware mode is disabled, GOMOD will be the empty string.
+	return err == nil && !(output == os.DevNull || output == "")
 }

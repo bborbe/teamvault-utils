@@ -10,54 +10,79 @@ package vulncheck
 import (
 	"context"
 	"fmt"
-	"io"
-	"runtime/debug"
+	"sort"
 
+	"golang.org/x/tools/go/packages"
 	"golang.org/x/vuln/internal"
+	"golang.org/x/vuln/internal/buildinfo"
 	"golang.org/x/vuln/internal/client"
 	"golang.org/x/vuln/internal/govulncheck"
 	"golang.org/x/vuln/internal/osv"
-	"golang.org/x/vuln/internal/vulncheck/internal/buildinfo"
 )
 
-// Binary detects presence of vulnerable symbols in exe.
-// The Calls, Imports, and Requires fields on Result will be empty.
-func Binary(ctx context.Context, exe io.ReaderAt, cfg *govulncheck.Config, client *client.Client) (_ *Result, err error) {
-	mods, packageSymbols, bi, err := buildinfo.ExtractPackagesAndSymbols(exe)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse provided binary: %v", err)
-	}
+// Bin is an abstraction of Go binary containing
+// minimal information needed by govulncheck.
+type Bin struct {
+	Modules    []*packages.Module `json:"modules,omitempty"`
+	PkgSymbols []buildinfo.Symbol `json:"pkgSymbols,omitempty"`
+	GoVersion  string             `json:"goVersion,omitempty"`
+	GOOS       string             `json:"goos,omitempty"`
+	GOARCH     string             `json:"goarch,omitempty"`
+}
 
-	graph := NewPackageGraph(bi.GoVersion)
-	graph.AddModules(mods...)
-	mods = append(mods, graph.GetModule(internal.GoStdModulePath))
+// Binary detects presence of vulnerable symbols in bin and
+// emits findings to handler.
+func Binary(ctx context.Context, handler govulncheck.Handler, bin *Bin, cfg *govulncheck.Config, client *client.Client) error {
+	vr, err := binary(ctx, handler, bin, cfg, client)
+	if err != nil {
+		return err
+	}
+	return emitBinaryResult(handler, vr, binaryCallstacks(vr))
+}
+
+// binary detects presence of vulnerable symbols in bin.
+// It does not compute call graphs so the corresponding
+// info in Result will be empty.
+func binary(ctx context.Context, handler govulncheck.Handler, bin *Bin, cfg *govulncheck.Config, client *client.Client) (*Result, error) {
+	graph := NewPackageGraph(bin.GoVersion)
+	graph.AddModules(bin.Modules...)
+	mods := append(bin.Modules, graph.GetModule(internal.GoStdModulePath))
 
 	mv, err := FetchVulnerabilities(ctx, client, mods)
 	if err != nil {
 		return nil, err
 	}
-	modVulns := moduleVulnerabilities(mv)
 
-	goos := findSetting("GOOS", bi)
-	goarch := findSetting("GOARCH", bi)
-	if goos == "" || goarch == "" {
-		fmt.Printf("warning: failed to extract build system specification GOOS: %s GOARCH: %s\n", goos, goarch)
+	// Emit OSV entries immediately in their raw unfiltered form.
+	if err := emitOSVs(handler, mv); err != nil {
+		return nil, err
 	}
 
-	modVulns = modVulns.filter(goos, goarch)
-	result := &Result{}
+	if bin.GOOS == "" || bin.GOARCH == "" {
+		fmt.Printf("warning: failed to extract build system specification GOOS: %s GOARCH: %s\n", bin.GOOS, bin.GOARCH)
+	}
+	affVulns := affectingVulnerabilities(mv, bin.GOOS, bin.GOARCH)
 
-	if packageSymbols == nil {
+	result := &Result{}
+	if len(bin.PkgSymbols) == 0 {
 		// The binary exe is stripped. We currently cannot detect inlined
 		// symbols for stripped binaries (see #57764), so we report
 		// vulnerabilities at the go.mod-level precision.
-		addRequiresOnlyVulns(result, graph, modVulns)
+		addRequiresOnlyVulns(result, graph, affVulns)
 	} else {
-		for pkg, symbols := range packageSymbols {
+		// Group symbols per package to avoid querying vulns all over again.
+		pkgSymbols := make(map[string][]string)
+		for _, sym := range bin.PkgSymbols {
+			pkgSymbols[sym.Pkg] = append(pkgSymbols[sym.Pkg], sym.Name)
+		}
+
+		for pkg, symbols := range pkgSymbols {
+			// sort symbols for deterministic results
+			sort.SliceStable(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 			if !cfg.ScanLevel.WantSymbols() {
-				addImportsOnlyVulns(result, graph, pkg, symbols, modVulns)
+				addImportsOnlyVulns(result, graph, pkg, symbols, affVulns)
 			} else {
-				addSymbolVulns(result, graph, pkg, symbols, modVulns)
+				addSymbolVulns(result, graph, pkg, symbols, affVulns)
 			}
 		}
 	}
@@ -66,8 +91,8 @@ func Binary(ctx context.Context, exe io.ReaderAt, cfg *govulncheck.Config, clien
 
 // addImportsOnlyVulns adds Vuln entries to result in imports only mode, i.e., for each vulnerable symbol
 // of pkg.
-func addImportsOnlyVulns(result *Result, graph *PackageGraph, pkg string, symbols []string, modVulns moduleVulnerabilities) {
-	for _, osv := range modVulns.vulnsForPackage(pkg) {
+func addImportsOnlyVulns(result *Result, graph *PackageGraph, pkg string, symbols []string, affVulns affectingVulns) {
+	for _, osv := range affVulns.ForPackage(pkg) {
 		for _, affected := range osv.Affected {
 			for _, p := range affected.EcosystemSpecific.Packages {
 				if p.Path != pkg {
@@ -93,29 +118,18 @@ func addImportsOnlyVulns(result *Result, graph *PackageGraph, pkg string, symbol
 }
 
 // addSymbolVulns adds Vuln entries to result for every symbol of pkg in the binary that is vulnerable.
-func addSymbolVulns(result *Result, graph *PackageGraph, pkg string, symbols []string, modVulns moduleVulnerabilities) {
+func addSymbolVulns(result *Result, graph *PackageGraph, pkg string, symbols []string, affVulns affectingVulns) {
 	for _, symbol := range symbols {
-		for _, osv := range modVulns.vulnsForSymbol(pkg, symbol) {
+		for _, osv := range affVulns.ForSymbol(pkg, symbol) {
 			addVuln(result, graph, osv, symbol, pkg)
 		}
 	}
 }
 
-// findSetting returns value of setting from bi if present.
-// Otherwise, returns "".
-func findSetting(setting string, bi *debug.BuildInfo) string {
-	for _, s := range bi.Settings {
-		if s.Key == setting {
-			return s.Value
-		}
-	}
-	return ""
-}
-
-// addRequiresOnlyVulns adds to result all vulnerabilities in modVulns.
+// addRequiresOnlyVulns adds to result all vulnerabilities in affVulns.
 // Used when the binary under analysis is stripped.
-func addRequiresOnlyVulns(result *Result, graph *PackageGraph, modVulns moduleVulnerabilities) {
-	for _, mv := range modVulns {
+func addRequiresOnlyVulns(result *Result, graph *PackageGraph, affVulns affectingVulns) {
+	for _, mv := range affVulns {
 		for _, osv := range mv.Vulns {
 			for _, affected := range osv.Affected {
 				for _, p := range affected.EcosystemSpecific.Packages {
@@ -145,8 +159,8 @@ func addRequiresOnlyVulns(result *Result, graph *PackageGraph, modVulns moduleVu
 
 func addVuln(result *Result, graph *PackageGraph, osv *osv.Entry, symbol string, pkgPath string) {
 	result.Vulns = append(result.Vulns, &Vuln{
-		OSV:        osv,
-		Symbol:     symbol,
-		ImportSink: graph.GetPackage(pkgPath),
+		OSV:     osv,
+		Symbol:  symbol,
+		Package: graph.GetPackage(pkgPath),
 	})
 }

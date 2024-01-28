@@ -5,7 +5,6 @@
 package scan
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -34,6 +33,7 @@ const (
 	modeSource  = "source"
 	modeConvert = "convert" // only intended for use by gopls
 	modeQuery   = "query"   // only intended for use by gopls
+	modeExtract = "extract" // currently, only binary extraction is supported
 )
 
 func parseFlags(cfg *config, stderr io.Writer, args []string) error {
@@ -43,12 +43,12 @@ func parseFlags(cfg *config, stderr io.Writer, args []string) error {
 	flags := flag.NewFlagSet("", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	flags.BoolVar(&cfg.json, "json", false, "output JSON")
-	flags.BoolVar(&cfg.test, "test", false, "analyze test files (only valid for source mode)")
+	flags.BoolVar(&cfg.test, "test", false, "analyze test files (only valid for source mode, default false)")
 	flags.StringVar(&cfg.dir, "C", "", "change to `dir` before running govulncheck")
 	flags.StringVar(&cfg.db, "db", "https://vuln.go.dev", "vulnerability database `url`")
 	flags.StringVar(&cfg.mode, "mode", modeSource, "supports source or binary")
 	flags.Var(&tagsFlag, "tags", "comma-separated `list` of build tags")
-	flags.Var(&showFlag, "show", "enable display of additional information specified by the comma separated `list`\nThe only supported value is 'traces'")
+	flags.Var(&showFlag, "show", "enable display of additional information specified by the comma separated `list`\nThe supported values are 'traces','color', and 'version'")
 	flags.BoolVar(&version, "version", false, "print the version information")
 	scanLevel := flags.String("scan", "symbol", "set the scanning level desired, one of module, package or symbol")
 	flags.Usage = func() {
@@ -88,16 +88,29 @@ var supportedModes = map[string]bool{
 	modeBinary:  true,
 	modeConvert: true,
 	modeQuery:   true,
+	modeExtract: true,
+}
+
+var supportedLevels = map[string]bool{
+	govulncheck.ScanLevelModule:  true,
+	govulncheck.ScanLevelPackage: true,
+	govulncheck.ScanLevelSymbol:  true,
 }
 
 func validateConfig(cfg *config) error {
 	if _, ok := supportedModes[cfg.mode]; !ok {
 		return fmt.Errorf("%q is not a valid mode", cfg.mode)
 	}
+	if _, ok := supportedLevels[string(cfg.ScanLevel)]; !ok {
+		return fmt.Errorf("%q is not a valid scan level", cfg.ScanLevel)
+	}
 	switch cfg.mode {
 	case modeSource:
 		if len(cfg.patterns) == 1 && isFile(cfg.patterns[0]) {
 			return fmt.Errorf("%q is a file.\n\n%v", cfg.patterns[0], errNoBinaryFlag)
+		}
+		if cfg.ScanLevel == govulncheck.ScanLevelModule && len(cfg.patterns) != 0 {
+			return fmt.Errorf("patterns are not accepted for module only scanning")
 		}
 	case modeBinary:
 		if cfg.test {
@@ -111,6 +124,22 @@ func validateConfig(cfg *config) error {
 		}
 		if !isFile(cfg.patterns[0]) {
 			return fmt.Errorf("%q is not a file", cfg.patterns[0])
+		}
+	case modeExtract:
+		if cfg.test {
+			return fmt.Errorf("the -test flag is not supported in extract mode")
+		}
+		if len(cfg.tags) > 0 {
+			return fmt.Errorf("the -tags flag is not supported in extract mode")
+		}
+		if len(cfg.patterns) != 1 {
+			return fmt.Errorf("only 1 binary can be extracted at a time")
+		}
+		if cfg.json {
+			return fmt.Errorf("the -json flag must be off in extract mode")
+		}
+		if !isFile(cfg.patterns[0]) {
+			return fmt.Errorf("%q is not a file (source extraction is not supported)", cfg.patterns[0])
 		}
 	case modeConvert:
 		if len(cfg.patterns) != 0 {
@@ -155,20 +184,6 @@ func isFile(path string) bool {
 		return false
 	}
 	return !s.IsDir()
-}
-
-// fileExists checks if file path exists. Returns true
-// if the file exists or it cannot prove that it does
-// not exist. Otherwise, returns false.
-func fileExists(path string) bool {
-	if _, err := os.Stat(path); err == nil {
-		return true
-	} else if errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-	// Conservatively return true if os.Stat fails
-	// for some other reason.
-	return true
 }
 
 type showFlag []string
