@@ -2,206 +2,183 @@ package teamvault_test
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"testing"
 
-	. "github.com/bborbe/assert"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/bborbe/teamvault-utils"
+	"github.com/bborbe/teamvault-utils/mocks"
 )
 
-func TestParseContentWithoutPlaceholder(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	contentWithoutPlaceholder := []byte("hello world")
-	resultContent, err := teamvaultParser.Parse(context.Background(), contentWithoutPlaceholder)
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(resultContent, Is(contentWithoutPlaceholder)); err != nil {
-		t.Fatal(err)
-	}
-}
+var _ = Describe("Parser", func() {
+	var ctx context.Context
+	var err error
+	var parser teamvault.ConfigParser
+	var connector *mocks.Connector
+	var content []byte
+	var result []byte
+	BeforeEach(func() {
+		ctx = context.Background()
+		connector = &mocks.Connector{}
+		parser = teamvault.NewParser(connector)
+	})
+	Context("Parse", func() {
+		JustBeforeEach(func() {
+			result, err = parser.Parse(ctx, content)
+		})
+		Context("content without placeholder", func() {
+			BeforeEach(func() {
+				content = []byte("hello world")
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal(content))
+			})
+		})
+		Context("content teamvault user", func() {
+			BeforeEach(func() {
+				connector.UserReturns("myuser", nil)
+				content = []byte(`{{ "key123" | teamvaultUser }}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("myuser")))
+			})
+		})
+		Context("content teamvault password", func() {
+			BeforeEach(func() {
+				connector.PasswordReturns("mypass", nil)
+				content = []byte(`{{ "key123" | teamvaultPassword }}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("mypass")))
+			})
+		})
+		Context("content teamvault url", func() {
+			BeforeEach(func() {
+				connector.UrlReturns("http://example.com", nil)
+				content = []byte(`{{ "key123" | teamvaultUrl }}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("http://example.com")))
+			})
+		})
+		Context("content teamvault file", func() {
+			BeforeEach(func() {
+				connector.FileReturns(teamvault.File(base64.URLEncoding.EncodeToString([]byte("my-content"))), nil)
+				content = []byte(`{{ "key123" | teamvaultFile }}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("my-content")))
+			})
+		})
+		Context("content teamvault fileBase64", func() {
+			BeforeEach(func() {
+				connector.FileReturns("YXNkZi1maWxl", nil)
+				content = []byte(`{{ "key123" | teamvaultFileBase64 }}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("YXNkZi1maWxl")))
+			})
+		})
+		Context("content teamvault base64", func() {
+			BeforeEach(func() {
+				content = []byte(`{{ "abc" | base64}}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("YWJj")))
+			})
+		})
+		Context("content teamvault lower", func() {
+			BeforeEach(func() {
+				content = []byte(`{{ "aBc" | lower}}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("abc")))
+			})
+		})
+		Context("content teamvault upper", func() {
+			BeforeEach(func() {
+				content = []byte(`{{ "aBc" | upper}}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("ABC")))
+			})
+		})
+		Context("content teamvault env", func() {
+			BeforeEach(func() {
+				_ = os.Setenv("testEnv", "hello")
+				content = []byte(`{{ "testEnv" | env}}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("hello")))
+			})
+		})
+		Context("content teamvault htpasswd", func() {
+			BeforeEach(func() {
+				connector.UserReturns("myuser", nil)
+				connector.PasswordReturns("mypass", nil)
 
-func TestParseTeamvaultUsername(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultUser }}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("asdf")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseTeamvaultPassword(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultPassword }}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("6Jk10in-e7lYHEQubLMEW1MDb0fcFcw8t4aW5HEgvNI=")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseTeamvaultUrl(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultUrl}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("XsLMyuFYK_HQTI1aoP1u0iX6UdYavwOdQoXINGeG4Ek=")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseTeamvaultFile(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultFile}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("asdf-file")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseTeamvaultFileBase64(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "asdf" | teamvaultFileBase64}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("YXNkZi1maWxl")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseBase64(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "abc" | base64}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("YWJj")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseLower(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "aBc" | lower}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("abc")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseUpper(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "aBc" | upper}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("ABC")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseEnv(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	_ = os.Setenv("testEnv", "hello")
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "testEnv" | env}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is("hello")); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseTeamvaultHtpasswd(t *testing.T) {
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(`{{ "abc" | teamvaultHtpasswd}}`))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(len(resultContent), Gt(0)); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestParseFile(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	path := f.Name()
-	defer func() {
-		_ = os.Remove(path)
-	}()
-	content := "hello world"
-	f.WriteString(content)
-	f.Close()
-
-	teamvaultConnector := teamvault.NewDummyConnector()
-	teamvaultParser := teamvault.NewParser(teamvaultConnector)
-	resultContent, err := teamvaultParser.Parse(context.Background(), []byte(fmt.Sprintf(`{{ "%s" | readfile }}`, path)))
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(string(resultContent), Is(content)); err != nil {
-		t.Fatal(err)
-	}
-}
+				content = []byte(`{{ "abc" | teamvaultHtpasswd}}`)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(HaveLen(68))
+			})
+		})
+		Context("content teamvault file", func() {
+			var f *os.File
+			BeforeEach(func() {
+				f, err = os.CreateTemp("", "")
+				Expect(err).To(BeNil())
+				_, _ = f.WriteString("hello world")
+				_ = f.Close()
+				content = []byte(fmt.Sprintf(`{{ "%s" | readfile }}`, f.Name()))
+			})
+			AfterEach(func() {
+				if f != nil {
+					_ = os.Remove(f.Name())
+				}
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("correct result", func() {
+				Expect(result).To(Equal([]byte("hello world")))
+			})
+		})
+	})
+})

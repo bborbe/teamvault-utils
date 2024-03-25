@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -52,16 +51,18 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 		},
 		"readfile": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("read file for %v", val)
-			if val == nil {
+			switch v := val.(type) {
+			case string:
+				content, err := os.ReadFile(v)
+				if err != nil {
+					glog.V(2).Infof("read file %v failed: %v", val, err)
+					return "", errors.Wrapf(err, "read file %v failed", val)
+				}
+				glog.V(4).Infof("return value %s", content)
+				return string(content), nil
+			default:
 				return "", nil
 			}
-			file, err := ioutil.ReadFile(val.(string))
-			if err != nil {
-				glog.V(2).Infof("read file %v failed: %v", val, err)
-				return "", errors.Wrapf(err, "read file %v failed", val)
-			}
-			glog.V(4).Infof("return value %s", file)
-			return string(file), nil
 		},
 		"teamvaultUser": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("get teamvault value for %v", val)
