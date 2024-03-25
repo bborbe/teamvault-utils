@@ -14,7 +14,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/vuln/internal"
 	"golang.org/x/vuln/internal/govulncheck"
 	"golang.org/x/vuln/internal/osv"
 )
@@ -26,9 +25,11 @@ type findingSummary struct {
 }
 
 type summaryCounters struct {
-	VulnerabilitiesCalled int
-	ModulesCalled         int
-	StdlibCalled          bool
+	VulnerabilitiesCalled   int
+	ModulesCalled           int
+	VulnerabilitiesImported int
+	VulnerabilitiesRequired int
+	StdlibCalled            bool
 }
 
 func fixupFindings(osvs []*osv.Entry, findings []*findingSummary) {
@@ -74,27 +75,13 @@ func groupBy(findings []*findingSummary, compare func(left, right *findingSummar
 	return result
 }
 
-func counters(findings []*findingSummary) summaryCounters {
-	vulns := map[string]struct{}{}
-	modules := map[string]struct{}{}
+func isRequired(findings []*findingSummary) bool {
 	for _, f := range findings {
-		if f.Trace[0].Function == "" {
-			continue
+		if f.Trace[0].Module != "" {
+			return true
 		}
-		id := f.OSV.ID
-		vulns[id] = struct{}{}
-		mod := f.Trace[0].Module
-		modules[mod] = struct{}{}
 	}
-	result := summaryCounters{
-		VulnerabilitiesCalled: len(vulns),
-		ModulesCalled:         len(modules),
-	}
-	if _, found := modules[internal.GoStdModulePath]; found {
-		result.StdlibCalled = true
-		result.ModulesCalled--
-	}
-	return result
+	return false
 }
 
 func isImported(findings []*findingSummary) bool {
@@ -114,6 +101,7 @@ func isCalled(findings []*findingSummary) bool {
 	}
 	return false
 }
+
 func getOSV(osvs []*osv.Entry, id string) *osv.Entry {
 	for _, entry := range osvs {
 		if entry.ID == id {

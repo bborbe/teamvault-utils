@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/bborbe/http/client_builder"
+	libhttp "github.com/bborbe/http"
 	"github.com/golang/glog"
 
 	"github.com/bborbe/teamvault-utils"
@@ -51,10 +51,10 @@ func do(ctx context.Context) error {
 		teamvaultUser = teamvaultConfig.User
 		teamvaultPassword = teamvaultConfig.Password
 	}
-	httpClient := client_builder.New().WithTimeout(5 * time.Second).Build()
+	httpClient := libhttp.NewClientBuilder().WithTimeout(5 * time.Second).Build()
 	var teamvaultConnector teamvault.Connector
 	if !staging {
-		teamvaultConnector = teamvault.NewRemoteConnector(httpClient.Do, teamvaultUrl, teamvaultUser, teamvaultPassword)
+		teamvaultConnector = teamvault.NewRemoteConnector(httpClient, teamvaultUrl, teamvaultUser, teamvaultPassword)
 		if *cachePtr {
 			teamvaultConnector = teamvault.NewDiskFallbackConnector(teamvaultConnector)
 		}

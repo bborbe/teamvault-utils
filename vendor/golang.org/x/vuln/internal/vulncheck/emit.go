@@ -5,6 +5,7 @@
 package vulncheck
 
 import (
+	"go/token"
 	"sort"
 
 	"golang.org/x/tools/go/packages"
@@ -42,21 +43,8 @@ func emitModuleFindings(handler govulncheck.Handler, affVulns affectingVulns) er
 }
 
 // emitPackageFinding emits package-level findings fod vulnerabilities in vulns.
-//
-// It does not emit imported symbols. Only the package information is emitted.
 func emitPackageFindings(handler govulncheck.Handler, vulns []*Vuln) error {
-	emitted := make(map[Vuln]bool)
-	for _, vuln := range vulns {
-		v := Vuln{
-			Package: vuln.Package,
-			OSV:     vuln.OSV,
-		}
-		if emitted[v] {
-			// do not emit the same finding all over again
-			continue
-		}
-		emitted[v] = true
-
+	for _, v := range vulns {
 		if err := handler.Finding(&govulncheck.Finding{
 			OSV:          v.OSV.ID,
 			FixedVersion: FixedVersion(modPath(v.Package.Module), modVersion(v.Package.Module), v.OSV.Affected),
@@ -89,7 +77,7 @@ func emitCallFindings(handler govulncheck.Handler, callstacks map[*Vuln]CallStac
 		if err := handler.Finding(&govulncheck.Finding{
 			OSV:          vuln.OSV.ID,
 			FixedVersion: fixed,
-			Trace:        tracefromEntries(stack),
+			Trace:        traceFromEntries(stack),
 		}); err != nil {
 			return err
 		}
@@ -97,29 +85,44 @@ func emitCallFindings(handler govulncheck.Handler, callstacks map[*Vuln]CallStac
 	return nil
 }
 
-// tracefromEntries creates a sequence of
+// traceFromEntries creates a sequence of
 // frames from vcs. Position of a Frame is the
 // call position of the corresponding stack entry.
-func tracefromEntries(vcs CallStack) []*govulncheck.Frame {
+func traceFromEntries(vcs CallStack) []*govulncheck.Frame {
 	var frames []*govulncheck.Frame
 	for i := len(vcs) - 1; i >= 0; i-- {
 		e := vcs[i]
 		fr := frameFromPackage(e.Function.Package)
 		fr.Function = e.Function.Name
 		fr.Receiver = e.Function.Receiver()
-		if e.Call == nil || e.Call.Pos == nil {
-			fr.Position = nil
-		} else {
-			fr.Position = &govulncheck.Position{
-				Filename: e.Call.Pos.Filename,
-				Offset:   e.Call.Pos.Offset,
-				Line:     e.Call.Pos.Line,
-				Column:   e.Call.Pos.Column,
-			}
-		}
+		isSink := i == (len(vcs) - 1)
+		fr.Position = posFromStackEntry(e, isSink)
 		frames = append(frames, fr)
 	}
 	return frames
+}
+
+func posFromStackEntry(e StackEntry, sink bool) *govulncheck.Position {
+	var p *token.Position
+	if sink && e.Function != nil && e.Function.Pos != nil {
+		// For sinks, i.e., vulns we take the position
+		// of the symbol.
+		p = e.Function.Pos
+	} else if e.Call != nil && e.Call.Pos != nil {
+		// Otherwise, we take the position of
+		// the call statement.
+		p = e.Call.Pos
+	}
+
+	if p == nil {
+		return nil
+	}
+	return &govulncheck.Position{
+		Filename: p.Filename,
+		Offset:   p.Offset,
+		Line:     p.Line,
+		Column:   p.Column,
+	}
 }
 
 func frameFromPackage(pkg *packages.Package) *govulncheck.Frame {
@@ -157,42 +160,4 @@ func frameFromModule(mod *packages.Module, affected []osv.Affected) *govulncheck
 	}
 
 	return fr
-}
-
-func emitBinaryResult(handler govulncheck.Handler, vr *Result, callstacks map[*Vuln]CallStack) error {
-	// first deal with all the affected vulnerabilities
-	emitted := map[string]bool{}
-	for _, vv := range vr.Vulns {
-		fixed := FixedVersion(modPath(vv.Package.Module), modVersion(vv.Package.Module), vv.OSV.Affected)
-		stack := callstacks[vv]
-		if stack == nil {
-			continue
-		}
-		emitted[vv.OSV.ID] = true
-		if err := handler.Finding(&govulncheck.Finding{
-			OSV:          vv.OSV.ID,
-			FixedVersion: fixed,
-			Trace:        tracefromEntries(stack),
-		}); err != nil {
-			return err
-		}
-	}
-	for _, vv := range vr.Vulns {
-		if emitted[vv.OSV.ID] {
-			continue
-		}
-		stacks := callstacks[vv]
-		if len(stacks) != 0 {
-			continue
-		}
-		emitted[vv.OSV.ID] = true
-		if err := handler.Finding(&govulncheck.Finding{
-			OSV:          vv.OSV.ID,
-			FixedVersion: FixedVersion(modPath(vv.Package.Module), modVersion(vv.Package.Module), vv.OSV.Affected),
-			Trace:        []*govulncheck.Frame{frameFromPackage(vv.Package)},
-		}); err != nil {
-			return err
-		}
-	}
-	return nil
 }
