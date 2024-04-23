@@ -7,6 +7,7 @@ package scan
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"golang.org/x/vuln/internal"
@@ -73,13 +74,6 @@ func (h *TextHandler) Show(show []string) {
 			h.showAllVulns = true
 		}
 	}
-}
-
-func Flush(h govulncheck.Handler) error {
-	if th, ok := h.(interface{ Flush() error }); ok {
-		return th.Flush()
-	}
-	return nil
 }
 
 func (h *TextHandler) Flush() error {
@@ -163,16 +157,13 @@ func (h *TextHandler) allVulns(findings []*findingSummary) summaryCounters {
 	stdlibCalled := false
 	for _, findings := range byVuln {
 		switch {
-		case isStdFindings(findings):
-			if isCalled(findings) {
-				called = append(called, findings)
-				stdlibCalled = true
-			} else {
-				required = append(required, findings)
-			}
 		case isCalled(findings):
 			called = append(called, findings)
-			mods[findings[0].Trace[0].Module] = struct{}{}
+			if isStdFindings(findings) {
+				stdlibCalled = true
+			} else {
+				mods[findings[0].Trace[0].Module] = struct{}{}
+			}
 		case isImported(findings):
 			imported = append(imported, findings)
 		default:
@@ -242,13 +233,20 @@ func (h *TextHandler) vulnerability(index int, findings []*findingSummary) {
 	byModule := groupByModule(findings)
 	first := true
 	for _, module := range byModule {
-		//TODO: this assumes all traces on a module are found and fixed at the same versions
+		// Note: there can be several findingSummaries for the same vulnerability
+		// emitted during streaming for different scan levels.
+
+		// The module is same for all finding summaries.
 		lastFrame := module[0].Trace[0]
 		mod := lastFrame.Module
+		// For stdlib, try to show package path as module name where
+		// the scan level allows it.
+		// TODO: should this be done in byModule as well?
 		path := lastFrame.Module
-		if path == internal.GoStdModulePath {
-			path = lastFrame.Package
+		if stdPkg := h.pkg(module); path == internal.GoStdModulePath && stdPkg != "" {
+			path = stdPkg
 		}
+		// All findings on a module are found and fixed at the same version
 		foundVersion := moduleVersionString(lastFrame.Module, lastFrame.Version)
 		fixedVersion := moduleVersionString(lastFrame.Module, module[0].FixedVersion)
 		if !first {
@@ -288,7 +286,29 @@ func (h *TextHandler) vulnerability(index int, findings []*findingSummary) {
 	h.print("\n")
 }
 
+// pkg gives the package information for findings summaries
+// if one exists. This is only used to print package path
+// instead of a module for stdlib vulnerabilities at symbol
+// and package scan level.
+func (h *TextHandler) pkg(summaries []*findingSummary) string {
+	for _, f := range summaries {
+		if pkg := f.Trace[0].Package; pkg != "" {
+			return pkg
+		}
+	}
+	return ""
+}
+
+// traces prints out the most precise trace information
+// found in the given summaries.
 func (h *TextHandler) traces(traces []*findingSummary) {
+	// Sort the traces by the vulnerable symbol. This
+	// guarantees determinism since we are currently
+	// showing only one trace per symbol.
+	sort.SliceStable(traces, func(i, j int) bool {
+		return symbol(traces[i].Trace[0], true) < symbol(traces[j].Trace[0], true)
+	})
+
 	first := true
 	count := 1
 	for _, entry := range traces {

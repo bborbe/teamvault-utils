@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.3.1
+
+- go mod update
+
 ## 4.3.0
 
 - go mod update

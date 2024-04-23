@@ -21,6 +21,19 @@ func ParseTimeOfDay(ctx context.Context, value string) (*TimeOfDay, error) {
 		now := Now()
 		return TimeOfDayFromTime(now).Ptr(), nil
 	}
+	if parts := strings.Split(value, " "); len(parts) == 2 {
+		location, err := stdtime.LoadLocation(parts[1])
+		if err != nil {
+			return nil, errors.Wrapf(ctx, err, "load location '%s' failed", parts[1])
+		}
+		timeOfDay, err := ParseTimeOfDay(ctx, parts[0])
+		if err != nil {
+			return nil, errors.Wrapf(ctx, err, "parse time of day failed")
+		}
+		timeOfDay.Location = location
+		return timeOfDay, nil
+	}
+
 	var err error
 	var t stdtime.Time
 	for _, layout := range []string{

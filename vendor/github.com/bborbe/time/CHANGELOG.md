@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.2.0
+
+- Allow ParseTimeOfDay with Timezone. Example '13:37 Europe/Berlin'
+- go mod update
+
 ## v1.1.1
 
 - fix ParseDuration

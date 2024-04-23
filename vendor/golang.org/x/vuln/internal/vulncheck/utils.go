@@ -18,6 +18,7 @@ import (
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/ssa/ssautil"
 	"golang.org/x/tools/go/types/typeutil"
+	"golang.org/x/vuln/internal"
 	"golang.org/x/vuln/internal/osv"
 	"golang.org/x/vuln/internal/semver"
 
@@ -90,8 +91,40 @@ func callGraph(ctx context.Context, prog *ssa.Program, entries []*ssa.Function) 
 		return nil, err
 	}
 	cg := vta.CallGraph(fslice, vtaCg)
-	cg.DeleteSyntheticNodes()
+	deleteSyntheticNodes(cg)
 	return cg, nil
+}
+
+// deleteSyntheticNodes is like g.DeleteSyntheticNodes except
+// that instantiation of generics, which are also synthetics,
+// are preserved. We want to keep those functions in the
+// call graph for more accurate call stacks.
+func deleteSyntheticNodes(g *callgraph.Graph) {
+	edges := make(map[callgraph.Edge]bool)
+	for _, cgn := range g.Nodes {
+		for _, e := range cgn.Out {
+			edges[*e] = true
+		}
+	}
+	for fn, cgn := range g.Nodes {
+		if cgn == g.Root || fn.Synthetic == "" || isInit(&FuncNode{Name: fn.Name()}) {
+			continue // keep
+		}
+		if fn.Synthetic != "" && fn.Origin() != nil { // added to the original function
+			continue
+		}
+		for _, eIn := range cgn.In {
+			for _, eOut := range cgn.Out {
+				newEdge := callgraph.Edge{Caller: eIn.Caller, Site: eIn.Site, Callee: eOut.Callee}
+				if edges[newEdge] {
+					continue // don't add duplicate
+				}
+				callgraph.AddEdge(eIn.Caller, eIn.Site, eOut.Callee)
+				edges[newEdge] = true
+			}
+		}
+		g.DeleteNode(cgn)
+	}
 }
 
 // dbTypeFormat formats the name of t according how types
@@ -314,4 +347,31 @@ func modVersion(mod *packages.Module) string {
 		return mod.Replace.Version
 	}
 	return mod.Version
+}
+
+// pkgPath returns the path of the f's enclosing package, if any.
+// Otherwise, returns internal.UnknownPackagePath.
+func pkgPath(f *ssa.Function) string {
+	g := f
+	if f.Origin() != nil {
+		// Instantiations of generics do not have
+		// an associated package. We hence look up
+		// the original function for the package.
+		g = f.Origin()
+	}
+	if g.Package() != nil && g.Package().Pkg != nil {
+		return g.Package().Pkg.Path()
+	}
+	return internal.UnknownPackagePath
+}
+func IsStdPackage(pkg string) bool {
+	if pkg == "" || pkg == internal.UnknownPackagePath {
+		return false
+	}
+	// std packages do not have a "." in their path. For instance, see
+	// Contains in pkgsite/+/refs/heads/master/internal/stdlbib/stdlib.go.
+	if i := strings.IndexByte(pkg, '/'); i != -1 {
+		pkg = pkg[:i]
+	}
+	return !strings.Contains(pkg, ".")
 }
