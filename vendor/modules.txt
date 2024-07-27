@@ -7,7 +7,6 @@ github.com/GehirnInc/crypt/internal
 github.com/GehirnInc/crypt/md5_crypt
 # github.com/bborbe/assert v0.0.0-20181116222016-22a6c6341415
 ## explicit
-github.com/bborbe/assert
 # github.com/bborbe/collection v1.4.1
 ## explicit; go 1.22.4
 github.com/bborbe/collection

@@ -11,6 +11,18 @@ import (
 	"github.com/golang/glog"
 )
 
+type SourceDirectory string
+
+func (s SourceDirectory) String() string {
+	return string(s)
+}
+
+type TargetDirectory string
+
+func (t TargetDirectory) String() string {
+	return string(t)
+}
+
 //counterfeiter:generate -o  mocks/config_generator.go --fake-name ConfigGenerator . ConfigGenerator
 type ConfigGenerator interface {
 	Generate(ctx context.Context, sourceDirectory SourceDirectory, targetDirectory TargetDirectory) error

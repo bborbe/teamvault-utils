@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
-type TeamvaultApiUrl string
+type ApiUrl string
 
-func (t TeamvaultApiUrl) String() string {
-	return string(t)
+func (a ApiUrl) String() string {
+	return string(a)
 }
 
-func (t TeamvaultApiUrl) Key() (Key, error) {
-	parts := strings.Split(t.String(), "/")
+func (a ApiUrl) Key() (Key, error) {
+	parts := strings.Split(a.String(), "/")
 	if len(parts) < 3 {
 		return "", fmt.Errorf("parse key form api-url failed")
 	}

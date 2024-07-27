@@ -14,6 +14,24 @@ import (
 	"github.com/golang/glog"
 )
 
+type Url string
+
+func (t Url) String() string {
+	return string(t)
+}
+
+type User string
+
+func (t User) String() string {
+	return string(t)
+}
+
+type Password string
+
+func (t Password) String() string {
+	return string(t)
+}
+
 func NewRemoteConnector(
 	httpClient *http.Client,
 	url Url,
@@ -69,9 +87,9 @@ func (r *remoteConnector) Url(ctx context.Context, key Key) (Url, error) {
 	return response.Url, nil
 }
 
-func (r *remoteConnector) CurrentRevision(ctx context.Context, key Key) (TeamvaultCurrentRevision, error) {
+func (r *remoteConnector) CurrentRevision(ctx context.Context, key Key) (CurrentRevision, error) {
 	var response struct {
-		CurrentRevision TeamvaultCurrentRevision `json:"current_revision"`
+		CurrentRevision CurrentRevision `json:"current_revision"`
 	}
 	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/%s/", r.url.String(), key.String()), nil, http.MethodGet, nil, &response, r.createHeader()); err != nil {
 		return "", err
@@ -103,7 +121,7 @@ func (r *remoteConnector) createHeader() http.Header {
 func (r *remoteConnector) Search(ctx context.Context, search string) ([]Key, error) {
 	var response struct {
 		Results []struct {
-			ApiUrl TeamvaultApiUrl `json:"api_url"`
+			ApiUrl ApiUrl `json:"api_url"`
 		} `json:"results"`
 	}
 	values := url.Values{}

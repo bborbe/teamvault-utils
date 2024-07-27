@@ -2,53 +2,58 @@ package teamvault_test
 
 import (
 	"context"
-	"testing"
 
-	. "github.com/bborbe/assert"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/bborbe/teamvault-utils"
 )
 
-func TestDummyConnctorImplementsConnector(t *testing.T) {
-	c := teamvault.NewDummyConnector()
-	var i *teamvault.Connector
-	if err := AssertThat(c, Implements(i)); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestDummyUser(t *testing.T) {
-	key := teamvault.Key("key123")
-	du := teamvault.NewDummyConnector()
-	user, err := du.User(context.Background(), key)
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(user, Is(teamvault.User("key123"))); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestDummyPassword(t *testing.T) {
-	key := teamvault.Key("key123")
-	du := teamvault.NewDummyConnector()
-	password, err := du.Password(context.Background(), key)
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(password, Is(teamvault.Password("LgIWz7BC2r68P9WTtVJdfFOYrpT2tv_yw95BzhzECiU="))); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestDummyURL(t *testing.T) {
-	key := teamvault.Key("key123")
-	du := teamvault.NewDummyConnector()
-	url, err := du.Url(context.Background(), key)
-	if err := AssertThat(err, NilValue()); err != nil {
-		t.Fatal(err)
-	}
-	if err := AssertThat(url, Is(teamvault.Url("dk9kTUjDqGcvPlvF0ZOovq3sBE-0_-Y62i8mlTX_g1M="))); err != nil {
-		t.Fatal(err)
-	}
-}
+var _ = Describe("", func() {
+	var ctx context.Context
+	var err error
+	var dummyConnector teamvault.Connector
+	BeforeEach(func() {
+		ctx = context.Background()
+		dummyConnector = teamvault.NewDummyConnector()
+	})
+	Context("User", func() {
+		var user teamvault.User
+		JustBeforeEach(func() {
+			key := teamvault.Key("key123")
+			user, err = dummyConnector.User(ctx, key)
+		})
+		It("returns no error", func() {
+			Expect(err).To(BeNil())
+		})
+		It("returns correct user", func() {
+			Expect(user).To(Equal(teamvault.User("key123")))
+		})
+	})
+	Context("Password", func() {
+		var password teamvault.Password
+		JustBeforeEach(func() {
+			key := teamvault.Key("key123")
+			password, err = dummyConnector.Password(ctx, key)
+		})
+		It("returns no error", func() {
+			Expect(err).To(BeNil())
+		})
+		It("returns correct password", func() {
+			Expect(password).To(Equal(teamvault.Password("LgIWz7BC2r68P9WTtVJdfFOYrpT2tv_yw95BzhzECiU=")))
+		})
+	})
+	Context("Url", func() {
+		var url teamvault.Url
+		JustBeforeEach(func() {
+			key := teamvault.Key("key123")
+			url, err = dummyConnector.Url(ctx, key)
+		})
+		It("returns no error", func() {
+			Expect(err).To(BeNil())
+		})
+		It("returns correct password", func() {
+			Expect(url).To(Equal(teamvault.Url("dk9kTUjDqGcvPlvF0ZOovq3sBE-0_-Y62i8mlTX_g1M=")))
+		})
+	})
+})
