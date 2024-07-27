@@ -16,14 +16,14 @@ import (
 
 type Url string
 
-func (t Url) String() string {
-	return string(t)
+func (u Url) String() string {
+	return string(u)
 }
 
 type User string
 
-func (t User) String() string {
-	return string(t)
+func (u User) String() string {
+	return string(u)
 }
 
 type Password string

@@ -35,7 +35,7 @@ func main() {
 }
 
 func do(ctx context.Context) error {
-	teamvaultConnector, err := teamvault.CreateConnector(
+	teamvaultConnector, err := teamvault.CreateConnectorWithConfig(
 		teamvault.TeamvaultConfigPath(*teamvaultConfigPathPtr),
 		teamvault.Url(*teamvaultURLPtr),
 		teamvault.User(*teamvaultUserPtr),

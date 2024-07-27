@@ -97,9 +97,9 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			htpasswd := Htpasswd{
-				Connector: c.teamvaultConnector,
-			}
+			htpasswd := NewHtpasswdGenerator(
+				c.teamvaultConnector,
+			)
 			content, err := htpasswd.Generate(ctx, Key(val.(string)))
 			if err != nil {
 				return "", errors.Wrapf(err, "generate htpasswd failed")

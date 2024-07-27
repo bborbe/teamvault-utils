@@ -8,38 +8,63 @@ import (
 	"github.com/golang/glog"
 )
 
-func CreateConnector(
-	teamvaultConfigPath TeamvaultConfigPath,
-	teamvaultUrl Url,
-	teamvaultUser User,
-	teamvaultPassword Password,
+func CreateConnectorWithConfig(
+	configPath TeamvaultConfigPath,
+	apiURL Url,
+	apiUser User,
+	apiPassword Password,
 	staging Staging,
-	cache bool,
+	cacheEnabled bool,
 ) (Connector, error) {
-	if staging {
-		return NewDummyConnector(), nil
-	}
-	if teamvaultConfigPath.Exists() {
-		teamvaultConfig, err := teamvaultConfigPath.Parse()
+	if configPath.Exists() {
+		config, err := configPath.Parse()
 		if err != nil {
 			glog.V(2).Infof("parse teamvault config failed: %v", err)
 			return nil, err
 		}
-		teamvaultUrl = teamvaultConfig.Url
-		teamvaultUser = teamvaultConfig.User
-		teamvaultPassword = teamvaultConfig.Password
+		apiURL = config.Url
+		apiUser = config.User
+		apiPassword = config.Password
+		cacheEnabled = config.CacheEnabled
 	}
-	var teamvaultConnector Connector
-	teamvaultConnector = NewRemoteConnector(
+	return CreateConnector(
+		apiURL,
+		apiUser,
+		apiPassword,
+		staging,
+		cacheEnabled,
+	), nil
+}
+
+func CreateConnector(
+	apiURL Url,
+	apiUser User,
+	apiPassword Password,
+	staging Staging,
+	cacheEnabled bool,
+) Connector {
+	if staging {
+		return NewDummyConnector()
+	}
+	if cacheEnabled {
+		return NewDiskFallbackConnector(
+			CreateRemoteConnector(apiURL, apiUser, apiPassword),
+		)
+	}
+	return CreateRemoteConnector(apiURL, apiUser, apiPassword)
+}
+
+func CreateRemoteConnector(
+	apiURL Url,
+	apiUser User,
+	apiPassword Password,
+) Connector {
+	return NewRemoteConnector(
 		CreateHttpClient(),
-		teamvaultUrl,
-		teamvaultUser,
-		teamvaultPassword,
+		apiURL,
+		apiUser,
+		apiPassword,
 	)
-	if cache {
-		teamvaultConnector = NewDiskFallbackConnector(teamvaultConnector)
-	}
-	return teamvaultConnector, nil
 }
 
 func CreateHttpClient() *http.Client {

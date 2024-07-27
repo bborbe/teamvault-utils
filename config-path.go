@@ -46,7 +46,7 @@ func (t TeamvaultConfigPath) Exists() bool {
 	return true
 }
 
-func (t TeamvaultConfigPath) Parse() (*TeamvaultConfig, error) {
+func (t TeamvaultConfigPath) Parse() (*Config, error) {
 	path, err := t.NormalizePath()
 	if err != nil {
 		glog.V(2).Infof("normalize path failed: %v", err)
@@ -60,8 +60,8 @@ func (t TeamvaultConfigPath) Parse() (*TeamvaultConfig, error) {
 	return ParseTeamvaultConfig(content)
 }
 
-func ParseTeamvaultConfig(content []byte) (*TeamvaultConfig, error) {
-	config := &TeamvaultConfig{}
+func ParseTeamvaultConfig(content []byte) (*Config, error) {
+	config := &Config{}
 	if err := json.Unmarshal(content, config); err != nil {
 		glog.Warningf("parse config failed: %v", err)
 		return nil, err

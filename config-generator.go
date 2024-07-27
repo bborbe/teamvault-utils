@@ -3,7 +3,6 @@ package teamvault
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,7 +55,7 @@ func (c *configGenerator) Generate(ctx context.Context, sourceDirectory SourceDi
 			glog.V(4).Infof("directory %s created", target)
 			return nil
 		}
-		content, err := ioutil.ReadFile(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			glog.V(2).Infof("read file %s failed: %v", path, err)
 			return err
@@ -66,7 +65,7 @@ func (c *configGenerator) Generate(ctx context.Context, sourceDirectory SourceDi
 			glog.V(2).Infof("replace variables failed: %v", err)
 			return err
 		}
-		if err := ioutil.WriteFile(target, content, 0644); err != nil {
+		if err := os.WriteFile(target, content, 0644); err != nil {
 			glog.V(2).Infof("create file %s failed: %v", target, err)
 			return err
 		}

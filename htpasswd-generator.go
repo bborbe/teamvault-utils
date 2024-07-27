@@ -7,17 +7,27 @@ import (
 	"github.com/golang/glog"
 )
 
-type Htpasswd struct {
-	Connector Connector
+type HtpasswdGenerator interface {
+	Generate(ctx context.Context, key Key) ([]byte, error)
 }
 
-func (c *Htpasswd) Generate(ctx context.Context, key Key) ([]byte, error) {
-	pass, err := c.Connector.Password(ctx, key)
+func NewHtpasswdGenerator(connector Connector) HtpasswdGenerator {
+	return &htpasswdGenerator{
+		connector: connector,
+	}
+}
+
+type htpasswdGenerator struct {
+	connector Connector
+}
+
+func (c *htpasswdGenerator) Generate(ctx context.Context, key Key) ([]byte, error) {
+	pass, err := c.connector.Password(ctx, key)
 	if err != nil {
 		glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
 		return nil, err
 	}
-	user, err := c.Connector.User(ctx, key)
+	user, err := c.connector.User(ctx, key)
 	if err != nil {
 		glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
 		return nil, err
