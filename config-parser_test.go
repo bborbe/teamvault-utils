@@ -23,7 +23,7 @@ var _ = Describe("Parser", func() {
 	BeforeEach(func() {
 		ctx = context.Background()
 		connector = &mocks.Connector{}
-		parser = teamvault.NewParser(connector)
+		parser = teamvault.NewConfigParser(connector)
 	})
 	Context("Parse", func() {
 		JustBeforeEach(func() {

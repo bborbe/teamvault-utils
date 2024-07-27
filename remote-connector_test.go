@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	libhttp "github.com/bborbe/http"
-	"github.com/bborbe/log"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
@@ -29,7 +28,7 @@ var _ = Describe("RemoteConnector", func() {
 		username = "user"
 		password = "pass"
 		remoteConnector = teamvault.NewRemoteConnector(
-			libhttp.CreateDefaultHttpClient(ctx, log.DefaultSamplerFactory),
+			libhttp.CreateDefaultHttpClient(),
 			teamvault.Url(server.URL()),
 			teamvault.User(username),
 			teamvault.Password(password),

@@ -6,11 +6,12 @@ package run
 
 import (
 	"context"
+	stderrors "errors"
 	"io"
 	"sync"
 
+	"github.com/bborbe/errors"
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 )
 
 // ConcurrentRunner allow run N tasks concurrent
@@ -43,7 +44,7 @@ func (c *concurrentRunner) Close() error {
 	select {
 	case <-c.closed:
 		glog.V(3).Infof("already closed => skip")
-		return errors.Errorf("already closed")
+		return stderrors.New("already closed")
 	default:
 		glog.V(3).Infof("close concurrent runner")
 		close(c.closed)
@@ -100,7 +101,7 @@ func (c *concurrentRunner) Run(ctx context.Context) error {
 						if err != nil {
 							select {
 							case <-ctx.Done():
-							case errs <- errors.Wrap(err, "execute fn failed"):
+							case errs <- errors.Wrap(ctx, err, "execute fn failed"):
 							}
 						}
 					}()

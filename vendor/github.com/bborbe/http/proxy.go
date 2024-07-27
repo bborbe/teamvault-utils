@@ -10,16 +10,6 @@ import (
 	"net/url"
 )
 
-type ProxyErrorHandler interface {
-	HandleError(resp http.ResponseWriter, req *http.Request, err error)
-}
-
-type ProxyErrorHandlerFunc func(resp http.ResponseWriter, req *http.Request, err error)
-
-func (p ProxyErrorHandlerFunc) HandleError(resp http.ResponseWriter, req *http.Request, err error) {
-	p(resp, req, err)
-}
-
 func NewProxy(
 	transport http.RoundTripper,
 	apiUrl *url.URL,

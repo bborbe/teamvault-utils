@@ -20,7 +20,7 @@ type configGenerator struct {
 	configParser ConfigParser
 }
 
-func NewGenerator(configParser ConfigParser) ConfigGenerator {
+func NewConfigGenerator(configParser ConfigParser) ConfigGenerator {
 	return &configGenerator{
 		configParser: configParser,
 	}

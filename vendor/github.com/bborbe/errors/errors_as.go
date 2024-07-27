@@ -4,8 +4,14 @@
 
 package errors
 
-import "errors"
+import stderrors "errors"
 
 func As(err error, target any) bool {
-	return errors.As(err, target)
+	if stderrors.As(err, target) {
+		return true
+	}
+	if stderrors.As(Unwrap(err), target) {
+		return true
+	}
+	return false
 }

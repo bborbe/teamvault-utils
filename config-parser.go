@@ -17,16 +17,16 @@ type ConfigParser interface {
 	Parse(ctx context.Context, content []byte) ([]byte, error)
 }
 
-type configParser struct {
-	teamvaultConnector Connector
-}
-
-func NewParser(
+func NewConfigParser(
 	teamvaultConnector Connector,
 ) ConfigParser {
 	return &configParser{
 		teamvaultConnector: teamvaultConnector,
 	}
+}
+
+type configParser struct {
+	teamvaultConnector Connector
 }
 
 func (c *configParser) Parse(ctx context.Context, content []byte) ([]byte, error) {

@@ -14,6 +14,7 @@ func TestTeamvaultApiUrlString(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
 func TestTeamvaultApiUrlKey(t *testing.T) {
 	apiUrl := teamvault.TeamvaultApiUrl("foo")
 	if err := AssertThat(apiUrl.String(), Is("foo")); err != nil {

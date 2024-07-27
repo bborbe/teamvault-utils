@@ -5,15 +5,18 @@
 package errors
 
 func Unwrap(err error) error {
-	switch e := err.(type) {
-	case interface{ Unwrap() error }:
-		return e.Unwrap()
-	case interface{ Unwrap() []error }:
-		if errs := e.Unwrap(); len(errs) > 0 {
-			return errs[0]
+	for {
+		switch e := err.(type) {
+		case interface{ Unwrap() error }:
+			err = e.Unwrap()
+		case interface{ Unwrap() []error }:
+			if errs := e.Unwrap(); len(errs) > 0 {
+				err = errs[0]
+			}
+		case interface{ Cause() error }:
+			err = e.Cause()
+		default:
+			return err
 		}
-		return nil
-	default:
-		return err
 	}
 }

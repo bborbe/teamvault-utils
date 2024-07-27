@@ -61,7 +61,7 @@ func do(ctx context.Context) error {
 	} else {
 		teamvaultConnector = teamvault.NewDummyConnector()
 	}
-	configParser := teamvault.NewParser(teamvaultConnector)
+	configParser := teamvault.NewConfigParser(teamvaultConnector)
 	content, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		return err

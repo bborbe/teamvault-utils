@@ -15,6 +15,10 @@ const dataCtxKey dataCtxKeyType = "data"
 
 var mutex sync.Mutex
 
+func AddContextDataToError(ctx context.Context, err error) error {
+	return AddDataToError(err, DataFromContext(ctx))
+}
+
 func AddToContext(ctx context.Context, key, value string) context.Context {
 	v := ctx.Value(dataCtxKey)
 	if v == nil {

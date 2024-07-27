@@ -2,7 +2,7 @@ package teamvault
 
 import "context"
 
-type Cache struct {
+type cacheConnector struct {
 	Connector Connector
 	Passwords map[Key]Password
 	Users     map[Key]User
@@ -10,8 +10,8 @@ type Cache struct {
 	Files     map[Key]File
 }
 
-func NewCache(connector Connector) Connector {
-	return &Cache{
+func NewCacheConnector(connector Connector) Connector {
+	return &cacheConnector{
 		Connector: connector,
 		Passwords: make(map[Key]Password),
 		Users:     make(map[Key]User),
@@ -20,7 +20,7 @@ func NewCache(connector Connector) Connector {
 	}
 }
 
-func (c *Cache) Password(ctx context.Context, key Key) (Password, error) {
+func (c *cacheConnector) Password(ctx context.Context, key Key) (Password, error) {
 	value, ok := c.Passwords[key]
 	if ok {
 		return value, nil
@@ -32,7 +32,7 @@ func (c *Cache) Password(ctx context.Context, key Key) (Password, error) {
 	return value, err
 }
 
-func (c *Cache) User(ctx context.Context, key Key) (User, error) {
+func (c *cacheConnector) User(ctx context.Context, key Key) (User, error) {
 	value, ok := c.Users[key]
 	if ok {
 		return value, nil
@@ -44,7 +44,7 @@ func (c *Cache) User(ctx context.Context, key Key) (User, error) {
 	return value, err
 }
 
-func (c *Cache) Url(ctx context.Context, key Key) (Url, error) {
+func (c *cacheConnector) Url(ctx context.Context, key Key) (Url, error) {
 	value, ok := c.Urls[key]
 	if ok {
 		return value, nil
@@ -56,7 +56,7 @@ func (c *Cache) Url(ctx context.Context, key Key) (Url, error) {
 	return value, err
 }
 
-func (c *Cache) File(ctx context.Context, key Key) (File, error) {
+func (c *cacheConnector) File(ctx context.Context, key Key) (File, error) {
 	value, ok := c.Files[key]
 	if ok {
 		return value, nil
@@ -68,6 +68,6 @@ func (c *Cache) File(ctx context.Context, key Key) (File, error) {
 	return value, err
 }
 
-func (c *Cache) Search(ctx context.Context, key string) ([]Key, error) {
+func (c *cacheConnector) Search(ctx context.Context, key string) ([]Key, error) {
 	return c.Connector.Search(ctx, key)
 }

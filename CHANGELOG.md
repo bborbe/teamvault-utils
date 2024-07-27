@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.4.0
+
+- refactpr
+- offline config option
+
 ## 4.3.1
 
 - go mod update

@@ -63,8 +63,8 @@ func do(ctx context.Context) error {
 	} else {
 		teamvaultConnector = teamvault.NewDummyConnector()
 	}
-	configParser := teamvault.NewParser(teamvaultConnector)
-	manifestsGenerator := teamvault.NewGenerator(configParser)
+	configParser := teamvault.NewConfigParser(teamvaultConnector)
+	manifestsGenerator := teamvault.NewConfigGenerator(configParser)
 	if err := manifestsGenerator.Generate(ctx, sourceDirectory, targetDirectory); err != nil {
 		return err
 	}

@@ -11,13 +11,15 @@ import (
 	"time"
 
 	"github.com/bborbe/log"
+	libmath "github.com/bborbe/math"
 	"github.com/golang/glog"
 )
 
 func NewRoundTripperRateLimit(
 	ctx context.Context,
 	tripper http.RoundTripper,
-	requestPerSecond int64,
+	maxRequestPerInterval int64,
+	intervalDurarion time.Duration,
 	logSamplerFactory log.SamplerFactory,
 ) http.RoundTripper {
 	logSampler := logSamplerFactory.Sampler()
@@ -25,7 +27,7 @@ func NewRoundTripperRateLimit(
 	var counter int64
 	var mux sync.Mutex
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(intervalDurarion)
 
 	go func() {
 		defer ticker.Stop()
@@ -35,9 +37,7 @@ func NewRoundTripperRateLimit(
 				return
 			case <-ticker.C:
 				mux.Lock()
-				if counter > 0 {
-					counter--
-				}
+				counter = *libmath.Max([]int64{counter - maxRequestPerInterval, 0})
 				mux.Unlock()
 			}
 		}
@@ -46,14 +46,16 @@ func NewRoundTripperRateLimit(
 	return RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		mux.Lock()
 		counter++
-		rateLimitedExceeded := counter > requestPerSecond
-		sleepAmount := time.Second / time.Duration(requestPerSecond) * time.Duration(counter-requestPerSecond)
-		glog.V(3).Infof("counter %d > requestPerSecond %d => rateLimitedExceeded %v", counter, requestPerSecond, rateLimitedExceeded)
+		rateLimitedExceeded := counter > maxRequestPerInterval
+		durationPerRequest := intervalDurarion / time.Duration(maxRequestPerInterval)
+		requestOverflowCounter := counter - maxRequestPerInterval
+		sleepAmount := durationPerRequest * time.Duration(requestOverflowCounter)
+		glog.V(3).Infof("counter %d > requestPerSecond %d => rateLimitedExceeded %v", counter, maxRequestPerInterval, rateLimitedExceeded)
 		mux.Unlock()
 
 		if sleepAmount > 0 {
 			if logSampler.IsSample() {
-				glog.V(2).Infof("rate limit exceeded => sleep for %v (sample)", sleepAmount)
+				glog.V(2).Infof("rate limit exceeded by (%d) => sleep for %v (sample)", requestOverflowCounter, sleepAmount)
 			}
 			select {
 			case <-ctx.Done():
