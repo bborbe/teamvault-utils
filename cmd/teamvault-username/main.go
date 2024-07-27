@@ -5,9 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"runtime"
-	"time"
 
-	libhttp "github.com/bborbe/http"
+	"github.com/bborbe/errors"
 	"github.com/golang/glog"
 
 	"github.com/bborbe/teamvault-utils"
@@ -36,31 +35,18 @@ func main() {
 }
 
 func do(ctx context.Context) error {
-	teamvaultUrl := teamvault.Url(*teamvaultUrlPtr)
-	teamvaultUser := teamvault.User(*teamvaultUserPtr)
-	teamvaultPassword := teamvault.Password(*teamvaultPassPtr)
-	teamvaultConfigPath := teamvault.TeamvaultConfigPath(*teamvaultConfigPathPtr)
-	staging := teamvault.Staging(*stagingPtr)
-	if teamvaultConfigPath.Exists() {
-		teamvaultConfig, err := teamvaultConfigPath.Parse()
-		if err != nil {
-			glog.V(2).Infof("parse teamvault config failed: %v", err)
-			return err
-		}
-		teamvaultUrl = teamvaultConfig.Url
-		teamvaultUser = teamvaultConfig.User
-		teamvaultPassword = teamvaultConfig.Password
+	teamvaultConnector, err := teamvault.CreateConnector(
+		teamvault.TeamvaultConfigPath(*teamvaultConfigPathPtr),
+		teamvault.Url(*teamvaultUrlPtr),
+		teamvault.User(*teamvaultUserPtr),
+		teamvault.Password(*teamvaultPassPtr),
+		teamvault.Staging(*stagingPtr),
+		*cachePtr,
+	)
+	if err != nil {
+		return errors.Wrapf(ctx, err, "create connector failed")
 	}
-	httpClient := libhttp.NewClientBuilder().WithTimeout(5 * time.Second).Build()
-	var teamvaultConnector teamvault.Connector
-	if !staging {
-		teamvaultConnector = teamvault.NewRemoteConnector(httpClient, teamvaultUrl, teamvaultUser, teamvaultPassword)
-		if *cachePtr {
-			teamvaultConnector = teamvault.NewDiskFallbackConnector(teamvaultConnector)
-		}
-	} else {
-		teamvaultConnector = teamvault.NewDummyConnector()
-	}
+
 	result, err := teamvaultConnector.User(ctx, teamvault.Key(*teamvaultKeyPtr))
 	if err != nil {
 		return err

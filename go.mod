@@ -3,6 +3,7 @@ module github.com/bborbe/teamvault-utils
 go 1.22.5
 
 require (
+	github.com/bborbe/errors v1.3.0
 	github.com/bborbe/http v1.4.0
 	github.com/bborbe/io v0.0.0-20180829202151-54b762caaee8
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
@@ -23,7 +24,6 @@ require (
 	github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5 // indirect
 	github.com/bborbe/assert v0.0.0-20181116222016-22a6c6341415 // indirect
 	github.com/bborbe/collection v1.4.1 // indirect
-	github.com/bborbe/errors v1.3.0 // indirect
 	github.com/bborbe/log v1.0.0 // indirect
 	github.com/bborbe/math v1.0.0 // indirect
 	github.com/bborbe/run v1.5.3 // indirect
