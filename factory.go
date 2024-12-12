@@ -1,6 +1,7 @@
 package teamvault
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 )
 
 func CreateConnectorWithConfig(
+	httpClient *http.Client,
 	configPath TeamvaultConfigPath,
 	apiURL Url,
 	apiUser User,
@@ -28,6 +30,7 @@ func CreateConnectorWithConfig(
 		cacheEnabled = config.CacheEnabled
 	}
 	return CreateConnector(
+		httpClient,
 		apiURL,
 		apiUser,
 		apiPassword,
@@ -37,6 +40,7 @@ func CreateConnectorWithConfig(
 }
 
 func CreateConnector(
+	httpClient *http.Client,
 	apiURL Url,
 	apiUser User,
 	apiPassword Password,
@@ -48,25 +52,26 @@ func CreateConnector(
 	}
 	if cacheEnabled {
 		return NewDiskFallbackConnector(
-			CreateRemoteConnector(apiURL, apiUser, apiPassword),
+			CreateRemoteConnector(httpClient, apiURL, apiUser, apiPassword),
 		)
 	}
-	return CreateRemoteConnector(apiURL, apiUser, apiPassword)
+	return CreateRemoteConnector(httpClient, apiURL, apiUser, apiPassword)
 }
 
 func CreateRemoteConnector(
+	httpClient *http.Client,
 	apiURL Url,
 	apiUser User,
 	apiPassword Password,
 ) Connector {
 	return NewRemoteConnector(
-		CreateHttpClient(),
+		httpClient,
 		apiURL,
 		apiUser,
 		apiPassword,
 	)
 }
 
-func CreateHttpClient() *http.Client {
-	return libhttp.NewClientBuilder().WithTimeout(5 * time.Second).Build()
+func CreateHttpClient(ctx context.Context) (*http.Client, error) {
+	return libhttp.NewClientBuilder().WithTimeout(5 * time.Second).Build(ctx)
 }

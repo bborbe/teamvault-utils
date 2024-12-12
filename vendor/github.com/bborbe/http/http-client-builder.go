@@ -7,33 +7,47 @@ package http
 import (
 	"context"
 	"crypto/tls"
-	"errors"
+	stderrors "errors"
 	"net"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/bborbe/errors"
 	"github.com/golang/glog"
 )
 
 type DialFunc func(ctx context.Context, network, address string) (net.Conn, error)
 
 type HttpClientBuilder interface {
-	Build() *http.Client
-	BuildRoundTripper() http.RoundTripper
 	WithProxy() HttpClientBuilder
 	WithoutProxy() HttpClientBuilder
 	WithRedirects() HttpClientBuilder
 	WithoutRedirects() HttpClientBuilder
 	WithTimeout(timeout time.Duration) HttpClientBuilder
 	WithDialFunc(dialFunc DialFunc) HttpClientBuilder
+	WithInsecureSkipVerify(insecureSkipVerify bool) HttpClientBuilder
+	WithClientCert(caCertPath string, clientCertPath string, clientKeyPath string) HttpClientBuilder
+	Build(ctx context.Context) (*http.Client, error)
+	BuildRoundTripper(ctx context.Context) (http.RoundTripper, error)
 }
 
 type httpClientBuilder struct {
-	proxy         Proxy
-	checkRedirect CheckRedirect
-	timeout       time.Duration
-	dialFunc      DialFunc
+	proxy              Proxy
+	checkRedirect      CheckRedirect
+	timeout            time.Duration
+	dialFunc           DialFunc
+	insecureSkipVerify bool
+	caCertPath         string
+	clientCertPath     string
+	clientKeyPath      string
+}
+
+func (h *httpClientBuilder) WithClientCert(caCertPath string, clientCertPath string, clientKeyPath string) HttpClientBuilder {
+	h.caCertPath = caCertPath
+	h.clientCertPath = clientCertPath
+	h.clientKeyPath = clientKeyPath
+	return h
 }
 
 type Proxy func(req *http.Request) (*url.URL, error)
@@ -67,25 +81,39 @@ func (h *httpClientBuilder) BuildDialFunc() DialFunc {
 	}).DialContext
 }
 
-func (h *httpClientBuilder) BuildRoundTripper() http.RoundTripper {
+func (h *httpClientBuilder) BuildRoundTripper(ctx context.Context) (http.RoundTripper, error) {
 	if glog.V(5) {
 		glog.Infof("build http transport")
 	}
+	tlsClientConfig := &tls.Config{}
+	if h.caCertPath != "" && h.clientCertPath != "" && h.clientKeyPath != "" {
+		var err error
+		tlsClientConfig, err = CreateTlsClientConfig(ctx, h.caCertPath, h.clientCertPath, h.clientKeyPath)
+		if err != nil {
+			return nil, errors.Wrapf(ctx, err, "create tls config failed")
+		}
+	}
+	tlsClientConfig.InsecureSkipVerify = h.insecureSkipVerify
 	return &http.Transport{
 		Proxy:           h.proxy,
 		DialContext:     h.BuildDialFunc(),
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+		TLSClientConfig: tlsClientConfig,
+	}, nil
 }
 
-func (h *httpClientBuilder) Build() *http.Client {
+func (h *httpClientBuilder) Build(ctx context.Context) (*http.Client, error) {
 	if glog.V(5) {
 		glog.Infof("build http client")
 	}
-	return &http.Client{
-		Transport:     h.BuildRoundTripper(),
-		CheckRedirect: h.checkRedirect,
+	roundTripper, err := h.BuildRoundTripper(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "build roundTripper failed")
 	}
+
+	return &http.Client{
+		Transport:     roundTripper,
+		CheckRedirect: h.checkRedirect,
+	}, nil
 }
 
 func (h *httpClientBuilder) WithProxy() HttpClientBuilder {
@@ -101,7 +129,7 @@ func (h *httpClientBuilder) WithoutProxy() HttpClientBuilder {
 func (h *httpClientBuilder) WithRedirects() HttpClientBuilder {
 	h.checkRedirect = func(req *http.Request, via []*http.Request) error {
 		if len(via) >= 10 {
-			return errors.New("stopped after 10 redirects")
+			return stderrors.New("stopped after 10 redirects")
 		}
 		return nil
 	}
@@ -111,9 +139,14 @@ func (h *httpClientBuilder) WithRedirects() HttpClientBuilder {
 func (h *httpClientBuilder) WithoutRedirects() HttpClientBuilder {
 	h.checkRedirect = func(req *http.Request, via []*http.Request) error {
 		if len(via) >= 1 {
-			return errors.New("redirects")
+			return stderrors.New("redirects")
 		}
 		return nil
 	}
 	return h
+}
+
+func (h *httpClientBuilder) WithInsecureSkipVerify(insecureSkipVerify bool) HttpClientBuilder {
+	h.insecureSkipVerify = insecureSkipVerify
+	return nil
 }

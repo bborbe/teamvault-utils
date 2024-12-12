@@ -35,7 +35,13 @@ func main() {
 }
 
 func do(ctx context.Context) error {
+	httpClient, err := teamvault.CreateHttpClient(ctx)
+	if err != nil {
+		return errors.Wrapf(ctx, err, "create httpClient failed")
+	}
+
 	teamvaultConnector, err := teamvault.CreateConnectorWithConfig(
+		httpClient,
 		teamvault.TeamvaultConfigPath(*teamvaultConfigPathPtr),
 		teamvault.Url(*teamvaultUrlPtr),
 		teamvault.User(*teamvaultUserPtr),

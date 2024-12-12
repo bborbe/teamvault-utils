@@ -17,7 +17,7 @@ func CreateHttpClient(
 	timeout time.Duration,
 ) *http.Client {
 	return &http.Client{
-		Transport: CreateDefaultTroundTripper(),
+		Transport: CreateDefaultRoundTripper(),
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
