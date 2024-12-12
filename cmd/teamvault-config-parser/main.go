@@ -10,7 +10,7 @@ import (
 	"github.com/bborbe/errors"
 	"github.com/golang/glog"
 
-	"github.com/bborbe/teamvault-utils"
+	"github.com/bborbe/teamvault-utils/v4"
 )
 
 var (

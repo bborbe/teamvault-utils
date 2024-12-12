@@ -11,7 +11,7 @@ import (
 var _ = Describe("Teamvault Config Parser", func() {
 	It("Compiles", func() {
 		var err error
-		_, err = gexec.Build("github.com/bborbe/teamvault-utils/cmd/teamvault-config-parser")
+		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-parser")
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

@@ -5,7 +5,7 @@
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/cmd/teamvault-config-dir-generator
+go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-dir-generator
 ```
 
 Config:
@@ -34,7 +34,7 @@ teamvault-config-dir-generator \
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/cmd/teamvault-config-parser
+go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-parser
 ```
 
 Sample config:
@@ -60,7 +60,7 @@ cat my.config | teamvault-config-parser
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/cmd/teamvault-username
+go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-username
 ```
 
 Run:
@@ -76,7 +76,7 @@ teamvault-username \
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/cmd/teamvault-password
+go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-password
 ```
 
 Run:
@@ -92,7 +92,7 @@ teamvault-password \
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/cmd/teamvault-url
+go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-url
 ```
 
 Run:

@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 
-	"github.com/bborbe/teamvault-utils"
+	"github.com/bborbe/teamvault-utils/v4"
 )
 
 var _ = Describe("RemoteConnector", func() {

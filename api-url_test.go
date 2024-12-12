@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/bborbe/teamvault-utils"
+	"github.com/bborbe/teamvault-utils/v4"
 )
 
 var _ = Describe("ApiUrl", func() {
