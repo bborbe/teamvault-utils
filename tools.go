@@ -12,6 +12,5 @@ import (
 	_ "github.com/incu6us/goimports-reviser"
 	_ "github.com/kisielk/errcheck"
 	_ "github.com/maxbrunsfeld/counterfeiter/v6"
-	_ "golang.org/x/lint/golint"
 	_ "golang.org/x/vuln/cmd/govulncheck"
 )

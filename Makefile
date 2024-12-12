@@ -28,10 +28,7 @@ generate:
 test:
 	go test -mod=vendor -p=1 -cover -race $(shell go list -mod=vendor ./... | grep -v /vendor/)
 
-check: lint vet errcheck vulncheck
-
-lint:
-	go run -mod=vendor golang.org/x/lint/golint -min_confidence 1 $(shell go list -mod=vendor ./... | grep -v /vendor/)
+check: vet errcheck vulncheck
 
 vet:
 	go vet -mod=vendor $(shell go list -mod=vendor ./... | grep -v /vendor/)
