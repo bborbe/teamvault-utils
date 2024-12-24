@@ -12,7 +12,6 @@ import (
 
 	"github.com/bborbe/errors"
 	"github.com/bborbe/parse"
-
 	"github.com/bborbe/validation"
 )
 

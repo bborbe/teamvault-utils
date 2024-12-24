@@ -13,7 +13,6 @@ import (
 
 	"github.com/bborbe/errors"
 	"github.com/bborbe/parse"
-
 	"github.com/bborbe/validation"
 )
 
@@ -190,4 +189,12 @@ func (u UnixTime) UnixMicro() int64 {
 
 func (u UnixTime) Unix() int64 {
 	return u.Time().Unix()
+}
+
+func (u UnixTime) Truncate(duration Duration) UnixTime {
+	return UnixTime(u.Time().Truncate(duration.Duration()))
+}
+
+func (u UnixTime) DateTime() DateTime {
+	return DateTime(u)
 }

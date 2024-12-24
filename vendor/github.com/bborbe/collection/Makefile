@@ -10,20 +10,16 @@ ensure:
 	go mod vendor
 
 format:
-	find . -type f -name '*.go' -not -path './vendor/*' -exec gofmt -w "{}" +
-	find . -type f -name '*.go' -not -path './vendor/*' -exec go run -mod=vendor github.com/incu6us/goimports-reviser -project-name github.com/bborbe/collection -file-path "{}" \;
+	go run -mod=vendor github.com/incu6us/goimports-reviser/v3 -project-name github.com/bborbe/collection -format -excludes vendor ./...
 
 generate:
 	rm -rf mocks avro
 	go generate -mod=vendor ./...
 
 test:
-	go test -mod=vendor -p=1 -cover -race $(shell go list -mod=vendor ./... | grep -v /vendor/)
+	go test -mod=vendor -p=$${GO_TEST_PARALLEL:-1} -cover -race $(shell go list -mod=vendor ./... | grep -v /vendor/)
 
-check: lint vet errcheck vulncheck
-
-lint:
-	go run -mod=vendor golang.org/x/lint/golint -min_confidence 1 $(shell go list -mod=vendor ./... | grep -v /vendor/)
+check: vet errcheck vulncheck
 
 vet:
 	go vet -mod=vendor $(shell go list -mod=vendor ./... | grep -v /vendor/)

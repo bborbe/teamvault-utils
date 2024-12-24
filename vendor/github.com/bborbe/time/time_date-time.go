@@ -12,7 +12,6 @@ import (
 
 	"github.com/bborbe/errors"
 	"github.com/bborbe/parse"
-
 	"github.com/bborbe/validation"
 )
 
@@ -195,16 +194,16 @@ func (d DateTime) Unix() int64 {
 	return d.Time().Unix()
 }
 
-func (d DateTime) Before(stdTime DateTime) bool {
-	return d.Time().Before(stdTime.Time())
+func (d DateTime) Before(dateTime DateTime) bool {
+	return d.Time().Before(dateTime.Time())
 }
 
-func (d DateTime) After(stdTime DateTime) bool {
-	return d.Time().After(stdTime.Time())
+func (d DateTime) After(dateTime DateTime) bool {
+	return d.Time().After(dateTime.Time())
 }
 
-func (d DateTime) Add(duration stdtime.Duration) DateTime {
-	return DateTime(d.Time().Add(duration))
+func (d DateTime) Add(duration Duration) DateTime {
+	return DateTime(d.Time().Add(duration.Duration()))
 }
 
 func (d DateTime) Sub(duration DateTime) Duration {
@@ -226,4 +225,8 @@ func (d *DateTime) ComparePtr(stdTime *DateTime) int {
 		return 1
 	}
 	return d.Compare(*stdTime)
+}
+
+func (d DateTime) Truncate(duration Duration) DateTime {
+	return DateTime(d.Time().Truncate(duration.Duration()))
 }

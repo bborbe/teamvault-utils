@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## 4.4.1
+
+- go mod update
+
 ## 4.4.0
 
 - fix go module to github.com/bborbe/teamvault-utils/v4 

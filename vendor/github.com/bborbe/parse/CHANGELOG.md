@@ -8,9 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.5.0
+
+- add parse int64 array
+- go mod update
+
 ## v1.4.2
 
-- add InvalidTypeError to ParseString 
+- add InvalidTypeError to ParseString
 
 ## v1.4.1
 

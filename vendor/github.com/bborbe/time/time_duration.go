@@ -68,6 +68,17 @@ func ParseDurationDefault(ctx context.Context, value interface{}, defaultValue D
 }
 
 func ParseDuration(ctx context.Context, value interface{}) (*Duration, error) {
+	switch v := value.(type) {
+	case Duration:
+		return v.Ptr(), nil
+	case *Duration:
+		return v, nil
+	case stdtime.Duration:
+		return Duration(v).Ptr(), nil
+	case *stdtime.Duration:
+		return DurationPtr(v), nil
+	}
+
 	str, err := parse.ParseString(ctx, value)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "parse value failed")
@@ -116,6 +127,13 @@ func parseAsDuration(ctx context.Context, value string, unit string) (Duration, 
 	return Duration(i * float64(factor)), nil
 }
 
+func DurationPtr(time *stdtime.Duration) *Duration {
+	if time == nil {
+		return nil
+	}
+	return Duration(*time).Ptr()
+}
+
 type Duration stdtime.Duration
 
 func (d Duration) Duration() stdtime.Duration {
@@ -146,7 +164,28 @@ func (d Duration) String() string {
 		builder.WriteString("d")
 	}
 
-	builder.WriteString(remaining.Duration().String())
+	if hours := remaining / Hour; hours > 0 {
+		remaining = remaining - hours*Hour
+		builder.WriteString(strconv.Itoa(int(hours)))
+		builder.WriteString("h")
+	}
+
+	if minutes := remaining / Minute; minutes > 0 {
+		remaining = remaining - minutes*Minute
+		builder.WriteString(strconv.Itoa(int(minutes)))
+		builder.WriteString("m")
+	}
+
+	if seconds := remaining / Second; seconds > 0 {
+		remaining = remaining - seconds*Second
+		builder.WriteString(strconv.Itoa(int(seconds)))
+		builder.WriteString("s")
+	}
+
+	if remaining > 0 || builder.Len() == 0 {
+		builder.WriteString(remaining.Duration().String())
+	}
+
 	return builder.String()
 }
 
