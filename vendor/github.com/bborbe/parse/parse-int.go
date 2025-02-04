@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/bborbe/errors"
 	"github.com/bborbe/math"
 )
 
@@ -30,7 +29,7 @@ func ParseInt(ctx context.Context, value interface{}) (int, error) {
 	case fmt.Stringer:
 		return strconv.Atoi(v.String())
 	default:
-		return 0, errors.Errorf(ctx, "invalid type")
+		return ParseInt(ctx, fmt.Sprintf("%v", value))
 	}
 }
 

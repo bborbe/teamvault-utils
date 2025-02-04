@@ -8,6 +8,19 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.8.0
+
+- add UpdateErrorHandler
+- add ViewErrorHandler
+- add WithErrorTx
+- add JsonHandler
+- add JsonHandlerTx
+
+## v1.7.1
+
+- add missing license
+- go mod update
+
 ## v1.7.0
 
 - add CheckResponseIsSuccessful

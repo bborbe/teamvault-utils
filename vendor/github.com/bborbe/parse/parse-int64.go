@@ -6,9 +6,9 @@ package parse
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
-	"github.com/bborbe/errors"
 	"github.com/bborbe/math"
 )
 
@@ -27,7 +27,7 @@ func ParseInt64(ctx context.Context, value interface{}) (int64, error) {
 	case string:
 		return strconv.ParseInt(v, 10, 64)
 	default:
-		return 0, errors.Errorf(ctx, "invalid type")
+		return ParseInt64(ctx, fmt.Sprintf("%v", value))
 	}
 }
 

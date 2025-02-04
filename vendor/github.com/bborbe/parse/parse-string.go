@@ -8,6 +8,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/bborbe/errors"
@@ -40,8 +41,16 @@ func ParseString(ctx context.Context, value interface{}) (string, error) {
 	case fmt.Stringer:
 		return v.String(), nil
 	default:
+		if isSubtypeOfString(value) {
+			return ParseString(ctx, fmt.Sprintf("%s", value))
+		}
 		return "", errors.Wrapf(ctx, InvalidTypeError, "parse failed")
 	}
+}
+
+func isSubtypeOfString(value interface{}) bool {
+	t := reflect.TypeOf(value)
+	return t != nil && t.Kind() == reflect.String
 }
 
 func ParseStringDefault(ctx context.Context, value interface{}, defaultValue string) string {

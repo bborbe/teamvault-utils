@@ -6,9 +6,8 @@ package parse
 
 import (
 	"context"
+	"fmt"
 	"strconv"
-
-	"github.com/bborbe/errors"
 )
 
 func ParseFloat64(ctx context.Context, value interface{}) (float64, error) {
@@ -25,8 +24,10 @@ func ParseFloat64(ctx context.Context, value interface{}) (float64, error) {
 		return v, nil
 	case string:
 		return strconv.ParseFloat(v, 64)
+	case fmt.Stringer:
+		return ParseFloat64(ctx, v.String())
 	default:
-		return 0, errors.Errorf(ctx, "invalid type")
+		return ParseFloat64(ctx, fmt.Sprintf("%v", value))
 	}
 }
 

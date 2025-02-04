@@ -6,6 +6,8 @@ package parse
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/bborbe/errors"
 )
@@ -15,14 +17,18 @@ func ParseBool(ctx context.Context, value interface{}) (bool, error) {
 	case bool:
 		return v, nil
 	case string:
-		switch v {
+		switch strings.ToLower(v) {
 		case "true":
 			return true, nil
 		case "false":
 			return false, nil
 		}
+		return false, errors.Errorf(ctx, "invalid type")
+	case fmt.Stringer:
+		return ParseBool(ctx, v.String())
+	default:
+		return ParseBool(ctx, fmt.Sprintf("%v", value))
 	}
-	return false, errors.Errorf(ctx, "invalid type")
 }
 
 func ParseBoolDefault(ctx context.Context, value interface{}, defaultValue bool) bool {

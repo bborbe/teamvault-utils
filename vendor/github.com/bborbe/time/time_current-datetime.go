@@ -16,7 +16,7 @@ type CurrentDateTimeSetter interface {
 	SetNow(now DateTime)
 }
 
-//counterfeiter:generate -o mocks/time-current-time.go --fake-name TimeCurrentDateTime . CurrentDateTime
+//counterfeiter:generate -o mocks/current-time.go --fake-name CurrentDateTime . CurrentDateTime
 type CurrentDateTime interface {
 	CurrentDateTimeGetter
 	CurrentDateTimeSetter
