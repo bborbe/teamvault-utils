@@ -8,112 +8,116 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## 4.4.2
+## v4.4.3
 
 - go mod update
 
-## 4.4.1
+## v4.4.2
 
 - go mod update
 
-## 4.4.0
+## v4.4.1
+
+- go mod update
+
+## v4.4.0
 
 - fix go module to github.com/bborbe/teamvault-utils/v4 
 
-## 4.3.3
+## v4.3.3
 
 - go mod update
 - remove deprecated golint
 
-## 4.3.2
+## v4.3.2
 
 - refactor
 
-## 4.3.1
+## v4.3.1
 
 - go mod update
 
-## 4.3.0
+## v4.3.0
 
 - go mod update
 - inline lib http helper
 - refactor
 
-## 4.2.0
+## v4.2.0
 
 - add cache option for secrets
 
-## 4.1.1
+## v4.1.1
 
 - update all deps
 
-## 4.1.0
+## v4.1.0
 
 - update all deps
 - go version to 1.21
 
-## 4.0.1
+## v4.0.1
 
 - update all deps
 - go version to 1.19
 
-## 4.0.0
+## v4.0.0
 
 - add teamvault-file command
 - remove subpackages
 - use go modules instead dep
 
-## 3.4.0
+## v3.4.0
 
 - add readfile to read content from file
 - add indent method
 
-## 3.3.0
+## v3.3.0
 
 - Add Htpasswd generator 
 
-## 3.2.0
+## v3.2.0
 
 - Add cache connector
 
-## 3.1.1
+## v3.1.1
 
 - Create fallback dirs
 
-## 3.1.0
+## v3.1.0
 
 - Add disk fallback connector
 
-## 3.0.1
+## v3.0.1
 
 - Update deps
 
-## 3.0.0
+## v3.0.0
 
 - Move mode and Connector interface to root
 
-## 2.1.0
+## v2.1.0
 
 - add search method to connector
 
-## 2.0.0
+## v2.0.0
 
 - rename bin to cmd
 - replace unterscore with dash in commands
 - check config file is no directory 
 
-## 1.2.1
+## v1.2.1
 
 - fix commands
 
-## 1.2.0
+## v1.2.0
 
 - add teamvault_username, teamvault_password and teamvault_url command
 
-## 1.1.0
+## v1.1.0
 
 - Add teamvaultHtpasswd
 
-## 1.0.0
+## v1.0.0
 
 - Initial version

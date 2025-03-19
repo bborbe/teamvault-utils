@@ -18,23 +18,45 @@ import (
 
 const PreventRetryHeaderName = "X-Prevent-Retry"
 
+var defaultSkipStatusCodes = []int{
+	400,
+	401,
+	404,
+}
+
 // NewRoundTripperRetry wraps a given RoundTripper and retry the httpRequest with a delay between.
 func NewRoundTripperRetry(
 	roundTripper http.RoundTripper,
 	retryLimit int,
 	retryDelay time.Duration,
 ) http.RoundTripper {
+	return NewRoundTripperRetryWithSkipStatus(
+		roundTripper,
+		retryLimit,
+		retryDelay,
+		defaultSkipStatusCodes,
+	)
+}
+
+func NewRoundTripperRetryWithSkipStatus(
+	roundTripper http.RoundTripper,
+	retryLimit int,
+	retryDelay time.Duration,
+	skipStatusCodes []int,
+) http.RoundTripper {
 	return &retryRoundTripper{
-		roundTripper: roundTripper,
-		retryLimit:   retryLimit,
-		retryDelay:   retryDelay,
+		roundTripper:       roundTripper,
+		retryLimit:         retryLimit,
+		retryDelay:         retryDelay,
+		skipStatusCodesMap: toStatusCodeMap(skipStatusCodes),
 	}
 }
 
 type retryRoundTripper struct {
-	roundTripper http.RoundTripper
-	retryLimit   int
-	retryDelay   time.Duration
+	roundTripper       http.RoundTripper
+	retryLimit         int
+	retryDelay         time.Duration
+	skipStatusCodesMap map[int]bool
 }
 
 func (r *retryRoundTripper) RoundTrip(req *http.Request) (resp *http.Response, err error) {
@@ -79,9 +101,7 @@ func (r *retryRoundTripper) RoundTrip(req *http.Request) (resp *http.Response, e
 			}
 
 			if !(resp.StatusCode < 400 ||
-				resp.StatusCode == 400 ||
-				resp.StatusCode == 401 ||
-				resp.StatusCode == 404 ||
+				r.skipStatusCodesMap[resp.StatusCode] ||
 				r.retryLimit == retryCounter && resp.StatusCode != 502 && resp.StatusCode != 503 && resp.StatusCode != 504) {
 				glog.V(1).Infof("%s request to %s failed with status code %d => retry", reqCloned.Method, removeSensibleArgs(reqCloned.URL.String()), resp.StatusCode)
 				if err := r.delay(ctx); err != nil {
@@ -111,4 +131,12 @@ var removeSensibleArgsRegex = regexp.MustCompile(`hapikey=[^&]+`)
 
 func removeSensibleArgs(value string) string {
 	return removeSensibleArgsRegex.ReplaceAllString(value, "hapikey=***")
+}
+
+func toStatusCodeMap(skipStatusCodes []int) map[int]bool {
+	skipStatusCodesMap := map[int]bool{}
+	for _, code := range skipStatusCodes {
+		skipStatusCodesMap[code] = true
+	}
+	return skipStatusCodesMap
 }
