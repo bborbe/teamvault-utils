@@ -1,3 +1,0 @@
-# Log
-
-Logging utils.
