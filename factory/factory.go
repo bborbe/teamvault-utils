@@ -1,28 +1,29 @@
-package teamvault
+package factory
 
 import (
 	"context"
+	"github.com/bborbe/errors"
 	"net/http"
 	"time"
 
 	libhttp "github.com/bborbe/http"
-	"github.com/golang/glog"
+	"github.com/bborbe/teamvault-utils/v4"
 )
 
 func CreateConnectorWithConfig(
+	ctx context.Context,
 	httpClient *http.Client,
-	configPath TeamvaultConfigPath,
-	apiURL Url,
-	apiUser User,
-	apiPassword Password,
-	staging Staging,
+	configPath teamvault.TeamvaultConfigPath,
+	apiURL teamvault.Url,
+	apiUser teamvault.User,
+	apiPassword teamvault.Password,
+	staging teamvault.Staging,
 	cacheEnabled bool,
-) (Connector, error) {
+) (teamvault.Connector, error) {
 	if configPath.Exists() {
 		config, err := configPath.Parse()
 		if err != nil {
-			glog.V(2).Infof("parse teamvault config failed: %v", err)
-			return nil, err
+			return nil, errors.Wrapf(ctx, err, "parse teamvault config failed")
 		}
 		apiURL = config.Url
 		apiUser = config.User
@@ -41,17 +42,17 @@ func CreateConnectorWithConfig(
 
 func CreateConnector(
 	httpClient *http.Client,
-	apiURL Url,
-	apiUser User,
-	apiPassword Password,
-	staging Staging,
+	apiURL teamvault.Url,
+	apiUser teamvault.User,
+	apiPassword teamvault.Password,
+	staging teamvault.Staging,
 	cacheEnabled bool,
-) Connector {
+) teamvault.Connector {
 	if staging {
-		return NewDummyConnector()
+		return teamvault.NewDummyConnector()
 	}
 	if cacheEnabled {
-		return NewDiskFallbackConnector(
+		return teamvault.NewDiskFallbackConnector(
 			CreateRemoteConnector(httpClient, apiURL, apiUser, apiPassword),
 		)
 	}
@@ -60,11 +61,11 @@ func CreateConnector(
 
 func CreateRemoteConnector(
 	httpClient *http.Client,
-	apiURL Url,
-	apiUser User,
-	apiPassword Password,
-) Connector {
-	return NewRemoteConnector(
+	apiURL teamvault.Url,
+	apiUser teamvault.User,
+	apiPassword teamvault.Password,
+) teamvault.Connector {
+	return teamvault.NewRemoteConnector(
 		httpClient,
 		apiURL,
 		apiUser,
