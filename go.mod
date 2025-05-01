@@ -3,11 +3,10 @@ module github.com/bborbe/teamvault-utils/v4
 go 1.24.2
 
 require (
-	github.com/bborbe/argument/v2 v2.3.0
 	github.com/bborbe/errors v1.3.0
 	github.com/bborbe/http v1.10.0
 	github.com/bborbe/io v0.0.0-20180829202151-54b762caaee8
-	github.com/bborbe/run v1.7.0
+	github.com/bborbe/service v1.6.2
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/golang/glog v1.2.5
 	github.com/google/addlicense v1.1.1
@@ -23,12 +22,14 @@ require (
 require (
 	github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5 // indirect
 	github.com/actgardner/gogen-avro/v9 v9.2.0 // indirect
+	github.com/bborbe/argument/v2 v2.3.0 // indirect
 	github.com/bborbe/assert v0.0.0-20181116222016-22a6c6341415 // indirect
 	github.com/bborbe/collection v1.9.0 // indirect
 	github.com/bborbe/kv v1.13.1 // indirect
 	github.com/bborbe/log v1.1.0 // indirect
 	github.com/bborbe/math v1.2.0 // indirect
 	github.com/bborbe/parse v1.7.0 // indirect
+	github.com/bborbe/run v1.7.0 // indirect
 	github.com/bborbe/sentry v1.8.0 // indirect
 	github.com/bborbe/time v1.15.1 // indirect
 	github.com/bborbe/validation v1.3.0 // indirect

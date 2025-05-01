@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/bborbe/errors"
+	libservice "github.com/bborbe/service"
 
 	"github.com/bborbe/teamvault-utils/v4"
 	"github.com/bborbe/teamvault-utils/v4/factory"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 	app := &application{}
-	os.Exit(teamvault.Main(context.Background(), app))
+	os.Exit(libservice.MainCmd(context.Background(), app))
 }
 
 type application struct {
