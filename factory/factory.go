@@ -2,11 +2,12 @@ package factory
 
 import (
 	"context"
-	"github.com/bborbe/errors"
 	"net/http"
 	"time"
 
+	"github.com/bborbe/errors"
 	libhttp "github.com/bborbe/http"
+
 	"github.com/bborbe/teamvault-utils/v4"
 )
 
