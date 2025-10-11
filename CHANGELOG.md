@@ -8,6 +8,17 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.6.0
+
+- Add GitHub workflows for CI, Claude Code review, and Claude
+- Add golangci-lint configuration
+- Add key validation with context support
+- Add gosec suppressions for controlled file reads
+- Update dependencies
+- Update Makefile with security checks
+- Update all commands to use libservice.MainCmd
+- Add copyright headers to all files
+
 ## v4.5.3
 
 - use service.MainCmd
