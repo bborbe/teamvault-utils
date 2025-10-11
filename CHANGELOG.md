@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.6.1
+
+- Move NormalizePath function into package (remove external dependency)
+- Remove dependency on github.com/bborbe/io and github.com/bborbe/assert
+- Update Go version to 1.25.2
+
 ## v4.6.0
 
 - Add GitHub workflows for CI, Claude Code review, and Claude

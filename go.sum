@@ -95,16 +95,12 @@ github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuP
 github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
 github.com/bborbe/argument/v2 v2.3.0 h1:QnJnpP0tmPv9RJcDQkpKMkI2lkWfHlYUEj3u+U29yHQ=
 github.com/bborbe/argument/v2 v2.3.0/go.mod h1:/zizKleDAZVW4gpR2jRXWpUcrFMx+aPyHqeYyDg/KQs=
-github.com/bborbe/assert v0.0.0-20181116222016-22a6c6341415 h1:/JFZMMM/HYFeb44D+MSlYTFVI2a9zz2UPK0h9scycxA=
-github.com/bborbe/assert v0.0.0-20181116222016-22a6c6341415/go.mod h1:kASVnwjQZw9E9ne6ofCNXmKseNDlW14YPA+opAL9v18=
 github.com/bborbe/collection v1.10.1 h1:0DoSawhqPolHywFqzcsOBoYIOKt4Q0w+GouovXp9nd4=
 github.com/bborbe/collection v1.10.1/go.mod h1:DU8EJjoLLevdT2QmFy7T/IClPAKU7XeXr1fZlNXFgNw=
 github.com/bborbe/errors v1.3.0 h1:LcCk5WjoH/sN+eBy45MspCYxsYAdrwla2hKePZdHLIM=
 github.com/bborbe/errors v1.3.0/go.mod h1:ZKSsf4/NJYhKkxSgtlLY+2jJa3hW2tbb/lQe3w9qZLM=
 github.com/bborbe/http v1.15.0 h1:fY+9HTEFCR2ytoG5TBjv/w/6YIdurSDuI3QoCWi0l4Y=
 github.com/bborbe/http v1.15.0/go.mod h1:XPyikIyP5oxYF1I7JZoa9mOzyuQ9p0o9ghp8mmdKDSw=
-github.com/bborbe/io v0.0.0-20180829202151-54b762caaee8 h1:wlnAUbX/SI3I5sKG3D7NdlGMlm+JGEpM+5uZ3ZRbcKs=
-github.com/bborbe/io v0.0.0-20180829202151-54b762caaee8/go.mod h1:12dKinTbtiCZfFlwJUPVJl1hWLdD+/iV5w5afFSO+Ew=
 github.com/bborbe/kv v1.15.1 h1:lZzsPZfHAo4+Ov2smU+cFMt7xOb2s02oyKPYzMAdusA=
 github.com/bborbe/kv v1.15.1/go.mod h1:d7C+khh5Ed3o6sJHiWRtVIoRz8A0GNohrD61AYxjT4s=
 github.com/bborbe/log v1.4.1 h1:oGDzDNfoMAk17hVDGX6xuVaO9EonPQhZL9QkuyrUFj8=

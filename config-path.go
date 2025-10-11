@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"os"
 
-	io_util "github.com/bborbe/io/util"
 	"github.com/golang/glog"
 )
 
@@ -19,7 +18,7 @@ func (t TeamvaultConfigPath) String() string {
 }
 
 func (t TeamvaultConfigPath) NormalizePath() (TeamvaultConfigPath, error) {
-	root, err := io_util.NormalizePath(t.String())
+	root, err := NormalizePath(t.String())
 	if err != nil {
 		return "", err
 	}

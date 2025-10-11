@@ -5,7 +5,6 @@ go 1.25.2
 require (
 	github.com/bborbe/errors v1.3.0
 	github.com/bborbe/http v1.15.0
-	github.com/bborbe/io v0.0.0-20180829202151-54b762caaee8
 	github.com/bborbe/service v1.6.2
 	github.com/bborbe/validation v1.3.1
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
@@ -68,7 +67,6 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bborbe/argument/v2 v2.3.0 // indirect
-	github.com/bborbe/assert v0.0.0-20181116222016-22a6c6341415 // indirect
 	github.com/bborbe/collection v1.10.1 // indirect
 	github.com/bborbe/kv v1.15.1 // indirect
 	github.com/bborbe/log v1.4.1 // indirect
