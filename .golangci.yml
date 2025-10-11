@@ -1,0 +1,40 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - unused
+    - revive
+    - gosec
+    - gocyclo
+    - depguard
+    - dupl
+
+linters-settings:
+  depguard:
+    rules:
+      Main:
+        deny:
+          - pkg: "github.com/pkg/erros"
+            desc: "use github.com/bborbe/erros instead"
+
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1019" # allow deprecated in specific cases
+    - linters:
+        - revive
+      path: "_test\\.go$"
+      text: "dot-imports"
+    - linters:
+        - revive
+      text: "unused-parameter"
+    - linters:
+        - revive
+      text: "stutters"
