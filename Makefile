@@ -1,3 +1,14 @@
+
+all: precommit install
+
+install:
+	go build -o $(GOPATH)/bin/teamvault-config-dir-generator cmd/teamvault-config-dir-generator/*
+	go build -o $(GOPATH)/bin/teamvault-config-parser cmd/teamvault-config-parser/*
+	go build -o $(GOPATH)/bin/teamvault-password cmd/teamvault-password/*
+	go build -o $(GOPATH)/bin/teamvault-url cmd/teamvault-url/*
+	go build -o $(GOPATH)/bin/teamvault-username cmd/teamvault-username/*
+	go build -o $(GOPATH)/bin/teamvault-file cmd/teamvault-file/*
+
 default: precommit
 
 precommit: ensure format generate test check addlicense
@@ -49,11 +60,3 @@ lint:
 
 addlicense:
 	go run -mod=mod github.com/google/addlicense -c "Benjamin Borbe" -y $$(date +'%Y') -l bsd $$(find . -name "*.go" -not -path './vendor/*')
-
-install:
-	go build -o $(GOPATH)/bin/teamvault-config-dir-generator cmd/teamvault-config-dir-generator/*
-	go build -o $(GOPATH)/bin/teamvault-config-parser cmd/teamvault-config-parser/*
-	go build -o $(GOPATH)/bin/teamvault-password cmd/teamvault-password/*
-	go build -o $(GOPATH)/bin/teamvault-url cmd/teamvault-url/*
-	go build -o $(GOPATH)/bin/teamvault-username cmd/teamvault-username/*
-	go build -o $(GOPATH)/bin/teamvault-file cmd/teamvault-file/*
