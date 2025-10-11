@@ -10,7 +10,7 @@ package tools
 import (
 	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	_ "github.com/google/addlicense"
-	_ "github.com/google/osv-scanner/cmd/osv-scanner"
+	_ "github.com/google/osv-scanner/v2/cmd/osv-scanner"
 	_ "github.com/incu6us/goimports-reviser/v3"
 	_ "github.com/kisielk/errcheck"
 	_ "github.com/maxbrunsfeld/counterfeiter/v6"

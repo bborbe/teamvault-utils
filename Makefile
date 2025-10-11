@@ -47,7 +47,13 @@ vulncheck:
 	go run -mod=mod golang.org/x/vuln/cmd/govulncheck $(shell go list -mod=mod ./... | grep -v /vendor/)
 
 osv-scanner:
-	go run -mod=mod github.com/google/osv-scanner/cmd/osv-scanner -r .
+	@if [ -f .osv-scanner.toml ]; then \
+		echo "Using .osv-scanner.toml"; \
+		go run -mod=mod github.com/google/osv-scanner/v2/cmd/osv-scanner --config .osv-scanner.toml --recursive .; \
+	else \
+		echo "No config found, running default scan"; \
+		go run -mod=mod github.com/google/osv-scanner/v2/cmd/osv-scanner --recursive .; \
+	fi
 
 gosec:
 	go run -mod=mod github.com/securego/gosec/v2/cmd/gosec -exclude=G104 ./...

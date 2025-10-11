@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.6.2
+
+- Add `make all` target to run precommit checks and install binaries
+- Reorganize Makefile structure
+- Update dependencies
+
 ## v4.6.1
 
 - Move NormalizePath function into package (remove external dependency)
