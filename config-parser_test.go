@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package teamvault_test
 
 import (
@@ -78,7 +82,10 @@ var _ = Describe("Parser", func() {
 		})
 		Context("content teamvault file", func() {
 			BeforeEach(func() {
-				connector.FileReturns(teamvault.File(base64.URLEncoding.EncodeToString([]byte("my-content"))), nil)
+				connector.FileReturns(
+					teamvault.File(base64.URLEncoding.EncodeToString([]byte("my-content"))),
+					nil,
+				)
 				content = []byte(`{{ "key123" | teamvaultFile }}`)
 			})
 			It("returns no error", func() {

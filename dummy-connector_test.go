@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package teamvault_test
 
 import (
@@ -40,7 +44,9 @@ var _ = Describe("", func() {
 			Expect(err).To(BeNil())
 		})
 		It("returns correct password", func() {
-			Expect(password).To(Equal(teamvault.Password("LgIWz7BC2r68P9WTtVJdfFOYrpT2tv_yw95BzhzECiU=")))
+			Expect(
+				password,
+			).To(Equal(teamvault.Password("LgIWz7BC2r68P9WTtVJdfFOYrpT2tv_yw95BzhzECiU=")))
 		})
 	})
 	Context("Url", func() {

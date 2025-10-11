@@ -411,16 +411,6 @@ func (fake *Connector) UserReturnsOnCall(i int, result1 teamvault.User, result2 
 func (fake *Connector) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.fileMutex.RLock()
-	defer fake.fileMutex.RUnlock()
-	fake.passwordMutex.RLock()
-	defer fake.passwordMutex.RUnlock()
-	fake.searchMutex.RLock()
-	defer fake.searchMutex.RUnlock()
-	fake.urlMutex.RLock()
-	defer fake.urlMutex.RUnlock()
-	fake.userMutex.RLock()
-	defer fake.userMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

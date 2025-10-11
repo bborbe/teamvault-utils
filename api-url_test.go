@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package teamvault_test
 
 import (
@@ -21,22 +25,29 @@ var _ = Describe("ApiUrl", func() {
 			Expect(result).To(Equal("foo"))
 		})
 	})
-	DescribeTable("parse key", func(
-		apiUrl teamvault.ApiUrl,
-		expectedError bool,
-		expectedKey teamvault.Key,
-	) {
-		key, err := apiUrl.Key()
-		if expectedError {
-			Expect(err).NotTo(BeNil())
-		} else {
-			Expect(err).To(BeNil())
-			Expect(key).To(Equal(expectedKey))
-		}
-	},
+	DescribeTable(
+		"parse key",
+		func(
+			apiUrl teamvault.ApiUrl,
+			expectedError bool,
+			expectedKey teamvault.Key,
+		) {
+			key, err := apiUrl.Key()
+			if expectedError {
+				Expect(err).NotTo(BeNil())
+			} else {
+				Expect(err).To(BeNil())
+				Expect(key).To(Equal(expectedKey))
+			}
+		},
 		Entry("empty", teamvault.ApiUrl(""), true, teamvault.Key("")),
 		Entry("slash", teamvault.ApiUrl("/"), true, teamvault.Key("")),
 		Entry("two slashes", teamvault.ApiUrl("hello/my/world"), false, teamvault.Key("my")),
-		Entry("valid url", teamvault.ApiUrl("https://teamvault.example.com/api/secrets/key123/"), false, teamvault.Key("key123")),
+		Entry(
+			"valid url",
+			teamvault.ApiUrl("https://teamvault.example.com/api/secrets/key123/"),
+			false,
+			teamvault.Key("key123"),
+		),
 	)
 })

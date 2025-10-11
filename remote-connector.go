@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package teamvault
 
 import (
@@ -113,7 +117,15 @@ func (r *remoteConnector) File(ctx context.Context, key Key) (File, error) {
 
 func (r *remoteConnector) createHeader() http.Header {
 	httpHeader := make(http.Header)
-	httpHeader.Add("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", r.user.String(), r.pass.String())))))
+	httpHeader.Add(
+		"Authorization",
+		fmt.Sprintf(
+			"Basic %s",
+			base64.StdEncoding.EncodeToString(
+				[]byte(fmt.Sprintf("%s:%s", r.user.String(), r.pass.String())),
+			),
+		),
+	)
 	httpHeader.Add("Content-Type", "application/json")
 	return httpHeader
 }
@@ -140,7 +152,15 @@ func (r *remoteConnector) Search(ctx context.Context, search string) ([]Key, err
 	return result, nil
 }
 
-func (r *remoteConnector) call(ctx context.Context, url string, values url.Values, method string, request interface{}, response interface{}, headers http.Header) error {
+func (r *remoteConnector) call(
+	ctx context.Context,
+	url string,
+	values url.Values,
+	method string,
+	request interface{},
+	response interface{},
+	headers http.Header,
+) error {
 	if values != nil {
 		url = fmt.Sprintf("%s?%s", url, values.Encode())
 	}

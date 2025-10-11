@@ -100,8 +100,6 @@ func (fake *ConfigParser) ParseReturnsOnCall(i int, result1 []byte, result2 erro
 func (fake *ConfigParser) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.parseMutex.RLock()
-	defer fake.parseMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

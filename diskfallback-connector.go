@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package teamvault
 
 import (
@@ -102,5 +106,8 @@ func write(key Key, kind string, content []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "mkdir %s failed")
 	}
-	return errors.Wrap(ioutil.WriteFile(cachefile(key, kind), content, 0600), "write cache file failed")
+	return errors.Wrap(
+		ioutil.WriteFile(cachefile(key, kind), content, 0600),
+		"write cache file failed",
+	)
 }

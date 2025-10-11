@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package teamvault_test
 
 import (
@@ -43,17 +47,25 @@ var _ = Describe("RemoteConnector", func() {
 			result, err = remoteConnector.User(ctx, key)
 		})
 		BeforeEach(func() {
-			server.RouteToHandler(http.MethodGet, "/api/secrets/key123/", func(resp http.ResponseWriter, req *http.Request) {
-				argUsername, argPassword, ok := req.BasicAuth()
-				Expect(ok).To(BeTrue())
-				Expect(argUsername).To(Equal(username))
-				Expect(argPassword).To(Equal(password))
-				resp.WriteHeader(http.StatusOK)
-				fmt.Fprintf(resp, `{"username":"myuser"}`)
-			})
-			server.RouteToHandler(http.MethodGet, "/api/method/login", func(resp http.ResponseWriter, req *http.Request) {
-				resp.WriteHeader(http.StatusOK)
-			})
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/key123/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(resp, `{"username":"myuser"}`)
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/method/login",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+				},
+			)
 		})
 		It("returns no error", func() {
 			Expect(err).To(BeNil())
@@ -69,25 +81,41 @@ var _ = Describe("RemoteConnector", func() {
 			result, err = remoteConnector.Password(ctx, key)
 		})
 		BeforeEach(func() {
-			server.RouteToHandler(http.MethodGet, "/api/secrets/key123/", func(resp http.ResponseWriter, req *http.Request) {
-				argUsername, argPassword, ok := req.BasicAuth()
-				Expect(ok).To(BeTrue())
-				Expect(argUsername).To(Equal(username))
-				Expect(argPassword).To(Equal(password))
-				resp.WriteHeader(http.StatusOK)
-				fmt.Fprintf(resp, `{"current_revision":"%s/api/secret-revisions/ref123/"}`, server.URL())
-			})
-			server.RouteToHandler(http.MethodGet, "/api/secret-revisions/ref123/data", func(resp http.ResponseWriter, req *http.Request) {
-				argUsername, argPassword, ok := req.BasicAuth()
-				Expect(ok).To(BeTrue())
-				Expect(argUsername).To(Equal(username))
-				Expect(argPassword).To(Equal(password))
-				resp.WriteHeader(http.StatusOK)
-				fmt.Fprintf(resp, `{"password":"S3CR3T"}`)
-			})
-			server.RouteToHandler(http.MethodGet, "/api/method/login", func(resp http.ResponseWriter, req *http.Request) {
-				resp.WriteHeader(http.StatusOK)
-			})
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/key123/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(
+						resp,
+						`{"current_revision":"%s/api/secret-revisions/ref123/"}`,
+						server.URL(),
+					)
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secret-revisions/ref123/data",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(resp, `{"password":"S3CR3T"}`)
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/method/login",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+				},
+			)
 		})
 		It("returns no error", func() {
 			Expect(err).To(BeNil())
@@ -103,17 +131,25 @@ var _ = Describe("RemoteConnector", func() {
 			result, err = remoteConnector.Url(ctx, key)
 		})
 		BeforeEach(func() {
-			server.RouteToHandler(http.MethodGet, "/api/secrets/key123/", func(resp http.ResponseWriter, req *http.Request) {
-				argUsername, argPassword, ok := req.BasicAuth()
-				Expect(ok).To(BeTrue())
-				Expect(argUsername).To(Equal(username))
-				Expect(argPassword).To(Equal(password))
-				resp.WriteHeader(http.StatusOK)
-				fmt.Fprintf(resp, `{"url":"http://my.example.com"}`)
-			})
-			server.RouteToHandler(http.MethodGet, "/api/method/login", func(resp http.ResponseWriter, req *http.Request) {
-				resp.WriteHeader(http.StatusOK)
-			})
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/key123/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(resp, `{"url":"http://my.example.com"}`)
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/method/login",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+				},
+			)
 		})
 		It("returns no error", func() {
 			Expect(err).To(BeNil())
@@ -129,14 +165,17 @@ var _ = Describe("RemoteConnector", func() {
 			result, err = remoteConnector.Search(ctx, "searchString")
 		})
 		BeforeEach(func() {
-			server.RouteToHandler(http.MethodGet, "/api/secrets/", func(resp http.ResponseWriter, req *http.Request) {
-				argUsername, argPassword, ok := req.BasicAuth()
-				Expect(ok).To(BeTrue())
-				Expect(argUsername).To(Equal(username))
-				Expect(argPassword).To(Equal(password))
-				Expect(req.FormValue("search")).To(Equal("searchString"))
-				resp.WriteHeader(http.StatusOK)
-				fmt.Fprintf(resp, `
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					Expect(req.FormValue("search")).To(Equal("searchString"))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(resp, `
 					{
 						"count": 1,
 						"next": null,
@@ -165,10 +204,15 @@ var _ = Describe("RemoteConnector", func() {
 						]
 					}
 				`)
-			})
-			server.RouteToHandler(http.MethodGet, "/api/method/login", func(resp http.ResponseWriter, req *http.Request) {
-				resp.WriteHeader(http.StatusOK)
-			})
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/method/login",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+				},
+			)
 		})
 		It("returns no error", func() {
 			Expect(err).To(BeNil())
