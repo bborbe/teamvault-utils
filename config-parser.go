@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package teamvault
 
 import (
@@ -53,6 +57,7 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			glog.V(4).Infof("read file for %v", val)
 			switch v := val.(type) {
 			case string:
+				// #nosec G304 -- file path provided by template user
 				content, err := os.ReadFile(v)
 				if err != nil {
 					glog.V(2).Infof("read file %v failed: %v", val, err)
@@ -70,6 +75,9 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
+			if err := key.Validate(ctx); err != nil {
+				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+			}
 			user, err := c.teamvaultConnector.User(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
@@ -84,6 +92,9 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
+			if err := key.Validate(ctx); err != nil {
+				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+			}
 			pass, err := c.teamvaultConnector.Password(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
@@ -113,6 +124,9 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
+			if err := key.Validate(ctx); err != nil {
+				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+			}
 			pass, err := c.teamvaultConnector.Url(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get url from teamvault for key %v failed: %v", key, err)
@@ -127,6 +141,9 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
+			if err := key.Validate(ctx); err != nil {
+				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+			}
 			file, err := c.teamvaultConnector.File(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
@@ -135,7 +152,11 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			glog.V(4).Infof("return value %s", file.String())
 			content, err := file.Content()
 			if err != nil {
-				return "", errors.Wrapf(err, "get content from teamvault file for key %v failed", key)
+				return "", errors.Wrapf(
+					err,
+					"get content from teamvault file for key %v failed",
+					key,
+				)
 			}
 			return string(content), nil
 		},
@@ -145,6 +166,9 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				return "", nil
 			}
 			key := Key(val.(string))
+			if err := key.Validate(ctx); err != nil {
+				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+			}
 			file, err := c.teamvaultConnector.File(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
