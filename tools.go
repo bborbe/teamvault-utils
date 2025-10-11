@@ -8,9 +8,14 @@
 package tools
 
 import (
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 	_ "github.com/google/addlicense"
-	_ "github.com/incu6us/goimports-reviser"
+	_ "github.com/google/osv-scanner/cmd/osv-scanner"
+	_ "github.com/incu6us/goimports-reviser/v3"
 	_ "github.com/kisielk/errcheck"
 	_ "github.com/maxbrunsfeld/counterfeiter/v6"
+	_ "github.com/securego/gosec/v2/cmd/gosec"
+	_ "github.com/segmentio/golines"
+	_ "golang.org/x/lint/golint"
 	_ "golang.org/x/vuln/cmd/govulncheck"
 )
