@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
@@ -18,12 +22,12 @@ func main() {
 }
 
 type application struct {
-	TeamvaultUrl        string `required:"false" arg:"teamvault-url" env:"TEAMVAULT_URL" usage:"teamvault url"`
-	TeamvaultUser       string `required:"false" arg:"teamvault-user" env:"TEAMVAULT_USER" usage:"teamvault user"`
-	TeamvaultPass       string `required:"false" arg:"teamvault-pass" env:"TEAMVAULT_PASS" usage:"teamvault password" display:"length"`
+	TeamvaultUrl        string `required:"false" arg:"teamvault-url"    env:"TEAMVAULT_URL"    usage:"teamvault url"`
+	TeamvaultUser       string `required:"false" arg:"teamvault-user"   env:"TEAMVAULT_USER"   usage:"teamvault user"`
+	TeamvaultPass       string `required:"false" arg:"teamvault-pass"   env:"TEAMVAULT_PASS"   usage:"teamvault password"            display:"length"`
 	TeamvaultConfigPath string `required:"false" arg:"teamvault-config" env:"TEAMVAULT_CONFIG" usage:"teamvault config"`
-	Staging             bool   `required:"false" arg:"staging" env:"STAGING" usage:"staging status" default:"false"`
-	Cache               bool   `required:"false" arg:"cache" env:"CACHE" usage:"enable teamvault secret cache" default:"false"`
+	Staging             bool   `required:"false" arg:"staging"          env:"STAGING"          usage:"staging status"                                 default:"false"`
+	Cache               bool   `required:"false" arg:"cache"            env:"CACHE"            usage:"enable teamvault secret cache"                  default:"false"`
 }
 
 func (a *application) Run(ctx context.Context) error {

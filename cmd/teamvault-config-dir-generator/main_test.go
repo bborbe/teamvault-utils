@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main_test
 
 import (
@@ -11,7 +15,9 @@ import (
 var _ = Describe("Teamvault Config Dir Generator", func() {
 	It("Compiles", func() {
 		var err error
-		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-dir-generator")
+		_, err = gexec.Build(
+			"github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-dir-generator",
+		)
 		Expect(err).NotTo(HaveOccurred())
 	})
 })
