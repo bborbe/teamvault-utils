@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,10 +11,12 @@ import (
 	"github.com/golang/glog"
 )
 
+// HtpasswdGenerator generates htpasswd formatted credentials from TeamVault secrets.
 type HtpasswdGenerator interface {
 	Generate(ctx context.Context, key Key) ([]byte, error)
 }
 
+// NewHtpasswdGenerator creates a new HtpasswdGenerator with the given Connector.
 func NewHtpasswdGenerator(connector Connector) HtpasswdGenerator {
 	return &htpasswdGenerator{
 		connector: connector,

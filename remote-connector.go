@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,48 +13,58 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 
+	"github.com/bborbe/time"
 	"github.com/golang/glog"
 )
 
+// Url represents a TeamVault URL or secret URL value.
 type Url string
 
+// String returns the string representation of the Url.
 func (u Url) String() string {
 	return string(u)
 }
 
+// User represents a TeamVault username.
 type User string
 
+// String returns the string representation of the User.
 func (u User) String() string {
 	return string(u)
 }
 
+// Password represents a TeamVault password.
 type Password string
 
+// String returns the string representation of the Password.
 func (t Password) String() string {
 	return string(t)
 }
 
+// NewRemoteConnector creates a new Connector that connects to a remote TeamVault instance.
 func NewRemoteConnector(
 	httpClient *http.Client,
 	url Url,
 	user User,
 	pass Password,
+	currentDateTime time.CurrentDateTime,
 ) Connector {
 	return &remoteConnector{
-		httpClient: httpClient,
-		url:        url,
-		user:       user,
-		pass:       pass,
+		httpClient:      httpClient,
+		url:             url,
+		user:            user,
+		pass:            pass,
+		currentDateTime: currentDateTime,
 	}
 }
 
 type remoteConnector struct {
-	url        Url
-	user       User
-	pass       Password
-	httpClient *http.Client
+	url             Url
+	user            User
+	pass            Password
+	httpClient      *http.Client
+	currentDateTime time.CurrentDateTime
 }
 
 func (r *remoteConnector) Password(ctx context.Context, key Key) (Password, error) {
@@ -165,8 +175,9 @@ func (r *remoteConnector) call(
 		url = fmt.Sprintf("%s?%s", url, values.Encode())
 	}
 	glog.V(4).Infof("rest %s to %s", method, url)
-	start := time.Now()
-	defer glog.V(8).Infof("create completed in %dms", time.Now().Sub(start)/time.Millisecond)
+	start := r.currentDateTime.Now()
+	defer glog.V(8).
+		Infof("create completed in %dms", r.currentDateTime.Now().Sub(start)/time.Millisecond)
 	glog.V(8).Infof("send message to %s", url)
 
 	var body io.Reader

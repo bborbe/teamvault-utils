@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	libhttp "github.com/bborbe/http"
+	libtime "github.com/bborbe/time"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
@@ -36,6 +37,7 @@ var _ = Describe("RemoteConnector", func() {
 			teamvault.Url(server.URL()),
 			teamvault.User(username),
 			teamvault.Password(password),
+			libtime.NewCurrentDateTime(),
 		)
 	})
 	AfterEach(func() {

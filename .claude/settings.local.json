@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/bborbe/Documents/workspaces/skeleton/.github/workflows/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

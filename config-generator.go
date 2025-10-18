@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,18 +14,24 @@ import (
 	"github.com/golang/glog"
 )
 
+// SourceDirectory represents the source directory path for configuration generation.
 type SourceDirectory string
 
+// String returns the string representation of the SourceDirectory.
 func (s SourceDirectory) String() string {
 	return string(s)
 }
 
+// TargetDirectory represents the target directory path for configuration generation.
 type TargetDirectory string
 
+// String returns the string representation of the TargetDirectory.
 func (t TargetDirectory) String() string {
 	return string(t)
 }
 
+// ConfigGenerator generates configuration files by parsing templates and replacing TeamVault placeholders.
+//
 //counterfeiter:generate -o  mocks/config_generator.go --fake-name ConfigGenerator . ConfigGenerator
 type ConfigGenerator interface {
 	Generate(
@@ -39,6 +45,7 @@ type configGenerator struct {
 	configParser ConfigParser
 }
 
+// NewConfigGenerator creates a new ConfigGenerator with the given ConfigParser.
 func NewConfigGenerator(configParser ConfigParser) ConfigGenerator {
 	return &configGenerator{
 		configParser: configParser,

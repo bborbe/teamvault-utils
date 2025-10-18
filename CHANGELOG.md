@@ -8,6 +8,16 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.0
+
+- Add comprehensive GoDoc documentation for all exported items
+- Add package-level documentation (doc.go files)
+- Migrate from standard time package to github.com/bborbe/time
+- Update dependencies (glog v1.2.4, golang.org/x/net v0.33.0)
+- Add go-modtool to development tools
+- Update README with library usage examples and API documentation
+- Update license headers with correct year ranges
+
 ## v4.6.3
 
 - Fix security issue: Remove sensitive data from verbose logging (passwords, secrets, files)

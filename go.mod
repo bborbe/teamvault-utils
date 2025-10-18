@@ -5,7 +5,8 @@ go 1.25.3
 require (
 	github.com/bborbe/errors v1.3.1
 	github.com/bborbe/http v1.17.0
-	github.com/bborbe/service v1.6.4
+	github.com/bborbe/service v1.7.1
+	github.com/bborbe/time v1.20.0
 	github.com/bborbe/validation v1.3.3
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/golang/glog v1.2.5
@@ -72,15 +73,14 @@ require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/bborbe/argument/v2 v2.4.3 // indirect
+	github.com/bborbe/argument/v2 v2.7.0 // indirect
 	github.com/bborbe/collection v1.10.2 // indirect
 	github.com/bborbe/kv v1.16.0 // indirect
 	github.com/bborbe/log v1.4.2 // indirect
 	github.com/bborbe/math v1.2.1 // indirect
 	github.com/bborbe/parse v1.8.3 // indirect
-	github.com/bborbe/run v1.7.8 // indirect
-	github.com/bborbe/sentry v1.8.4 // indirect
-	github.com/bborbe/time v1.20.0 // indirect
+	github.com/bborbe/run v1.8.1 // indirect
+	github.com/bborbe/sentry v1.8.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bkielbasa/cyclop v1.2.3 // indirect
 	github.com/blizzy78/varnamelen v0.8.0 // indirect
@@ -202,7 +202,6 @@ require (
 	github.com/hexops/gotextdiff v1.0.3 // indirect
 	github.com/ianlancetaylor/demangle v0.0.0-20250628045327-2d64ad6b7ec5 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/incu6us/goimports-reviser v0.1.6 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.6.8 // indirect
 	github.com/jgautheron/goconst v1.7.1 // indirect
@@ -406,6 +405,6 @@ require (
 )
 
 exclude (
-	golang.org/x/tools v0.38.0
 	cloud.google.com/go v0.26.0
+	golang.org/x/tools v0.38.0
 )

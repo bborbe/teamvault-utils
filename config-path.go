@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,12 +11,15 @@ import (
 	"github.com/golang/glog"
 )
 
+// TeamvaultConfigPath represents a path to a TeamVault configuration file.
 type TeamvaultConfigPath string
 
+// String returns the string representation of the TeamvaultConfigPath.
 func (t TeamvaultConfigPath) String() string {
 	return string(t)
 }
 
+// NormalizePath converts the TeamvaultConfigPath to an absolute path.
 func (t TeamvaultConfigPath) NormalizePath() (TeamvaultConfigPath, error) {
 	root, err := NormalizePath(t.String())
 	if err != nil {
@@ -25,7 +28,7 @@ func (t TeamvaultConfigPath) NormalizePath() (TeamvaultConfigPath, error) {
 	return TeamvaultConfigPath(root), nil
 }
 
-// Exists the backup
+// Exists checks if the TeamvaultConfigPath points to an existing non-empty file.
 func (t TeamvaultConfigPath) Exists() bool {
 	path, err := t.NormalizePath()
 	if err != nil {
@@ -49,6 +52,7 @@ func (t TeamvaultConfigPath) Exists() bool {
 	return true
 }
 
+// Parse reads and parses the TeamVault configuration from the file.
 func (t TeamvaultConfigPath) Parse() (*Config, error) {
 	path, err := t.NormalizePath()
 	if err != nil {
@@ -63,6 +67,7 @@ func (t TeamvaultConfigPath) Parse() (*Config, error) {
 	return ParseTeamvaultConfig(content)
 }
 
+// ParseTeamvaultConfig parses a TeamVault configuration from JSON content.
 func ParseTeamvaultConfig(content []byte) (*Config, error) {
 	config := &Config{}
 	if err := json.Unmarshal(content, config); err != nil {

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,6 +10,7 @@ import (
 
 	"github.com/bborbe/errors"
 	libservice "github.com/bborbe/service"
+	libtime "github.com/bborbe/time"
 
 	"github.com/bborbe/teamvault-utils/v4"
 	"github.com/bborbe/teamvault-utils/v4/factory"
@@ -32,6 +33,8 @@ type application struct {
 }
 
 func (a *application) Run(ctx context.Context) error {
+	currentDateTime := libtime.NewCurrentDateTime()
+
 	httpClient, err := factory.CreateHttpClient(ctx)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "create httpClient failed")
@@ -46,6 +49,7 @@ func (a *application) Run(ctx context.Context) error {
 		teamvault.Password(a.TeamvaultPass),
 		teamvault.Staging(a.Staging),
 		a.Cache,
+		currentDateTime,
 	)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "create connector failed")

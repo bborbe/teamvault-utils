@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,11 +17,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ConfigParser parses configuration templates and replaces TeamVault placeholders with actual values.
+//
 //counterfeiter:generate -o  mocks/config_parser.go --fake-name ConfigParser . ConfigParser
 type ConfigParser interface {
 	Parse(ctx context.Context, content []byte) ([]byte, error)
 }
 
+// NewConfigParser creates a new ConfigParser with the given TeamVault Connector.
 func NewConfigParser(
 	teamvaultConnector Connector,
 ) ConfigParser {

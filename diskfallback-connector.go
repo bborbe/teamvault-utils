@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// NewDiskFallbackConnector creates a new Connector that uses disk cache as fallback when the underlying connector fails.
 func NewDiskFallbackConnector(connector Connector) Connector {
 	return &diskFallback{
 		connector: connector,

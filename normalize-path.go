@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,6 +13,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NormalizePath converts a path to an absolute path, expanding ~ to the home directory.
 func NormalizePath(path string) (string, error) {
 	glog.V(4).Infof("NormalizePath %s", path)
 	if strings.Index(path, "~/") == 0 {
