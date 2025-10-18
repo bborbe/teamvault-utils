@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.6.3
+
+- Fix security issue: Remove sensitive data from verbose logging (passwords, secrets, files)
+- Fix security issue: Add path traversal validation to readfile template function
+- Add exclude directives in go.mod for incompatible versions
+- Update dependencies
+
 ## v4.6.2
 
 - Add `make all` target to run precommit checks and install binaries
