@@ -6,9 +6,9 @@ package teamvault
 
 import "context"
 
-// Connector provides access to TeamVault secrets including passwords, users, URLs, and files.
-//
 //counterfeiter:generate -o  mocks/connector.go --fake-name Connector . Connector
+
+// Connector provides access to TeamVault secrets including passwords, users, URLs, and files.
 type Connector interface {
 	Password(ctx context.Context, key Key) (Password, error)
 	User(ctx context.Context, key Key) (User, error)

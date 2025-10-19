@@ -17,9 +17,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ConfigParser parses configuration templates and replaces TeamVault placeholders with actual values.
-//
 //counterfeiter:generate -o  mocks/config_parser.go --fake-name ConfigParser . ConfigParser
+
+// ConfigParser parses configuration templates and replaces TeamVault placeholders with actual values.
 type ConfigParser interface {
 	Parse(ctx context.Context, content []byte) ([]byte, error)
 }

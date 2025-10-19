@@ -6,7 +6,6 @@ package teamvault
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -99,7 +98,7 @@ func cachedir(key Key) string {
 }
 
 func read(key Key, kind string) ([]byte, error) {
-	return ioutil.ReadFile(cachefile(key, kind))
+	return os.ReadFile(cachefile(key, kind))
 }
 
 func write(key Key, kind string, content []byte) error {
@@ -108,7 +107,7 @@ func write(key Key, kind string, content []byte) error {
 		return errors.Wrap(err, "mkdir %s failed")
 	}
 	return errors.Wrap(
-		ioutil.WriteFile(cachefile(key, kind), content, 0600),
+		os.WriteFile(cachefile(key, kind), content, 0600),
 		"write cache file failed",
 	)
 }

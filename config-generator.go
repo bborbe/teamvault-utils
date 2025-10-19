@@ -30,9 +30,9 @@ func (t TargetDirectory) String() string {
 	return string(t)
 }
 
-// ConfigGenerator generates configuration files by parsing templates and replacing TeamVault placeholders.
-//
 //counterfeiter:generate -o  mocks/config_generator.go --fake-name ConfigGenerator . ConfigGenerator
+
+// ConfigGenerator generates configuration files by parsing templates and replacing TeamVault placeholders.
 type ConfigGenerator interface {
 	Generate(
 		ctx context.Context,

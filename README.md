@@ -374,6 +374,103 @@ make precommit  # Format, test, lint, and check
 
 ---
 
+## Full Example
+
+Here's a complete, runnable example demonstrating real-world usage patterns combining multiple features:
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "net/http"
+    "os"
+
+    teamvault "github.com/bborbe/teamvault-utils/v4"
+    libtime "github.com/bborbe/time"
+)
+
+func main() {
+    ctx := context.Background()
+
+    // Create a cached connector for better performance
+    // The cache connector wraps the remote connector and caches responses
+    connector := teamvault.NewCacheConnector(
+        teamvault.NewRemoteConnector(
+            http.DefaultClient,
+            teamvault.Url("https://teamvault.example.com"),
+            teamvault.User("my-user"),
+            teamvault.Password("my-pass"),
+            libtime.NewCurrentDateTime(),
+        ),
+    )
+
+    // Example 1: Retrieve individual secrets
+    password, err := connector.Password(ctx, teamvault.Key("vLVLbm"))
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error getting password: %v\n", err)
+        os.Exit(1)
+    }
+    fmt.Printf("Retrieved password (length: %d)\n", len(password.String()))
+
+    user, err := connector.User(ctx, teamvault.Key("vLVLbm"))
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error getting user: %v\n", err)
+        os.Exit(1)
+    }
+    fmt.Printf("Retrieved user: %s\n", user.String())
+
+    // Example 2: Parse a configuration template
+    parser := teamvault.NewConfigParser(connector)
+
+    configTemplate := []byte(`
+# Database Configuration
+database:
+  host: {{ "vLVLbm" | teamvaultUrl }}
+  username: {{ "vLVLbm" | teamvaultUser }}
+  password: {{ "vLVLbm" | teamvaultPassword }}
+
+# Application Settings
+app:
+  environment: {{ "production" | env }}
+  debug: false
+`)
+
+    result, err := parser.Parse(ctx, configTemplate)
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error parsing config: %v\n", err)
+        os.Exit(1)
+    }
+
+    fmt.Println("\nGenerated Configuration:")
+    fmt.Println(string(result))
+
+    // Example 3: Generate configuration files from templates
+    generator := teamvault.NewConfigGenerator(parser)
+
+    err = generator.Generate(
+        ctx,
+        teamvault.SourceDirectory("./templates"),
+        teamvault.TargetDirectory("./config"),
+    )
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error generating configs: %v\n", err)
+        os.Exit(1)
+    }
+
+    fmt.Println("\nConfiguration files generated successfully!")
+}
+```
+
+This example demonstrates:
+- Creating a cached connector for performance optimization
+- Retrieving individual secrets (password, user)
+- Parsing configuration templates with TeamVault placeholders
+- Generating multiple configuration files from a template directory
+
+---
+
 ## Testing
 
 Testing code that uses this library is straightforward using the mock connector or dummy connector:

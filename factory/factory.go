@@ -16,6 +16,8 @@ import (
 	"github.com/bborbe/teamvault-utils/v4"
 )
 
+// CreateConnectorWithConfig creates a new TeamVault Connector using configuration from a file or parameters.
+// If the config file exists, it takes precedence over the individual parameters.
 func CreateConnectorWithConfig(
 	ctx context.Context,
 	httpClient *http.Client,
@@ -48,6 +50,8 @@ func CreateConnectorWithConfig(
 	), nil
 }
 
+// CreateConnector creates a new TeamVault Connector based on staging and cache settings.
+// Returns a dummy connector for staging environments, or a disk fallback connector when cache is enabled.
 func CreateConnector(
 	httpClient *http.Client,
 	apiURL teamvault.Url,
@@ -68,6 +72,7 @@ func CreateConnector(
 	return CreateRemoteConnector(httpClient, apiURL, apiUser, apiPassword, currentDateTime)
 }
 
+// CreateRemoteConnector creates a new Connector that communicates directly with a remote TeamVault API.
 func CreateRemoteConnector(
 	httpClient *http.Client,
 	apiURL teamvault.Url,
@@ -84,6 +89,8 @@ func CreateRemoteConnector(
 	)
 }
 
+// CreateHttpClient creates a new HTTP client configured for TeamVault API communication.
+// The client has a default timeout of 5 seconds.
 func CreateHttpClient(ctx context.Context) (*http.Client, error) {
 	return libhttp.NewClientBuilder().WithTimeout(5 * time.Second).Build(ctx)
 }

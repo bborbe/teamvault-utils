@@ -8,6 +8,16 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.1
+
+- Remove deprecated io/ioutil package, use os.ReadFile/WriteFile instead
+- Fix counterfeiter directive placement to keep directives out of GoDoc
+- Update test target to use Ginkgo framework with race detection enabled
+- Add missing GoDoc comments for factory package functions
+- Remove legacy build tag comment (keep only //go:build directive)
+- Simplify Makefile default target (remove explicit default: line)
+- Add comprehensive Full Example section to README demonstrating real-world usage
+
 ## v4.7.0
 
 - Add comprehensive GoDoc documentation for all exported items

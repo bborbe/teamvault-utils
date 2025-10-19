@@ -22,7 +22,6 @@ require (
 	github.com/securego/gosec/v2 v2.22.10
 	github.com/segmentio/golines v0.13.0
 	github.com/shoenig/go-modtool v0.4.0
-	golang.org/x/lint v0.0.0-20241112194109-818c5a804067
 	golang.org/x/vuln v1.1.4
 )
 
@@ -372,6 +371,7 @@ require (
 	golang.org/x/crypto v0.43.0 // indirect
 	golang.org/x/exp v0.0.0-20251002181428-27f1f14c8bb9 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
+	golang.org/x/lint v0.0.0-20241112194109-818c5a804067 // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect

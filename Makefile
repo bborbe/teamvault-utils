@@ -1,6 +1,4 @@
 
-default: precommit
-
 precommit: ensure format generate test check addlicense
 	@echo "ready to commit"
 
@@ -21,8 +19,7 @@ generate:
 
 .PHONY: test
 test:
-	# -race
-	go test -mod=mod -p=$${GO_TEST_PARALLEL:-1} -cover $(shell go list -mod=mod ./... | grep -v /vendor/)
+	go run -mod=mod github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --race --cover --trace
 
 # TODO: enable lint
 # check: lint vet errcheck vulncheck osv-scanner gosec trivy
