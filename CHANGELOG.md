@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.2
+
+- Fix race condition in cache connector by adding sync.RWMutex protection for concurrent map access
+- Add comprehensive concurrent access tests for cache connector with race detection
+- Fix copyright year ranges in doc.go and factory/doc.go to match git history
+- Add coverprofile.out to .gitignore
+
 ## v4.7.1
 
 - Remove deprecated io/ioutil package, use os.ReadFile/WriteFile instead
