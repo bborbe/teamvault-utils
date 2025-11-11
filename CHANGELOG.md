@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.3
+
+- Update Go version to 1.25.4
+- Update dependencies (http v1.21.0, service v1.8.3, osv-scanner v2.2.4, ginkgo v2.27.2, and others)
+
 ## v4.7.2
 
 - Fix race condition in cache connector by adding sync.RWMutex protection for concurrent map access
