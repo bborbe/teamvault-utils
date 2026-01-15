@@ -9,3 +9,4 @@
 coverprofile.out
 *.test
 /.mcp-*
+/.update-logs/
