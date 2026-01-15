@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.5
+
+- Add UnmarshalJSON to User and Password types to handle numeric JSON values
+- Fix TeamVault parsing errors when secrets contain numbers instead of strings
+
 ## v4.7.4
 
 - Update dependencies (http v1.23.0, osv-scanner v2.3.0, goimports-reviser v3.11.0, and others)

@@ -77,6 +77,40 @@ var _ = Describe("RemoteConnector", func() {
 			Expect(result.String()).To(Equal("myuser"))
 		})
 	})
+	Context("Username as number", func() {
+		var result teamvault.User
+		JustBeforeEach(func() {
+			result, err = remoteConnector.User(ctx, key)
+		})
+		BeforeEach(func() {
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/key123/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(resp, `{"username":9876}`)
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/method/login",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+				},
+			)
+		})
+		It("returns no error", func() {
+			Expect(err).To(BeNil())
+		})
+		It("returns username as string", func() {
+			Expect(result).NotTo(BeNil())
+			Expect(result.String()).To(Equal("9876"))
+		})
+	})
 	Context("Password", func() {
 		var result teamvault.Password
 		JustBeforeEach(func() {
@@ -125,6 +159,56 @@ var _ = Describe("RemoteConnector", func() {
 		It("returns password", func() {
 			Expect(result).NotTo(BeNil())
 			Expect(result.String()).To(Equal("S3CR3T"))
+		})
+	})
+	Context("Password as number", func() {
+		var result teamvault.Password
+		JustBeforeEach(func() {
+			result, err = remoteConnector.Password(ctx, key)
+		})
+		BeforeEach(func() {
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/key123/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(
+						resp,
+						`{"current_revision":"%s/api/secret-revisions/ref123/"}`,
+						server.URL(),
+					)
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secret-revisions/ref123/data",
+				func(resp http.ResponseWriter, req *http.Request) {
+					argUsername, argPassword, ok := req.BasicAuth()
+					Expect(ok).To(BeTrue())
+					Expect(argUsername).To(Equal(username))
+					Expect(argPassword).To(Equal(password))
+					resp.WriteHeader(http.StatusOK)
+					fmt.Fprintf(resp, `{"password":5784}`)
+				},
+			)
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/method/login",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+				},
+			)
+		})
+		It("returns no error", func() {
+			Expect(err).To(BeNil())
+		})
+		It("returns password as string", func() {
+			Expect(result).NotTo(BeNil())
+			Expect(result.String()).To(Equal("5784"))
 		})
 	})
 	Context("Url", func() {

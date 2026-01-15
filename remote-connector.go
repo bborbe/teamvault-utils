@@ -34,12 +34,50 @@ func (u User) String() string {
 	return string(u)
 }
 
+// UnmarshalJSON implements json.Unmarshaler to handle both string and number types.
+func (u *User) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as string first
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		*u = User(str)
+		return nil
+	}
+
+	// If that fails, try as number and convert to string
+	var num json.Number
+	if err := json.Unmarshal(data, &num); err == nil {
+		*u = User(num.String())
+		return nil
+	}
+
+	return fmt.Errorf("username must be string or number")
+}
+
 // Password represents a TeamVault password.
 type Password string
 
 // String returns the string representation of the Password.
 func (t Password) String() string {
 	return string(t)
+}
+
+// UnmarshalJSON implements json.Unmarshaler to handle both string and number types.
+func (t *Password) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as string first
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		*t = Password(str)
+		return nil
+	}
+
+	// If that fails, try as number and convert to string
+	var num json.Number
+	if err := json.Unmarshal(data, &num); err == nil {
+		*t = Password(num.String())
+		return nil
+	}
+
+	return fmt.Errorf("password must be string or number")
 }
 
 // NewRemoteConnector creates a new Connector that connects to a remote TeamVault instance.
