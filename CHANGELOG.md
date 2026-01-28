@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.7
+- Update Go to 1.25.6
+- Remove replace and exclude directives from go.mod
+
 ## v4.7.6
 - Add .mcp-* pattern to .gitignore
 
