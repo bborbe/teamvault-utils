@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.8
+
+- Update ginkgo/v2 from v2.27.5 to v2.28.1
+- Update gomega from v1.39.0 to v1.39.1
+- Update golang.org/x tools, mod, net, telemetry
+- Add k8s.io/kube-openapi replace directive
+- Add exclusion list for problematic k8s deps
+
 ## v4.7.7
 - Update Go to 1.25.6
 - Remove replace and exclude directives from go.mod
