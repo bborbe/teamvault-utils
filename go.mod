@@ -1,6 +1,6 @@
 module github.com/bborbe/teamvault-utils/v4
 
-go 1.25.6
+go 1.25.7
 
 require (
 	github.com/bborbe/errors v1.5.1
