@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v4.7.10
 
 - Update Go to 1.26.0 in CI workflow
 - Update dependencies (errors, http, service, time, validation, osv-scanner, goimports-reviser, gosec)
