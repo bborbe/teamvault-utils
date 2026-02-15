@@ -241,7 +241,9 @@ func (r *remoteConnector) call(
 			req.Header.Add(key, value)
 		}
 	}
-	resp, err := r.httpClient.Do(req)
+	resp, err := r.httpClient.Do(
+		req,
+	) // #nosec G704 -- URLs are constructed from configured base URL and API paths, not user input
 	if err != nil {
 		glog.V(2).Infof("execute request failed: %v", err)
 		return err

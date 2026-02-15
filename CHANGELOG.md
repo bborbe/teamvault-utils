@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- Update Go to 1.26.0 in CI workflow
+- Update dependencies (errors, http, service, time, validation, osv-scanner, goimports-reviser, gosec)
+- Add gosec suppression for false positive SSRF warning in HTTP client
+
 ## v4.7.9
 
 - Update GitHub workflows to v1 plugin system
