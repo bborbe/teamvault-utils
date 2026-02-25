@@ -17,7 +17,7 @@ require (
 	github.com/golangci/golangci-lint v1.64.8
 	github.com/google/addlicense v1.2.0
 	github.com/google/osv-scanner/v2 v2.3.3
-	github.com/incu6us/goimports-reviser/v3 v3.12.5
+	github.com/incu6us/goimports-reviser/v3 v3.12.6
 	github.com/kisielk/errcheck v1.9.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
 	github.com/onsi/ginkgo/v2 v2.28.1
