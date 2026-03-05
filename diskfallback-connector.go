@@ -106,6 +106,7 @@ func write(key Key, kind string, content []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "mkdir %s failed")
 	}
+	// #nosec G703 -- path is constructed from controlled cache directory and key
 	return errors.Wrap(
 		os.WriteFile(cachefile(key, kind), content, 0600),
 		"write cache file failed",

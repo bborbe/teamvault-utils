@@ -81,7 +81,7 @@ func (c *configGenerator) Generate(
 				glog.V(4).Infof("directory %s created", target)
 				return nil
 			}
-			// #nosec G304 -- path is controlled by filepath.Walk within sourceDirectory
+			// #nosec G304,G122 -- path is controlled by filepath.Walk within sourceDirectory
 			content, err := os.ReadFile(path)
 			if err != nil {
 				glog.V(2).Infof("read file %s failed: %v", path, err)
@@ -92,6 +92,7 @@ func (c *configGenerator) Generate(
 				glog.V(2).Infof("replace variables failed: %v", err)
 				return err
 			}
+			// #nosec G703 -- target path is derived from filepath.Walk within sourceDirectory
 			if err := os.WriteFile(target, content, 0600); err != nil {
 				glog.V(2).Infof("create file %s failed: %v", target, err)
 				return err
