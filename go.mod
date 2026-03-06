@@ -1,6 +1,6 @@
 module github.com/bborbe/teamvault-utils/v4
 
-go 1.26.0
+go 1.26.1
 
 replace (
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250701173324-9bd5c66d9911
@@ -10,7 +10,7 @@ require (
 	github.com/bborbe/errors v1.5.3
 	github.com/bborbe/http v1.26.3
 	github.com/bborbe/service v1.9.3
-	github.com/bborbe/time v1.24.0
+	github.com/bborbe/time v1.24.1
 	github.com/bborbe/validation v1.4.4
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/golang/glog v1.2.5
@@ -80,11 +80,11 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bborbe/argument/v2 v2.12.3 // indirect
-	github.com/bborbe/collection v1.20.1 // indirect
+	github.com/bborbe/collection v1.20.3 // indirect
 	github.com/bborbe/kv v1.18.1 // indirect
 	github.com/bborbe/log v1.6.2 // indirect
 	github.com/bborbe/math v1.3.1 // indirect
-	github.com/bborbe/parse v1.10.1 // indirect
+	github.com/bborbe/parse v1.10.3 // indirect
 	github.com/bborbe/run v1.9.1 // indirect
 	github.com/bborbe/sentry v1.9.6 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
