@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.15
+
+- Update bborbe/errors to v1.5.4, bborbe/time to v1.25.0
+- Update osv-scanner to v2.3.4, go-git to v5.17.0
+- Update opentelemetry to v1.39.0, grpc to v1.79.3
+- Remove k8s replace directive and exclude blocks
+- Update charmbracelet, docker, golang.org/x packages
+
 ## v4.7.14
 
 - go mod update
