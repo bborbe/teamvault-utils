@@ -10,3 +10,6 @@ coverprofile.out
 *.test
 /.mcp-*
 /.update-logs/
+/.dark-factory.lock
+/prompts/log
+/specs/log
