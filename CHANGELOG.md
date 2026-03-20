@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.7.14
+
+- upgrade golangci-lint from v1 to v2
+- standardize Makefile: add .PHONY declarations, multiline trivy, mocks mkdir
+- update .golangci.yml to v2 format
+- setup dark-factory config
+
 ## v4.7.13
 
 - Update dependencies (gosec v2.24.7, errcheck v1.10.0, time v1.24.0, and others)
