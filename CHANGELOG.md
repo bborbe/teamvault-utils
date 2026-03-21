@@ -8,6 +8,15 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.8.0
+
+- feat: enable golangci-lint in `check` Makefile target
+- chore: update `.golangci.yml` to standard bborbe config with additional linters (nestif, errname, unparam, bodyclose, forcetypeassert, asasalint, prealloc)
+- fix: replace `github.com/pkg/errors` with `github.com/bborbe/errors` in config-parser and diskfallback-connector
+- fix: add `defer resp.Body.Close()` in remote-connector HTTP call
+- fix: use comma-ok type assertion pattern for all `val.(string)` casts in config-parser template functions
+- refactor: simplify `remoteConnector.call` by removing always-same-value `method` and `request` parameters
+
 ## v4.7.16
 
 - chore: verify all tests pass and precommit checks succeed with no issues

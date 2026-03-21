@@ -5,12 +5,10 @@
 package teamvault
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 
@@ -113,7 +111,7 @@ func (r *remoteConnector) Password(ctx context.Context, key Key) (Password, erro
 	var response struct {
 		Password Password `json:"password"`
 	}
-	if err := r.call(ctx, fmt.Sprintf("%sdata", currentRevision.String()), nil, http.MethodGet, nil, &response, r.createHeader()); err != nil {
+	if err := r.call(ctx, fmt.Sprintf("%sdata", currentRevision.String()), nil, &response, r.createHeader()); err != nil {
 		return "", err
 	}
 	return response.Password, nil
@@ -123,7 +121,7 @@ func (r *remoteConnector) User(ctx context.Context, key Key) (User, error) {
 	var response struct {
 		User User `json:"username"`
 	}
-	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/%s/", r.url.String(), key.String()), nil, http.MethodGet, nil, &response, r.createHeader()); err != nil {
+	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/%s/", r.url.String(), key.String()), nil, &response, r.createHeader()); err != nil {
 		return "", err
 	}
 	return response.User, nil
@@ -133,7 +131,7 @@ func (r *remoteConnector) Url(ctx context.Context, key Key) (Url, error) {
 	var response struct {
 		Url Url `json:"url"`
 	}
-	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/%s/", r.url.String(), key.String()), nil, http.MethodGet, nil, &response, r.createHeader()); err != nil {
+	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/%s/", r.url.String(), key.String()), nil, &response, r.createHeader()); err != nil {
 		return "", err
 	}
 	return response.Url, nil
@@ -143,7 +141,7 @@ func (r *remoteConnector) CurrentRevision(ctx context.Context, key Key) (Current
 	var response struct {
 		CurrentRevision CurrentRevision `json:"current_revision"`
 	}
-	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/%s/", r.url.String(), key.String()), nil, http.MethodGet, nil, &response, r.createHeader()); err != nil {
+	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/%s/", r.url.String(), key.String()), nil, &response, r.createHeader()); err != nil {
 		return "", err
 	}
 	return response.CurrentRevision, nil
@@ -157,7 +155,7 @@ func (r *remoteConnector) File(ctx context.Context, key Key) (File, error) {
 	var response struct {
 		File File `json:"file"`
 	}
-	if err := r.call(ctx, fmt.Sprintf("%sdata", rev.String()), nil, http.MethodGet, nil, &response, r.createHeader()); err != nil {
+	if err := r.call(ctx, fmt.Sprintf("%sdata", rev.String()), nil, &response, r.createHeader()); err != nil {
 		return "", err
 	}
 	return response.File, nil
@@ -186,7 +184,7 @@ func (r *remoteConnector) Search(ctx context.Context, search string) ([]Key, err
 	}
 	values := url.Values{}
 	values.Add("search", search)
-	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/", r.url.String()), values, http.MethodGet, nil, &response, r.createHeader()); err != nil {
+	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/", r.url.String()), values, &response, r.createHeader()); err != nil {
 		return nil, err
 	}
 	var result []Key
@@ -204,33 +202,19 @@ func (r *remoteConnector) call(
 	ctx context.Context,
 	url string,
 	values url.Values,
-	method string,
-	request interface{},
 	response interface{},
 	headers http.Header,
 ) error {
 	if values != nil {
 		url = fmt.Sprintf("%s?%s", url, values.Encode())
 	}
-	glog.V(4).Infof("rest %s to %s", method, url)
+	glog.V(4).Infof("rest GET to %s", url)
 	start := r.currentDateTime.Now()
 	defer glog.V(8).
 		Infof("create completed in %dms", r.currentDateTime.Now().Sub(start)/time.Millisecond)
 	glog.V(8).Infof("send message to %s", url)
 
-	var body io.Reader
-	if request != nil {
-		content, err := json.Marshal(request)
-		if err != nil {
-			glog.V(2).Infof("marhal request failed: %v", err)
-			return err
-		}
-		if glog.V(8) {
-			glog.Infof("send request to %s: %s", url, string(content))
-		}
-		body = bytes.NewBuffer(content)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		glog.V(2).Infof("build request failed: %v", err)
 		return err
@@ -248,6 +232,7 @@ func (r *remoteConnector) call(
 		glog.V(2).Infof("execute request failed: %v", err)
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode/100 != 2 {
 		glog.V(2).Infof("request to %s failed with status: %d", url, resp.StatusCode)
 		return fmt.Errorf("request to %s failed with status: %d", url, resp.StatusCode)

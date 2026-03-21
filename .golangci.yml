@@ -15,13 +15,37 @@ linters:
     - gocyclo
     - depguard
     - dupl
+    - nestif
+    - errname
+    - unparam
+    - bodyclose
+    - forcetypeassert
+    - asasalint
+    - prealloc
   settings:
     depguard:
       rules:
         Main:
           deny:
-            - pkg: "github.com/pkg/erros"
-              desc: "use github.com/bborbe/erros instead"
+            - pkg: "github.com/pkg/errors"
+              desc: "use github.com/bborbe/errors instead"
+            - pkg: "github.com/bborbe/argument"
+              desc: "use github.com/bborbe/argument/v2 instead"
+            - pkg: "golang.org/x/net/context"
+              desc: "use context from standard library instead"
+            - pkg: "golang.org/x/lint/golint"
+              desc: "deprecated, use revive or staticcheck instead"
+            - pkg: "io/ioutil"
+              desc: "deprecated since Go 1.16, use io and os packages instead"
+    funlen:
+      lines: 80
+      statements: 50
+    gocognit:
+      min-complexity: 20
+    nestif:
+      min-complexity: 4
+    maintidx:
+      min-maintainability-index: 20
   exclusions:
     presets:
       - comments
@@ -40,7 +64,26 @@ linters:
         text: "unused-parameter"
       - linters:
           - revive
-        text: "stutters"
+        text: "exported"
+      - linters:
+          - revive
+        text: "var-naming"
+      - linters:
+          - gocyclo
+        text: "createFuncMap"
+      - linters:
+          - dupl
+        path: "_test\\.go$"
+      - linters:
+          - unparam
+        path: "_test\\.go$"
+      - linters:
+          - dupl
+        path: "-test-suite\\.go$"
+      - linters:
+          - revive
+        path: "-test-suite\\.go$"
+        text: "dot-imports"
 
 formatters:
   enable:
