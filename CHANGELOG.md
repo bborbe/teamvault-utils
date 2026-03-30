@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.8.1
+
+- Update bborbe/* dependencies (errors, http, service, time, validation, etc.)
+- Bump golangci-lint to v2.11.4, gosec to v2.25.0, osv-scanner to v2.3.5
+- Update opentelemetry to v1.42.0, docker to v28.5.2, containerd to v1.7.30
+- Bump golang.org/x/* packages (crypto, net, sys, tools, etc.)
+- Remove stale exclude block and k8s.io/kube-openapi replace directive
+
 ## v4.8.0
 
 - feat: enable golangci-lint in `check` Makefile target
