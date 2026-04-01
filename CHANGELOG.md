@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.8.3
+
+- Update Go dependencies to latest versions
+- Downgrade several indirect deps to stable releases
+- Add replace directives for anthropic-sdk-go, cellbuf, go-header, go-diskfs, ginkgolinter
+
 ## v4.8.2
 
 - Update dependencies to fix security vulnerabilities (go-git/v5 v5.17.2, buildkit v0.29.0)
