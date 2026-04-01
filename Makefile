@@ -30,10 +30,8 @@ generate:
 test:
 	go run -mod=mod github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --race --cover --trace
 
-# TODO: enable lint
-# check: lint vet errcheck vulncheck osv-scanner gosec trivy
 .PHONY: check
-check: vet errcheck vulncheck osv-scanner gosec trivy
+check: lint vet errcheck vulncheck osv-scanner gosec trivy
 
 .PHONY: lint
 lint:

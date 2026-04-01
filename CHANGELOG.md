@@ -8,6 +8,32 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.8.2
+
+- Update dependencies to fix security vulnerabilities (go-git/v5 v5.17.2, buildkit v0.29.0)
+- Add .trivyignore for docker/docker CVEs
+
+## v4.8.1
+
+- Update bborbe/* dependencies (errors, http, service, time, validation, etc.)
+- Bump golangci-lint to v2.11.4, gosec to v2.25.0, osv-scanner to v2.3.5
+- Update opentelemetry to v1.42.0, docker to v28.5.2, containerd to v1.7.30
+- Bump golang.org/x/* packages (crypto, net, sys, tools, etc.)
+- Remove stale exclude block and k8s.io/kube-openapi replace directive
+
+## v4.8.0
+
+- feat: enable golangci-lint in `check` Makefile target
+- chore: update `.golangci.yml` to standard bborbe config with additional linters (nestif, errname, unparam, bodyclose, forcetypeassert, asasalint, prealloc)
+- fix: replace `github.com/pkg/errors` with `github.com/bborbe/errors` in config-parser and diskfallback-connector
+- fix: add `defer resp.Body.Close()` in remote-connector HTTP call
+- fix: use comma-ok type assertion pattern for all `val.(string)` casts in config-parser template functions
+- refactor: simplify `remoteConnector.call` by removing always-same-value `method` and `request` parameters
+
+## v4.7.16
+
+- chore: verify all tests pass and precommit checks succeed with no issues
+
 ## v4.7.14
 
 - upgrade golangci-lint from v1 to v2

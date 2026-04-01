@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bborbe/errors"
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 )
 
 // NewDiskFallbackConnector creates a new Connector that uses disk cache as fallback when the underlying connector fails.
@@ -34,7 +34,7 @@ func (d *diskFallback) Password(ctx context.Context, key Key) (Password, error) 
 			return Password(content), nil
 		}
 	}
-	if write(key, kind, []byte(content)) != nil {
+	if write(ctx, key, kind, []byte(content)) != nil {
 		glog.Warningf("write teamvault diskfallback failed")
 	}
 	return content, err
@@ -49,7 +49,7 @@ func (d *diskFallback) User(ctx context.Context, key Key) (User, error) {
 			return User(content), nil
 		}
 	}
-	if write(key, kind, []byte(content)) != nil {
+	if write(ctx, key, kind, []byte(content)) != nil {
 		glog.Warningf("write teamvault diskfallback failed")
 	}
 	return content, err
@@ -64,7 +64,7 @@ func (d *diskFallback) Url(ctx context.Context, key Key) (Url, error) {
 			return Url(content), nil
 		}
 	}
-	if write(key, kind, []byte(content)) != nil {
+	if write(ctx, key, kind, []byte(content)) != nil {
 		glog.Warningf("write teamvault diskfallback failed")
 	}
 	return content, err
@@ -79,7 +79,7 @@ func (d *diskFallback) File(ctx context.Context, key Key) (File, error) {
 			return File(content), nil
 		}
 	}
-	if write(key, kind, []byte(content)) != nil {
+	if write(ctx, key, kind, []byte(content)) != nil {
 		glog.Warningf("write teamvault diskfallback failed")
 	}
 	return content, err
@@ -101,13 +101,14 @@ func read(key Key, kind string) ([]byte, error) {
 	return os.ReadFile(cachefile(key, kind))
 }
 
-func write(key Key, kind string, content []byte) error {
+func write(ctx context.Context, key Key, kind string, content []byte) error {
 	err := os.MkdirAll(cachedir(key), 0700)
 	if err != nil {
-		return errors.Wrap(err, "mkdir %s failed")
+		return errors.Wrap(ctx, err, "mkdir failed")
 	}
 	// #nosec G703 -- path is constructed from controlled cache directory and key
 	return errors.Wrap(
+		ctx,
 		os.WriteFile(cachefile(key, kind), content, 0600),
 		"write cache file failed",
 	)

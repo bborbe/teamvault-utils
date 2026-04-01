@@ -13,8 +13,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/bborbe/errors"
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 )
 
 //counterfeiter:generate -o  mocks/config_parser.go --fake-name ConfigParser . ConfigParser
@@ -55,7 +55,7 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 	return template.FuncMap{
 		"indent": func(spaces int, v string) string {
 			pad := strings.Repeat(" ", spaces)
-			return pad + strings.Replace(v, "\n", "\n"+pad, -1)
+			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 		},
 		"readfile": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("read file for %v", val)
@@ -66,7 +66,7 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				absPath, err := filepath.Abs(v)
 				if err != nil {
 					glog.V(2).Infof("invalid file path %v: %v", val, err)
-					return "", errors.Wrapf(err, "invalid file path %v", val)
+					return "", errors.Wrapf(ctx, err, "invalid file path %v", val)
 				}
 
 				// Clean the absolute path to resolve any ./ or ../
@@ -76,7 +76,7 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				// This prevents traversal attempts like /etc/../etc/passwd
 				if cleanPath != absPath {
 					glog.V(2).Infof("path traversal attempt detected: %v resolved to %v", absPath, cleanPath)
-					return "", errors.New("path contains directory traversal sequences")
+					return "", errors.New(ctx, "path contains directory traversal sequences")
 				}
 
 				// Read file using validated absolute path
@@ -84,7 +84,7 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 				content, err := os.ReadFile(cleanPath)
 				if err != nil {
 					glog.V(2).Infof("read file %v failed: %v", val, err)
-					return "", errors.Wrapf(err, "read file %v failed", val)
+					return "", errors.Wrapf(ctx, err, "read file %v failed", val)
 				}
 				glog.V(4).Infof("file read successfully: %v", val)
 				return string(content), nil
@@ -97,14 +97,18 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := Key(val.(string))
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			key := Key(str)
 			if err := key.Validate(ctx); err != nil {
-				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+				return nil, errors.Wrapf(ctx, err, "key '%s' invalid", key)
 			}
 			user, err := c.teamvaultConnector.User(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get user from teamvault for key %v failed: %v", key, err)
-				return "", errors.Wrapf(err, "get user from teamvault for key %v failed", key)
+				return "", errors.Wrapf(ctx, err, "get user from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("user retrieved successfully for key %v", key)
 			return user.String(), nil
@@ -114,14 +118,23 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := Key(val.(string))
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			key := Key(str)
 			if err := key.Validate(ctx); err != nil {
-				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+				return nil, errors.Wrapf(ctx, err, "key '%s' invalid", key)
 			}
 			pass, err := c.teamvaultConnector.Password(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get password from teamvault for key %v failed: %v", key, err)
-				return "", errors.Wrapf(err, "get password from teamvault for key %v failed", key)
+				return "", errors.Wrapf(
+					ctx,
+					err,
+					"get password from teamvault for key %v failed",
+					key,
+				)
 			}
 			glog.V(4).Infof("password retrieved successfully for key %v", key)
 			return pass.String(), nil
@@ -131,12 +144,16 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
 			htpasswd := NewHtpasswdGenerator(
 				c.teamvaultConnector,
 			)
-			content, err := htpasswd.Generate(ctx, Key(val.(string)))
+			content, err := htpasswd.Generate(ctx, Key(str))
 			if err != nil {
-				return "", errors.Wrapf(err, "generate htpasswd failed")
+				return "", errors.Wrapf(ctx, err, "generate htpasswd failed")
 			}
 			glog.V(4).Infof("htpasswd generated successfully for key %v", val)
 			return string(content), nil
@@ -146,14 +163,18 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := Key(val.(string))
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			key := Key(str)
 			if err := key.Validate(ctx); err != nil {
-				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+				return nil, errors.Wrapf(ctx, err, "key '%s' invalid", key)
 			}
 			pass, err := c.teamvaultConnector.Url(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get url from teamvault for key %v failed: %v", key, err)
-				return "", errors.Wrapf(err, "get url from teamvault for key %v failed", key)
+				return "", errors.Wrapf(ctx, err, "get url from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("url retrieved successfully for key %v", key)
 			return pass.String(), nil
@@ -163,19 +184,24 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := Key(val.(string))
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			key := Key(str)
 			if err := key.Validate(ctx); err != nil {
-				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+				return nil, errors.Wrapf(ctx, err, "key '%s' invalid", key)
 			}
 			file, err := c.teamvaultConnector.File(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
-				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)
+				return "", errors.Wrapf(ctx, err, "get file from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("file retrieved successfully for key %v", key)
 			content, err := file.Content()
 			if err != nil {
 				return "", errors.Wrapf(
+					ctx,
 					err,
 					"get content from teamvault file for key %v failed",
 					key,
@@ -188,19 +214,23 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			key := Key(val.(string))
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			key := Key(str)
 			if err := key.Validate(ctx); err != nil {
-				return nil, errors.Wrapf(err, "key '%s' invalid", key)
+				return nil, errors.Wrapf(ctx, err, "key '%s' invalid", key)
 			}
 			file, err := c.teamvaultConnector.File(ctx, key)
 			if err != nil {
 				glog.V(2).Infof("get file from teamvault for key %v failed: %v", key, err)
-				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)
+				return "", errors.Wrapf(ctx, err, "get file from teamvault for key %v failed", key)
 			}
 			glog.V(4).Infof("file retrieved successfully for key %v", key)
 			content, err := file.Content()
 			if err != nil {
-				return "", errors.Wrapf(err, "get file from teamvault for key %v failed", key)
+				return "", errors.Wrapf(ctx, err, "get file from teamvault for key %v failed", key)
 			}
 			return base64.StdEncoding.EncodeToString(content), nil
 		},
@@ -209,7 +239,11 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			value := os.Getenv(val.(string))
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			value := os.Getenv(str)
 			glog.V(4).Infof("environment variable retrieved: %v", val)
 			return value, nil
 		},
@@ -218,21 +252,33 @@ func (c *configParser) createFuncMap(ctx context.Context) template.FuncMap {
 			if val == nil {
 				return "", nil
 			}
-			return base64.StdEncoding.EncodeToString([]byte(val.(string))), nil
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			return base64.StdEncoding.EncodeToString([]byte(str)), nil
 		},
 		"lower": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("lower value %v", val)
 			if val == nil {
 				return "", nil
 			}
-			return strings.ToLower(val.(string)), nil
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			return strings.ToLower(str), nil
 		},
 		"upper": func(val interface{}) (interface{}, error) {
 			glog.V(4).Infof("upper value %v", val)
 			if val == nil {
 				return "", nil
 			}
-			return strings.ToUpper(val.(string)), nil
+			str, ok := val.(string)
+			if !ok {
+				return "", errors.New(ctx, "expected string value")
+			}
+			return strings.ToUpper(str), nil
 		},
 	}
 }
