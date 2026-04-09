@@ -1,3 +1,6 @@
 pr: false
 worktree: false
 validationPrompt: docs/dod.md
+extraMounts:
+  - src: ${GOPATH}/pkg
+    dst: /home/node/go/pkg
