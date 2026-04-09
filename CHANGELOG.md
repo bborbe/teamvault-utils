@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.8.4
+
+- Update Go to 1.26.2
+- Bump bborbe/* deps (errors, http, service, time, validation, collection, parse)
+- Bump counterfeiter to v6.12.2
+- Bump moby/buildkit to v0.29.0, docker/cli to v29.3.1
+- Bump klauspost/compress to v1.18.5
+
 ## v4.8.3
 
 - Update Go dependencies to latest versions

@@ -1,6 +1,6 @@
 module github.com/bborbe/teamvault-utils/v4
 
-go 1.26.1
+go 1.26.2
 
 replace (
 	github.com/anthropics/anthropic-sdk-go => github.com/anthropics/anthropic-sdk-go v1.26.0
@@ -12,11 +12,11 @@ replace (
 )
 
 require (
-	github.com/bborbe/errors v1.5.8
-	github.com/bborbe/http v1.26.8
-	github.com/bborbe/service v1.9.7
-	github.com/bborbe/time v1.25.6
-	github.com/bborbe/validation v1.4.9
+	github.com/bborbe/errors v1.5.9
+	github.com/bborbe/http v1.26.9
+	github.com/bborbe/service v1.9.8
+	github.com/bborbe/time v1.25.8
+	github.com/bborbe/validation v1.4.10
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/golang/glog v1.2.5
 	github.com/golangci/golangci-lint/v2 v2.11.4
@@ -24,7 +24,7 @@ require (
 	github.com/google/osv-scanner/v2 v2.3.5
 	github.com/incu6us/goimports-reviser/v3 v3.12.6
 	github.com/kisielk/errcheck v1.10.0
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.2
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
 	github.com/securego/gosec/v2 v2.25.0
@@ -97,11 +97,11 @@ require (
 	github.com/ayoubfaouzi/pkcs7 v0.2.2 // indirect
 	github.com/bazelbuild/buildtools v0.0.0-20260319080235-05d2ebe49b0f // indirect
 	github.com/bborbe/argument/v2 v2.12.10 // indirect
-	github.com/bborbe/collection v1.20.7 // indirect
+	github.com/bborbe/collection v1.20.8 // indirect
 	github.com/bborbe/kv v1.19.2 // indirect
 	github.com/bborbe/log v1.6.8 // indirect
 	github.com/bborbe/math v1.3.6 // indirect
-	github.com/bborbe/parse v1.10.8 // indirect
+	github.com/bborbe/parse v1.10.9 // indirect
 	github.com/bborbe/run v1.9.11 // indirect
 	github.com/bborbe/sentry v1.9.13 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -134,7 +134,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/compose-spec/compose-go/v2 v2.10.1 // indirect
-	github.com/containerd/cgroups/v3 v3.1.2 // indirect
+	github.com/containerd/cgroups/v3 v3.1.3 // indirect
 	github.com/containerd/containerd v1.7.30 // indirect
 	github.com/containerd/containerd/api v1.10.0 // indirect
 	github.com/containerd/continuity v0.4.5 // indirect
@@ -157,7 +157,7 @@ require (
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/djherbis/times v1.6.0 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
-	github.com/docker/cli v29.3.0+incompatible // indirect
+	github.com/docker/cli v29.3.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v28.5.2+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.5 // indirect
@@ -250,7 +250,7 @@ require (
 	github.com/karamaru-alpha/copyloopvar v1.2.2 // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/kkHAIKE/contextcheck v1.1.6 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/kulti/thelper v0.7.1 // indirect
 	github.com/kunwardeep/paralleltest v1.0.15 // indirect
@@ -282,7 +282,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/micromdm/plist v0.2.2 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/moby/buildkit v0.28.1 // indirect
+	github.com/moby/buildkit v0.29.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/sys/atomicwriter v0.1.0 // indirect
@@ -291,6 +291,7 @@ require (
 	github.com/moby/sys/signal v0.7.1 // indirect
 	github.com/moby/sys/user v0.4.0 // indirect
 	github.com/moby/sys/userns v0.1.0 // indirect
+	github.com/moby/term v0.5.2 // indirect
 	github.com/modelcontextprotocol/go-sdk v1.4.1 // indirect
 	github.com/moricho/tparallel v0.3.2 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
