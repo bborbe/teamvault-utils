@@ -12,11 +12,11 @@ replace (
 )
 
 require (
-	github.com/bborbe/errors v1.5.9
-	github.com/bborbe/http v1.26.9
-	github.com/bborbe/service v1.9.8
-	github.com/bborbe/time v1.25.8
-	github.com/bborbe/validation v1.4.10
+	github.com/bborbe/errors v1.5.10
+	github.com/bborbe/http v1.26.10
+	github.com/bborbe/service v1.9.9
+	github.com/bborbe/time v1.25.9
+	github.com/bborbe/validation v1.4.11
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/golang/glog v1.2.5
 	github.com/golangci/golangci-lint/v2 v2.11.4
@@ -30,7 +30,7 @@ require (
 	github.com/securego/gosec/v2 v2.25.0
 	github.com/segmentio/golines v0.13.0
 	github.com/shoenig/go-modtool v0.7.1
-	golang.org/x/vuln v1.1.4
+	golang.org/x/vuln v1.2.0
 )
 
 require (
@@ -96,14 +96,14 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/ayoubfaouzi/pkcs7 v0.2.2 // indirect
 	github.com/bazelbuild/buildtools v0.0.0-20260319080235-05d2ebe49b0f // indirect
-	github.com/bborbe/argument/v2 v2.12.10 // indirect
-	github.com/bborbe/collection v1.20.8 // indirect
-	github.com/bborbe/kv v1.19.2 // indirect
-	github.com/bborbe/log v1.6.8 // indirect
-	github.com/bborbe/math v1.3.6 // indirect
-	github.com/bborbe/parse v1.10.9 // indirect
-	github.com/bborbe/run v1.9.11 // indirect
-	github.com/bborbe/sentry v1.9.13 // indirect
+	github.com/bborbe/argument/v2 v2.12.18 // indirect
+	github.com/bborbe/collection v1.20.9 // indirect
+	github.com/bborbe/kv v1.19.4 // indirect
+	github.com/bborbe/log v1.6.10 // indirect
+	github.com/bborbe/math v1.3.7 // indirect
+	github.com/bborbe/parse v1.10.10 // indirect
+	github.com/bborbe/run v1.9.18 // indirect
+	github.com/bborbe/sentry v1.9.14 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bkielbasa/cyclop v1.2.3 // indirect
 	github.com/blizzy78/varnamelen v0.8.0 // indirect
@@ -179,13 +179,13 @@ require (
 	github.com/firefart/nonamedreturns v1.0.6 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
-	github.com/getsentry/sentry-go v0.43.0 // indirect
+	github.com/getsentry/sentry-go v0.45.0 // indirect
 	github.com/ghostiam/protogetter v0.3.20 // indirect
 	github.com/go-critic/go-critic v0.14.3 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.8.0 // indirect
-	github.com/go-git/go-git/v5 v5.17.2 // indirect
+	github.com/go-git/go-git/v5 v5.18.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -420,19 +420,19 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
-	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20260312153236-7ab1446f8b90 // indirect
 	golang.org/x/lint v0.0.0-20241112194109-818c5a804067 // indirect
-	golang.org/x/mod v0.34.0 // indirect
-	golang.org/x/net v0.52.0 // indirect
+	golang.org/x/mod v0.35.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260316223853-b6b0c46d1ccd // indirect
-	golang.org/x/term v0.41.0 // indirect
-	golang.org/x/text v0.35.0 // indirect
-	golang.org/x/tools v0.43.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/telemetry v0.0.0-20260409153401-be6f6cb8b1fa // indirect
+	golang.org/x/term v0.42.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/tools v0.44.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genai v1.51.0 // indirect
 	google.golang.org/genproto v0.0.0-20260319201613-d00831a3d3e7 // indirect

@@ -11,5 +11,6 @@ coverprofile.out
 /.mcp-*
 /.update-logs/
 /.dark-factory.lock
+/.dark-factory.log
 /prompts/log
 /specs/log

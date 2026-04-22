@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.8.5
+
+- Update bborbe/* dependencies (errors, http, service, time, validation, etc.)
+- Update golang.org/x/* packages (crypto, net, sys, tools, vuln, etc.)
+- Update getsentry/sentry-go v0.43.0 → v0.45.0
+- Update go-git/go-git v5.17.2 → v5.18.0
+- Add .dark-factory.log to .gitignore
+
 ## v4.8.4
 
 - Update Go to 1.26.2
