@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v4.8.6
+
+- update ginkgo/v2 to v2.28.2
+- update gosec/v2 to v2.26.1
+- update golang.org/x/vuln to v1.3.0
+- update anthropic-sdk-go to v1.38.0, openai-go to v3.32.0, google/genai to v1.54.0
+
 ## v4.8.5
 
 - Update bborbe/* dependencies (errors, http, service, time, validation, etc.)
