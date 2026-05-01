@@ -1,11 +1,12 @@
 ---
-status: committing
+status: completed
 summary: Migrated from tools.go to tools.env + Makefile @version pattern; go.mod reduced from 461 to 53 lines, replace block removed, all make targets passing.
 container: teamvault-utils-003-migrate-tools-go
 dark-factory-version: dev
 created: "2026-05-01T07:35:35Z"
 queued: "2026-05-01T07:35:35Z"
 started: "2026-05-01T07:35:36Z"
+completed: "2026-05-01T07:42:57Z"
 ---
 
 # Migrate from tools.go to tools.env + Makefile @version pattern
