@@ -1,7 +1,8 @@
 ---
-status: prompted
+status: verifying
 approved: "2026-05-12T15:11:44Z"
 generating: "2026-05-12T17:52:51Z"
+verifying: "2026-05-12T18:22:04Z"
 branch: dark-factory/macos-keychain-credential-store
 ---
 

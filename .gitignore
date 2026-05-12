@@ -14,3 +14,10 @@ coverprofile.out
 /.dark-factory.log
 /prompts/log
 /specs/log
+/teamvault-config-dir-generator
+/teamvault-config-parser
+/teamvault-file
+/teamvault-login
+/teamvault-password
+/teamvault-url
+/teamvault-username
