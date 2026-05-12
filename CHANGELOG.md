@@ -2,9 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## v4.10.0
+## v4.10.1
 
 - feat: Add `teamvault-login` command: verifies TeamVault credentials against the API and stores the password in the macOS Keychain on success. Replaces the need to write the TeamVault password into the config file as plaintext.
+- docs: README adds "Setup (macOS, recommended)" link to the TOC and a `teamvault-login` subsection under "CLI Tools" so the keychain flow is discoverable from both entry points.
+- note: v4.10.0 was tagged but retracted — it contained an accidentally-committed binary at the repo root. v4.10.1 ships the same feature content with the binary excluded.
 
 ## v4.9.0
 

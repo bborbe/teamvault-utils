@@ -17,6 +17,7 @@ A Go library and CLI tools for interacting with TeamVault secret management syst
 
 ---
 
+* [Setup (macOS, recommended)](#setup-macos-recommended)
 * [Installation](#installation)
 * [Quick Start](#quick-start)
 * [Library Usage](#library-usage)
@@ -286,6 +287,24 @@ For complete API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com
 ## CLI Tools
 
 The library includes several command-line tools for quick secret access.
+
+### Teamvault Login
+
+Verify TeamVault credentials and store the password in the macOS Keychain. Recommended first step on macOS — see [Setup (macOS, recommended)](#setup-macos-recommended) for the full flow.
+
+Install:
+
+```bash
+go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-login
+```
+
+Run:
+
+```bash
+teamvault-login --teamvault-config ~/.teamvault.json
+```
+
+The command prompts for your TeamVault password (hidden input), verifies it against the API, and on success stores it in the macOS login Keychain. On non-macOS platforms it verifies only — no Keychain write.
 
 ### Teamvault Get Password
 

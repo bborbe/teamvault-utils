@@ -1,8 +1,9 @@
 ---
-status: verifying
+status: completed
 approved: "2026-05-12T15:11:44Z"
 generating: "2026-05-12T17:52:51Z"
 verifying: "2026-05-12T18:22:04Z"
+completed: "2026-05-12T20:21:07Z"
 branch: dark-factory/macos-keychain-credential-store
 ---
 
@@ -114,3 +115,20 @@ Keep the current flag/env/config-file resolution. Result: the AI Knowledge Shari
 
 - Linked from [[AI Knowledge Sharing at Seibert]] (Brogrammers vault Supply Matrix entry for teamvault-utils — currently flagged as blocked on this work).
 - Library choice for the Keychain layer (cgo + Security.framework vs shell-out to `security(1)` vs `zalando/go-keyring`) is an implementation detail to decide in the prompt phase, not in this spec.
+
+## Verification Result
+
+**Verified:** 2026-05-12T20:20:08Z (HEAD e839531)
+**Binary:** installed `dark-factory` (target repo is teamvault-utils, not dark-factory itself)
+**Scenario:** Walked spec's inline `## Verification` steps on darwin/arm64 host; matched each AC to fresh artifact from the deployed source.
+**Evidence:**
+- `factory/factory.go:73-86` adds Keychain read between config-file and connector creation, keyed by `KeychainServiceName="teamvault-utils"` (`keychain.go:18`) + URL account.
+- `keychain_other.go` build-tagged `//go:build !darwin`, `ReadPassword` returns `("", nil)`; darwin impl isolated in `keychain_darwin.go`.
+- `cmd/teamvault-login/main.go` (229 lines) verifies via `conn.Search`, stores via `kc.WritePassword`; `term.ReadPassword` (line 218) suppresses echo; loop up to 3 attempts (line 140).
+- Both `~/.teamvault.json` (personal, `teamvault.benjamin-borbe.de`) and `~/.teamvault-sm.json` (work, `teamvault.seibert.tools`) have no `password` field; operator confirmed `teamvault-username --teamvault-key=lO4K1w` → `longhorn` (personal-only key) and `--teamvault-key=mAYAlm` → `receipt` (work-only key), proving two independent Keychain entries resolved via URL.
+- `git diff 6331734..HEAD -- config.go connector.go config-path.go config-parser.go` is empty → public API of `Config`, `Connector`, `TeamvaultConfigPath.Parse()` unchanged.
+- 43 `It(...)` Ginkgo cases across `keychain_test.go`, `keychain_darwin_test.go`, `factory/factory_test.go`, `cmd/teamvault-login/main_test.go`; Counterfeiter mocks at `mocks/keychain.go`, `mocks/executor.go`; `go test ./...` → all packages OK.
+- README.md documents `teamvault-login` as recommended macOS setup (lines 34, 45, 51, 56-57, 66, 68, 293-307); flags config-file password as plaintext/insecure (line 66).
+- CHANGELOG.md v4.9.0 (Keychain fallback source) and v4.10.0 (`teamvault-login` command) entries present.
+- `make precommit` → gosec 0 issues, trivy clean, addlicense clean, "ready to commit".
+**Verdict:** PASS
