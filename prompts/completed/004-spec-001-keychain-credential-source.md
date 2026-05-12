@@ -1,5 +1,5 @@
 ---
-status: committing
+status: completed
 spec: [001-macos-keychain-credential-store]
 summary: 'Wired macOS Keychain into teamvault-utils as a password fallback: new Keychain interface + darwin implementation via security(1) + non-darwin no-op stub + factory wiring + full Ginkgo/Gomega test suite with Counterfeiter mocks.'
 container: teamvault-utils-004-spec-001-keychain-credential-source
@@ -7,8 +7,7 @@ dark-factory-version: v0.156.1-1-g04f3863-dirty
 created: "2026-05-12T16:49:55Z"
 queued: "2026-05-12T17:16:10Z"
 started: "2026-05-12T17:57:22Z"
-completed: "2026-05-12T17:54:07Z"
-lastFailReason: 'execute prompt: docker run failed: wait command: exit status 1'
+completed: "2026-05-12T18:09:43Z"
 ---
 
 <summary>
