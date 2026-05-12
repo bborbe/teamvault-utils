@@ -2,6 +2,8 @@ module github.com/bborbe/teamvault-utils/v4
 
 go 1.26.3
 
+retract v4.10.0 // contained an accidentally-committed teamvault-login binary; use v4.10.1 or later
+
 require (
 	github.com/bborbe/errors v1.5.13
 	github.com/bborbe/http v1.26.11
