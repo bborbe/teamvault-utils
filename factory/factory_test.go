@@ -1,0 +1,240 @@
+// Copyright (c) 2016-2026 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package factory_test
+
+import (
+	"context"
+	stderrors "errors"
+	"net/http"
+	"os"
+
+	libtime "github.com/bborbe/time"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+
+	teamvault "github.com/bborbe/teamvault-utils/v4"
+	"github.com/bborbe/teamvault-utils/v4/factory"
+	"github.com/bborbe/teamvault-utils/v4/mocks"
+)
+
+var _ = Describe("Factory", func() {
+	var (
+		ctx             context.Context
+		fakeKeychain    *mocks.Keychain
+		httpClient      *http.Client
+		currentDateTime libtime.CurrentDateTime
+	)
+
+	BeforeEach(func() {
+		ctx = context.Background()
+		fakeKeychain = &mocks.Keychain{}
+		httpClient = &http.Client{}
+		currentDateTime = libtime.NewCurrentDateTime()
+	})
+
+	Describe("CreateConnectorWithConfigAndKeychain", func() {
+		Context("when password is provided via args (no config file)", func() {
+			It("returns connector without consulting keychain", func() {
+				connector, err := factory.CreateConnectorWithConfigAndKeychain(
+					ctx,
+					httpClient,
+					teamvault.TeamvaultConfigPath(""),
+					teamvault.Url("https://vault.example.com"),
+					teamvault.User("admin"),
+					teamvault.Password("argspwd"),
+					teamvault.Staging(false),
+					false,
+					currentDateTime,
+					fakeKeychain,
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(connector).NotTo(BeNil())
+				Expect(fakeKeychain.ReadPasswordCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("when config file provides URL + user + password", func() {
+			var configPath string
+
+			BeforeEach(func() {
+				f, err := os.CreateTemp("", "teamvault-config-*.json")
+				Expect(err).NotTo(HaveOccurred())
+				configPath = f.Name()
+				DeferCleanup(func() { _ = os.Remove(configPath) })
+				_, err = f.WriteString(
+					`{"url":"https://vault.example.com","user":"admin","pass":"filepwd"}`,
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(f.Close()).To(Succeed())
+			})
+
+			It("returns connector without consulting keychain", func() {
+				connector, err := factory.CreateConnectorWithConfigAndKeychain(
+					ctx,
+					httpClient,
+					teamvault.TeamvaultConfigPath(configPath),
+					teamvault.Url(""),
+					teamvault.User(""),
+					teamvault.Password(""),
+					teamvault.Staging(false),
+					false,
+					currentDateTime,
+					fakeKeychain,
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(connector).NotTo(BeNil())
+				Expect(fakeKeychain.ReadPasswordCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("when config file has URL + user but no password and Keychain returns hit", func() {
+			var configPath string
+
+			BeforeEach(func() {
+				f, err := os.CreateTemp("", "teamvault-config-*.json")
+				Expect(err).NotTo(HaveOccurred())
+				configPath = f.Name()
+				DeferCleanup(func() { _ = os.Remove(configPath) })
+				_, err = f.WriteString(`{"url":"https://vault.example.com","user":"admin"}`)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(f.Close()).To(Succeed())
+				fakeKeychain.ReadPasswordReturns(teamvault.Password("keychainpwd"), nil)
+			})
+
+			It("returns connector built with Keychain password", func() {
+				connector, err := factory.CreateConnectorWithConfigAndKeychain(
+					ctx,
+					httpClient,
+					teamvault.TeamvaultConfigPath(configPath),
+					teamvault.Url(""),
+					teamvault.User(""),
+					teamvault.Password(""),
+					teamvault.Staging(false),
+					false,
+					currentDateTime,
+					fakeKeychain,
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(connector).NotTo(BeNil())
+				Expect(fakeKeychain.ReadPasswordCallCount()).To(Equal(1))
+			})
+		})
+
+		Context(
+			"when config file has URL + user but no password and Keychain returns miss",
+			func() {
+				var configPath string
+
+				BeforeEach(func() {
+					f, err := os.CreateTemp("", "teamvault-config-*.json")
+					Expect(err).NotTo(HaveOccurred())
+					configPath = f.Name()
+					DeferCleanup(func() { _ = os.Remove(configPath) })
+					_, err = f.WriteString(`{"url":"https://vault.example.com","user":"admin"}`)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(f.Close()).To(Succeed())
+					fakeKeychain.ReadPasswordReturns(teamvault.Password(""), nil)
+				})
+
+				It(
+					"returns connector built with empty password (existing behavior preserved)",
+					func() {
+						connector, err := factory.CreateConnectorWithConfigAndKeychain(
+							ctx,
+							httpClient,
+							teamvault.TeamvaultConfigPath(configPath),
+							teamvault.Url(""),
+							teamvault.User(""),
+							teamvault.Password(""),
+							teamvault.Staging(false),
+							false,
+							currentDateTime,
+							fakeKeychain,
+						)
+						Expect(err).NotTo(HaveOccurred())
+						Expect(connector).NotTo(BeNil())
+						Expect(fakeKeychain.ReadPasswordCallCount()).To(Equal(1))
+					},
+				)
+			},
+		)
+
+		Context(
+			"when config file has URL + user but no password and Keychain returns error",
+			func() {
+				var configPath string
+
+				BeforeEach(func() {
+					f, err := os.CreateTemp("", "teamvault-config-*.json")
+					Expect(err).NotTo(HaveOccurred())
+					configPath = f.Name()
+					DeferCleanup(func() { _ = os.Remove(configPath) })
+					_, err = f.WriteString(`{"url":"https://vault.example.com","user":"admin"}`)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(f.Close()).To(Succeed())
+					fakeKeychain.ReadPasswordReturns(
+						teamvault.Password(""),
+						stderrors.New("keychain locked"),
+					)
+				})
+
+				It("returns error mentioning the URL", func() {
+					_, err := factory.CreateConnectorWithConfigAndKeychain(
+						ctx,
+						httpClient,
+						teamvault.TeamvaultConfigPath(configPath),
+						teamvault.Url(""),
+						teamvault.User(""),
+						teamvault.Password(""),
+						teamvault.Staging(false),
+						false,
+						currentDateTime,
+						fakeKeychain,
+					)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("https://vault.example.com"))
+				})
+			},
+		)
+
+		Context("when no URL is available (empty args, no config file)", func() {
+			It("does not consult keychain", func() {
+				connector, err := factory.CreateConnectorWithConfigAndKeychain(
+					ctx,
+					httpClient,
+					teamvault.TeamvaultConfigPath(""),
+					teamvault.Url(""),
+					teamvault.User(""),
+					teamvault.Password(""),
+					teamvault.Staging(false),
+					false,
+					currentDateTime,
+					fakeKeychain,
+				)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(connector).NotTo(BeNil())
+				Expect(fakeKeychain.ReadPasswordCallCount()).To(Equal(0))
+			})
+		})
+	})
+
+	Describe("CreateConnectorWithConfig", func() {
+		It("returns non-nil connector for a fully-specified args case", func() {
+			connector, err := factory.CreateConnectorWithConfig(
+				ctx,
+				httpClient,
+				teamvault.TeamvaultConfigPath(""),
+				teamvault.Url("https://vault.example.com"),
+				teamvault.User("admin"),
+				teamvault.Password("secret"),
+				teamvault.Staging(false),
+				false,
+				currentDateTime,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(connector).NotTo(BeNil())
+		})
+	})
+})

@@ -18,6 +18,7 @@ import (
 
 // CreateConnectorWithConfig creates a new TeamVault Connector using configuration from a file or parameters.
 // If the config file exists, it takes precedence over the individual parameters.
+// Delegates to CreateConnectorWithConfigAndKeychain using the real OS Keychain.
 func CreateConnectorWithConfig(
 	ctx context.Context,
 	httpClient *http.Client,
@@ -29,6 +30,36 @@ func CreateConnectorWithConfig(
 	cacheEnabled bool,
 	currentDateTime libtime.CurrentDateTime,
 ) (teamvault.Connector, error) {
+	return CreateConnectorWithConfigAndKeychain(
+		ctx,
+		httpClient,
+		configPath,
+		apiURL,
+		apiUser,
+		apiPassword,
+		staging,
+		cacheEnabled,
+		currentDateTime,
+		teamvault.NewKeychain(),
+	)
+}
+
+// CreateConnectorWithConfigAndKeychain is the dependency-injected variant of
+// CreateConnectorWithConfig. Production callers use CreateConnectorWithConfig,
+// which delegates to this with teamvault.NewKeychain(). Tests inject a fake
+// Keychain to drive resolution-chain scenarios.
+func CreateConnectorWithConfigAndKeychain(
+	ctx context.Context,
+	httpClient *http.Client,
+	configPath teamvault.TeamvaultConfigPath,
+	apiURL teamvault.Url,
+	apiUser teamvault.User,
+	apiPassword teamvault.Password,
+	staging teamvault.Staging,
+	cacheEnabled bool,
+	currentDateTime libtime.CurrentDateTime,
+	keychain teamvault.Keychain,
+) (teamvault.Connector, error) {
 	if configPath.Exists() {
 		config, err := configPath.Parse()
 		if err != nil {
@@ -38,6 +69,20 @@ func CreateConnectorWithConfig(
 		apiUser = config.User
 		apiPassword = config.Password
 		cacheEnabled = config.CacheEnabled
+	}
+	if apiPassword == "" && apiURL != "" {
+		pwd, err := keychain.ReadPassword(ctx, apiURL)
+		if err != nil {
+			return nil, errors.Wrapf(
+				ctx,
+				err,
+				"read password from keychain for url %q failed",
+				apiURL,
+			)
+		}
+		if pwd != "" {
+			apiPassword = pwd
+		}
 	}
 	return CreateConnector(
 		httpClient,

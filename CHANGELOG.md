@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.9.0
+
+- feat: Add macOS Keychain as a password fallback source. When the resolved config provides URL + user but no password, the library now looks up the password from the login Keychain (service `teamvault-utils`, account = URL). On non-macOS platforms this step is a no-op. New `CreateConnectorWithConfigAndKeychain` factory function enables Keychain injection for testing.
+
 Please choose versions by [Semantic Versioning](http://semver.org/).
 
 * MAJOR version when you make incompatible API changes,
