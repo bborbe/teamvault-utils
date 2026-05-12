@@ -1,5 +1,5 @@
 ---
-status: committing
+status: completed
 spec: [001-macos-keychain-credential-store]
 summary: Created teamvault-login binary with credential verification, Keychain write on success, hidden stdin prompt loop (3 attempts), platform-safe non-darwin notice, 18 Ginkgo tests, README Setup section, and CHANGELOG entry
 container: teamvault-utils-005-spec-001-teamvault-login-binary
@@ -7,6 +7,7 @@ dark-factory-version: v0.156.1-1-g04f3863-dirty
 created: "2026-05-12T16:49:55Z"
 queued: "2026-05-12T17:16:10Z"
 started: "2026-05-12T18:09:45Z"
+completed: "2026-05-12T18:22:04Z"
 ---
 
 <summary>
