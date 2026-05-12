@@ -87,3 +87,4 @@ install:
 	go build -o $(GOPATH)/bin/teamvault-url cmd/teamvault-url/*
 	go build -o $(GOPATH)/bin/teamvault-username cmd/teamvault-username/*
 	go build -o $(GOPATH)/bin/teamvault-file cmd/teamvault-file/*
+	go build -o $(GOPATH)/bin/teamvault-login cmd/teamvault-login/*

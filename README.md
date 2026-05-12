@@ -28,6 +28,46 @@ A Go library and CLI tools for interacting with TeamVault secret management syst
 
 ---
 
+## Setup (macOS, recommended)
+
+On macOS, store your TeamVault password in the login Keychain so it never needs to appear in a plaintext config file:
+
+1. Create a config file with **only** `url` and `user` — leave out `pass`:
+
+   ```json
+   {
+       "url": "https://teamvault.example.com",
+       "user": "my-user"
+   }
+   ```
+
+2. Run `teamvault-login` once to verify your credentials and store the password in the Keychain:
+
+   ```bash
+   teamvault-login --teamvault-config ~/.teamvault.json
+   ```
+
+   The command prompts for your TeamVault password (hidden), verifies it against the API, and writes it to the macOS login Keychain on success.
+
+**Multi-vault setup:** repeat for each config file:
+
+```bash
+teamvault-login --teamvault-config ~/.teamvault.json
+teamvault-login --teamvault-config ~/.teamvault-sm.json
+```
+
+**Removing a stored password:**
+
+```bash
+security delete-generic-password -s teamvault-utils -a https://teamvault.example.com
+```
+
+> **Note:** Putting `pass` directly in the config file still works (the legacy path), but the password is stored in plaintext on disk. The Keychain path is strongly preferred on macOS.
+
+> **Non-macOS:** `teamvault-login` verifies credentials but does not persist them. Users on Linux/Windows should continue to supply the password via flag, environment variable, or config file for now.
+
+---
+
 ## Installation
 
 ```bash
