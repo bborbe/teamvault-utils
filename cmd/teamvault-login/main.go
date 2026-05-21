@@ -28,11 +28,12 @@ func main() {
 }
 
 type application struct {
-	TeamvaultUrl        string `required:"false" arg:"teamvault-url"    env:"TEAMVAULT_URL"    usage:"teamvault url"`
-	TeamvaultUser       string `required:"false" arg:"teamvault-user"   env:"TEAMVAULT_USER"   usage:"teamvault user"`
-	TeamvaultPass       string `required:"false" arg:"teamvault-pass"   env:"TEAMVAULT_PASS"   usage:"teamvault password" display:"length"`
-	TeamvaultConfigPath string `required:"false" arg:"teamvault-config" env:"TEAMVAULT_CONFIG" usage:"teamvault config"`
-	Staging             bool   `required:"false" arg:"staging"          env:"STAGING"          usage:"staging status"                      default:"false"`
+	TeamvaultUrl        string           `required:"false" arg:"teamvault-url"     env:"TEAMVAULT_URL"     usage:"teamvault url"`
+	TeamvaultUser       string           `required:"false" arg:"teamvault-user"    env:"TEAMVAULT_USER"    usage:"teamvault user"`
+	TeamvaultPass       string           `required:"false" arg:"teamvault-pass"    env:"TEAMVAULT_PASS"    usage:"teamvault password"                                                          display:"length"`
+	TeamvaultConfigPath string           `required:"false" arg:"teamvault-config"  env:"TEAMVAULT_CONFIG"  usage:"teamvault config"`
+	Staging             bool             `required:"false" arg:"staging"           env:"STAGING"           usage:"staging status"                                                                               default:"false"`
+	TeamvaultTimeout    libtime.Duration `required:"false" arg:"teamvault-timeout" env:"TEAMVAULT_TIMEOUT" usage:"HTTP request timeout for TeamVault API calls (e.g. 5s, 30s); 0 = default 5s"`
 }
 
 func (a *application) Run(ctx context.Context) error {
@@ -81,6 +82,11 @@ func (a *application) Run(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrapf(ctx, err, "create httpClient failed")
 	}
+	timeout := a.TeamvaultTimeout.Duration()
+	if timeout == 0 {
+		timeout = 5 * time.Second
+	}
+	httpClient.Timeout = timeout
 	currentDateTime := libtime.NewCurrentDateTime()
 	staging := teamvault.Staging(a.Staging)
 

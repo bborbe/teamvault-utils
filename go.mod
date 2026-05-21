@@ -3,6 +3,7 @@ module github.com/bborbe/teamvault-utils/v4
 go 1.26.3
 
 require (
+	github.com/bborbe/argument/v2 v2.12.21
 	github.com/bborbe/errors v1.5.13
 	github.com/bborbe/http v1.26.11
 	github.com/bborbe/service v1.9.11
@@ -18,7 +19,6 @@ require (
 require (
 	github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
-	github.com/bborbe/argument/v2 v2.12.21 // indirect
 	github.com/bborbe/collection v1.20.12 // indirect
 	github.com/bborbe/kv v1.19.6 // indirect
 	github.com/bborbe/log v1.6.12 // indirect

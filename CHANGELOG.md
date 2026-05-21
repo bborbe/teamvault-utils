@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.12.0
+
+- feat: `--teamvault-timeout` flag and `TEAMVAULT_TIMEOUT` env var across all `teamvault-*` CLI binaries; threads through to the new factory `CreateConnectorWithConfigAndTimeout`.
+
 ## v4.11.0
 
 - feat: Add configurable HTTP timeout via `Config.Timeout` (`libtime.Duration`); resolution order is CLI > config > 5s default. The factory applies the resolved timeout to `httpClient.Timeout` for full-request deadlines.

@@ -288,6 +288,17 @@ For complete API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com
 
 The library includes several command-line tools for quick secret access.
 
+### Common flags
+
+All `teamvault-*` CLI tools accept these flags:
+
+```bash
+--teamvault-timeout=5s   HTTP request timeout for TeamVault API calls (env: TEAMVAULT_TIMEOUT; default: 5s)
+--cache                  Enable disk-fallback cache (env: CACHE)
+```
+
+**Cache behavior:** Cache is enabled if EITHER the `--cache` / `CACHE` env var is `true` OR the config file's `cacheEnabled: true` is set. There is no way to force-disable via CLI when the config opts in; edit the config file to disable.
+
 ### Teamvault Login
 
 Verify TeamVault credentials and store the password in the macOS Keychain. Recommended first step on macOS — see [Setup (macOS, recommended)](#setup-macos-recommended) for the full flow.
@@ -394,9 +405,13 @@ TeamVault config file (~/.teamvault.json):
 {
     "url": "https://teamvault.example.com",
     "user": "my-user",
-    "pass": "my-pass"
+    "pass": "my-pass",
+    "cacheEnabled": true,
+    "timeout": "30s"
 }
 ```
+
+`cacheEnabled: true` enables disk-fallback caching. `timeout` sets the HTTP request timeout (default: 5 seconds when absent).
 
 Run:
 
