@@ -1,8 +1,9 @@
 ---
-status: prompted
+status: completed
 approved: "2026-05-21T17:29:49Z"
 generating: "2026-05-21T17:29:50Z"
 prompted: "2026-05-21T17:33:04Z"
+completed: "2026-05-21T21:32:25Z"
 branch: dark-factory/bug-keychain-write-empty-password-on-piped-stdin
 ---
 
@@ -148,3 +149,18 @@ Approach #2 if it works is the smallest diff. Approach #3 if it doesn't. The pro
 
 - Discovered during the `scenarios/002-keychain-login-and-retrieve.md` walk on 2026-05-21 against teamvault-utils HEAD = v4.12.0.
 - Reporter's keychain entry for `https://teamvault.benjamin-borbe.de` was destroyed by the scenario walk and was restored manually via Workaround #2 (with quoting around the password to handle the comma it contains) before normal `teamvault-*` use resumed.
+
+## Verification Result
+
+**Verified:** 2026-05-21T21:28:59Z (HEAD dc33341)
+**Verdict:** PASS (subsumed by spec 004 zalando migration)
+
+The original bug (piped-stdin `teamvault-login` writes empty password to macOS Keychain) is no longer reproducible. The v0.9.10 `security -i` REPL fix (commits 91f94f5 / 5707dd8) addressed the symptom; spec 004 (commit dc33341) replaces the entire hand-rolled `security` shell-out with `github.com/zalando/go-keyring`, eliminating the failure surface that produced this bug class.
+
+**Reproduction re-run against post-migration binary:**
+- Pre-state: keychain has real 32-char password (restored via `security add-generic-password -U`).
+- Action: `printf '%s\n' "$REAL_PASS" | /tmp/tv-login --teamvault-config <cfg-without-pass>`.
+- Result: `LOGIN_RC=0`; "Login successful. Password stored in macOS Keychain for https://teamvault.benjamin-borbe.de."; subsequent `teamvault-username` returns `longhorn`.
+- The keychain is NOT zeroed; downstream binaries authenticate correctly via the post-migration zalando read path.
+
+See spec 004's `## Verification Result` for the full AC matrix.
