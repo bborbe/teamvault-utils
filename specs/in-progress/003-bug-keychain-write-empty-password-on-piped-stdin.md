@@ -1,7 +1,9 @@
 ---
-status: draft
-kind: bug
-created: "2026-05-21T17:23:04Z"
+status: prompted
+approved: "2026-05-21T17:29:49Z"
+generating: "2026-05-21T17:29:50Z"
+prompted: "2026-05-21T17:33:04Z"
+branch: dark-factory/bug-keychain-write-empty-password-on-piped-stdin
 ---
 
 ## Summary
@@ -104,8 +106,10 @@ The bug surface is exactly the "non-interactive automation" use case that motiva
   - Evidence: manual run on a developer macOS; subsequent `teamvault-password --teamvault-key <known-key>` returns a non-empty real password.
 - [ ] Failure to write the Keychain (any `security` non-zero exit) propagates as a wrapped error and the program exits non-zero — the "Login successful" message MUST NOT print on a failed write.
   - Evidence: induce failure (e.g., locked Keychain), assert stderr contains the wrapped error and exit code is non-zero. Existing test pattern in `keychain_darwin_test.go` covers the exit-code branches; extend.
-- [ ] Existing unit tests in `keychain_darwin_test.go` continue to pass; new unit tests cover the non-interactive stdin path using the `Executor` fake (`mocks/executor.go`). Assert that the executor receives the password in a way that `security` will actually consume (positional `-w PASSWORD` argument OR another documented mechanism).
-- [ ] Existing integration test `keychain_darwin_integration_test.go` continues to pass; new integration test covers a real `security` invocation with a piped password and verifies round-trip via a temporary service name (e.g., `teamvault-utils-test-<uuid>`) to avoid clobbering real credentials.
+- [ ] Existing unit tests in `keychain_darwin_test.go` continue to pass unchanged (`go test ./... -run KeychainDarwin` exit 0).
+- [ ] New unit tests cover the non-interactive stdin path using the `Executor` fake (`mocks/executor.go`). Assert that the executor receives the password in a way that `security` will actually consume (positional `-w PASSWORD` argument OR another documented mechanism); assert empty stdin is NOT relied on as the password channel.
+- [ ] Existing integration test `keychain_darwin_integration_test.go` continues to pass unchanged.
+- [ ] New integration test covers a real `security` invocation with a piped password and verifies round-trip via a temporary service name (e.g., `teamvault-utils-test-<uuid>`) to avoid clobbering real credentials. Test must run unattended — `t.Skip` on non-darwin AND when `security` would require a Keychain-unlock prompt (detect via probe call before the test body).
 - [ ] Scenario `scenarios/002-keychain-login-and-retrieve.md` passes when re-walked end-to-end against the fixed binary (currently fails on the "Keychain entry idempotent" + "password non-empty" assertions).
 - [ ] `make precommit` exits 0.
 - [ ] CHANGELOG `## Unreleased` entry documents the bug fix with cross-reference to this spec.
@@ -128,8 +132,19 @@ Until the fix lands, users can:
    ```
    This stores the password correctly because `-w PASSWORD` uses the positional form. Risk: password appears in shell history and `ps` output; mitigate with `read -s PASS` then pass via `-w "$PASS"`.
 
+## Alternatives (decide in prompt phase)
+
+Three viable approaches that satisfy the Constraints:
+
+1. **`security add-generic-password -w "$PASS"` positional** — simplest fix. Constraint #2 forbids passing the password as a literal command-line argument *visible in `ps`*. On macOS, `argv` IS visible via `ps -E` and `/proc`-equivalents, so this approach is rejected on its face by Constraint #2.
+
+2. **`-i` interactive mode + stdin script** — `security -i` accepts subcommands via stdin. Test whether `add-generic-password ... -w` inside an `-i` session reads the password from stdin per-subcommand. If so, this avoids `argv` exposure. Spike during prompt phase to confirm.
+
+3. **macOS Keychain Services API via cgo** — direct `SecKeychainAddGenericPassword` call. Most robust (no shell quoting, no `security` quirks, no argv exposure) but adds cgo dependency and a darwin-specific compilation path. Existing `keychain_other.go` build-tag pattern already accommodates this; cgo only kicks in on darwin builds.
+
+Approach #2 if it works is the smallest diff. Approach #3 if it doesn't. The prompt phase MUST evaluate #2 first via a 10-line probe before committing to the cgo route.
+
 ## Notes
 
 - Discovered during the `scenarios/002-keychain-login-and-retrieve.md` walk on 2026-05-21 against teamvault-utils HEAD = v4.12.0.
-- The implementation choice (positional `-w PASSWORD` vs. a different IPC mechanism) is deliberately not pre-decided here; the prompt phase should evaluate options against the Constraints (in particular: not exposing the password in `ps` output). One viable approach: pipe to `/dev/stdin` via a different security subcommand, or use the macOS Keychain Services API via cgo. Decide in the prompt.
-- Reporter's keychain entry for `https://teamvault.benjamin-borbe.de` was destroyed by the scenario walk and must be restored manually (see Workaround #2) before normal `teamvault-*` use resumes.
+- Reporter's keychain entry for `https://teamvault.benjamin-borbe.de` was destroyed by the scenario walk and was restored manually via Workaround #2 (with quoting around the password to handle the comma it contains) before normal `teamvault-*` use resumed.
