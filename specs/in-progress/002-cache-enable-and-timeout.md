@@ -1,8 +1,9 @@
 ---
-status: prompted
+status: verifying
 approved: "2026-05-21T11:55:22Z"
 generating: "2026-05-21T12:03:02Z"
 prompted: "2026-05-21T12:06:25Z"
+verifying: "2026-05-21T13:03:14Z"
 branch: dark-factory/cache-enable-and-timeout
 ---
 
@@ -132,3 +133,18 @@ Cost: every TeamVault slowness incident breaks `teamvault-config-parser`-driven 
 
 - The fix to factory precedence (line 71) is one line: `cacheEnabled = cacheEnabled || config.CacheEnabled`. The bulk of work is the timeout plumbing across 7 cmd binaries + factory + config + tests.
 - `Config.Timeout` field type is `libtime.Duration` from `github.com/bborbe/time` (decided up front — see Constraints). Project already imports `libtime` everywhere; the type has `UnmarshalJSON` that handles both `"5s"` strings and numeric nanoseconds, so legacy and ergonomic configs both deserialize cleanly.
+
+## Verification Result
+
+**Verified:** 2026-05-21T13:43:50Z (HEAD f58b188)
+**Binary:** /tmp/df-verify-002/teamvault-password (built from HEAD via `go build ./cmd/teamvault-password`)
+**Scenario:** Live spec `## Verification` manual run: non-routable IP 10.255.255.1, timeout=1s, pre-populated cache file `~/.teamvault-cache/test-key/password`.
+**Evidence:**
+- `make precommit` → `ready to commit` (exit 0); `go test ./...` all packages PASS; `factory` suite: `Ran 19 of 19 Specs in 4.011 seconds`.
+- Manual cache-fallback: `teamvault-password --teamvault-config=… --teamvault-key=test-key` → stdout `cached-value`, exit 0, elapsed 1.75s.
+- Manual no-cache timeout: same config with `cacheEnabled:false` → `context deadline exceeded (Client.Timeout exceeded while awaiting headers)`, exit 1, elapsed 1.08s — proves resolved 1s timeout applied to `*http.Client`.
+- Manual cache OR-logic: config without `cacheEnabled` + `--cache=true` → `cached-value`, exit 0, elapsed 1.04s — proves the OR replaces the prior silent-override.
+- Manual negative-rejection: config `"timeout":"-5s"` → `create connector failed: invalid timeout -5s: must be >= 0`, exit 1.
+- README: `grep -n 'timeout' README.md` → 3 lines (296, 410, 414); `grep -n -i 'either.*cache' README.md` → line 300.
+- CHANGELOG: v4.11.0 lines 11-12 (Config.Timeout + OR fix), v4.12.0 line 7 (CLI flag) — dark-factory auto-tag path.
+**Verdict:** PASS
