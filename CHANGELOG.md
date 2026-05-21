@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.11.0
+
+- feat: Add configurable HTTP timeout via `Config.Timeout` (`libtime.Duration`); resolution order is CLI > config > 5s default. The factory applies the resolved timeout to `httpClient.Timeout` for full-request deadlines.
+- fix: Cache enable is now the logical OR of CLI `--cache` / `CACHE` and config `cacheEnabled` — previously the config silently overrode the CLI value at `factory/factory.go:71`.
+
 ## v4.10.1
 
 - feat: Add `teamvault-login` command: verifies TeamVault credentials against the API and stores the password in the macOS Keychain on success. Replaces the need to write the TeamVault password into the config file as plaintext.

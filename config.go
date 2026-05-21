@@ -4,10 +4,13 @@
 
 package teamvault
 
+import libtime "github.com/bborbe/time"
+
 // Config holds the configuration for connecting to a TeamVault instance.
 type Config struct {
-	Url          Url      `json:"url"`
-	User         User     `json:"user"`
-	Password     Password `json:"pass"`
-	CacheEnabled bool     `json:"cacheEnabled,omitempty"`
+	Url          Url              `json:"url"`
+	User         User             `json:"user"`
+	Password     Password         `json:"pass"`
+	CacheEnabled bool             `json:"cacheEnabled,omitempty"`
+	Timeout      libtime.Duration `json:"timeout,omitempty"`
 }

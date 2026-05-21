@@ -1,9 +1,10 @@
 ---
-status: draft
-created: "2026-05-21T10:41:12Z"
+status: prompted
+approved: "2026-05-21T11:55:22Z"
+generating: "2026-05-21T12:03:02Z"
+prompted: "2026-05-21T12:06:25Z"
+branch: dark-factory/cache-enable-and-timeout
 ---
-
-# Cache enablement precedence and configurable TeamVault timeout
 
 ## Summary
 
@@ -64,7 +65,7 @@ The library and CLI tools accept a timeout duration via config file, CLI flag, a
 - `Config` JSON deserialization remains backward compatible: pre-existing configs without `timeout` or with only `cacheEnabled` continue to work.
 - Default timeout = 5 seconds, matching today's hardcoded value.
 - Disk fallback behavior on the wire is unchanged — only the trigger (timeout error) is configurable.
-- No new external dependencies. `time.ParseDuration` from stdlib or `github.com/bborbe/time`'s `ParseDuration` if a project pattern exists (audit before choosing).
+- Use `github.com/bborbe/time` `libtime.Duration` (already a project dependency; has `UnmarshalJSON` that accepts both string forms like `"5s"` and numeric nanoseconds; libargument handles it via `encoding.TextUnmarshaler`). No new external deps.
 - All paths repo-relative in code and tests. No absolute paths in fixtures.
 - Tests use Ginkgo/Gomega; mocks via Counterfeiter under `mocks/` per project DoD.
 - Errors wrapped via `github.com/bborbe/errors`; no `fmt.Errorf`.
@@ -80,7 +81,7 @@ The library and CLI tools accept a timeout duration via config file, CLI flag, a
 | TeamVault unreachable + cache enabled + cached value exists | Request times out at configured duration; `DiskFallbackConnector` returns cached value; caller sees success | None — designed behavior |
 | TeamVault unreachable + cache enabled + no cached value (first run) | Timeout error propagates; nothing cached to fall back to | User retries when TeamVault recovers or pre-warms cache |
 | TeamVault unreachable + cache disabled | Timeout error propagates to caller as today | User retries or enables cache |
-| Both CLI `--cache=false` and config `cacheEnabled:true` set | Cache is **on** (OR semantics); user cannot force-disable via CLI when config opts in | Edit config to set `cacheEnabled:false`, or accept that explicit-config wins |
+| Both CLI `--cache=false` and config `cacheEnabled:true` set | Cache is **on** by design (OR semantics — either source enabling turns it on) | Not a failure path; if disabling is required, edit the config |
 | Both `--cache=true` and config `cacheEnabled` unset | Cache is **on** — the fixed behavior; today this is off due to the precedence bug | Working as intended after fix |
 
 ## Do-Nothing Option
@@ -100,8 +101,7 @@ Cost: every TeamVault slowness incident breaks `teamvault-config-parser`-driven 
 ## Acceptance Criteria
 
 - [ ] `Config` struct gains a `Timeout` field that accepts a Go duration via JSON (e.g. `"timeout": "30s"`); absent/empty field deserializes to zero value and the factory substitutes the 5s default.
-- [ ] Every `cmd/teamvault-*/main.go` (`teamvault-password`, `teamvault-username`, `teamvault-url`, `teamvault-file`, `teamvault-config-parser`, `teamvault-config-dir-generator`) gains a `--teamvault-timeout` flag and `TEAMVAULT_TIMEOUT` env var.
-- [ ] `teamvault-login`'s timeout knob: if `teamvault-login` already uses a separate timeout path, document the choice in the prompt; if it shares `CreateHttpClient`, gain the same knob.
+- [ ] Every `cmd/teamvault-*/main.go` (`teamvault-password`, `teamvault-username`, `teamvault-url`, `teamvault-file`, `teamvault-config-parser`, `teamvault-config-dir-generator`, `teamvault-login`) gains a `--teamvault-timeout` flag and `TEAMVAULT_TIMEOUT` env var. `teamvault-login` shares `factory.CreateHttpClient` (`cmd/teamvault-login/main.go:80`) so the same knob applies. The independent per-probe 10s `context.WithTimeout` in `loginFlow` (`cmd/teamvault-login/main.go:128, :158`) is unrelated and stays unchanged.
 - [ ] `factory.CreateConnectorWithConfig` and `factory.CreateConnectorWithConfigAndKeychain` accept a timeout duration parameter (additive change); existing in-tree call sites updated; backward-compat wrapper provided if external callers exist.
 - [ ] `factory.CreateHttpClient` honors a passed-in timeout (additive parameter, or a new exported function alongside) with 5s default.
 - [ ] In the factory, `cacheEnabled := cliCache || config.CacheEnabled` replaces the unconditional overwrite at `factory/factory.go:71`. New code path covered by a Ginkgo test asserting both inputs.
@@ -113,8 +113,8 @@ Cost: every TeamVault slowness incident breaks `teamvault-config-parser`-driven 
   - http client built by the factory has the resolved timeout (introspect `client.Timeout`)
 - [ ] Integration test (single Ginkgo `It`): with a stub HTTP server that sleeps longer than the configured timeout AND cache enabled with a pre-populated cache file, the connector returns the cached value without error. Without cache, the same scenario returns a timeout error.
 - [ ] `go test ./...` passes; `make precommit` exits 0.
-- [ ] `README.md` documents the new `timeout` config field and `--teamvault-timeout` CLI flag in the relevant sections (config example block + CLI tool sections). Cache OR-precedence noted in a short paragraph.
-- [ ] `CHANGELOG.md` has a `## Unreleased` entry covering both changes.
+- [ ] `README.md` documents the new `timeout` config field and `--teamvault-timeout` CLI flag in the relevant sections (config example block + CLI tool sections). Evidence: `grep -n 'timeout' README.md` returns ≥2 lines (config example + CLI section). Cache OR-precedence noted in a short paragraph; evidence: `grep -n -i 'cache.*precedence\|cacheEnabled.*or\|either.*cache' README.md` returns ≥1 line.
+- [ ] `CHANGELOG.md` has a `## Unreleased` entry covering both changes. Evidence: `grep -n '## Unreleased' CHANGELOG.md` returns line 1 match, AND `grep -n -i 'timeout\|cache' CHANGELOG.md` shows additions under that section.
 
 ## Verification
 
@@ -130,5 +130,5 @@ Cost: every TeamVault slowness incident breaks `teamvault-config-parser`-driven 
 
 ## Notes
 
-- The fix to factory precedence (line 71) is one line: `cacheEnabled = cacheEnabled || config.CacheEnabled`. The bulk of work is the timeout plumbing across 6 cmd binaries + factory + config + tests.
-- Implementation detail (decide in prompt phase): whether `Timeout` is `string` (parse in factory) or `time.Duration` (parse on Unmarshal via a `UnmarshalJSON`). Either works; `string` keeps `Config` shallow and matches how libargument represents durations elsewhere. Audit `github.com/bborbe/time` for a project-preferred duration type before choosing.
+- The fix to factory precedence (line 71) is one line: `cacheEnabled = cacheEnabled || config.CacheEnabled`. The bulk of work is the timeout plumbing across 7 cmd binaries + factory + config + tests.
+- `Config.Timeout` field type is `libtime.Duration` from `github.com/bborbe/time` (decided up front — see Constraints). Project already imports `libtime` everywhere; the type has `UnmarshalJSON` that handles both `"5s"` strings and numeric nanoseconds, so legacy and ergonomic configs both deserialize cleanly.
