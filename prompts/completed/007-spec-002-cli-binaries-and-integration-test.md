@@ -1,5 +1,5 @@
 ---
-status: committing
+status: completed
 spec: [002-cache-enable-and-timeout]
 summary: Added --teamvault-timeout flag and TEAMVAULT_TIMEOUT env var to all 7 teamvault-* binaries, wired to CreateConnectorWithConfigAndTimeout in 6 binaries and httpClient.Timeout in teamvault-login, added CLI parse contract test, updated README with config/CLI/cache docs, and added CHANGELOG entry.
 container: teamvault-utils-exec-007-spec-002-cli-binaries-and-integration-test
@@ -7,6 +7,7 @@ dark-factory-version: v0.164.0
 created: "2026-05-21T12:10:00Z"
 queued: "2026-05-21T12:38:20Z"
 started: "2026-05-21T12:49:38Z"
+completed: "2026-05-21T13:03:14Z"
 branch: dark-factory/cache-enable-and-timeout
 ---
 
