@@ -1,0 +1,49 @@
+---
+status: draft
+---
+
+# Scenario 002: teamvault-login persists password; subsequent reads use Keychain
+
+Validates that `teamvault-login` stores the password in the macOS Keychain and that subsequent `teamvault-*` calls read it from there without a stdin prompt or a plaintext `pass` in the config. macOS-only.
+
+## Setup
+
+- [ ] `[ "$(uname -s)" = "Darwin" ]` (else skip)
+- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/new-teamvault-login ./cmd/teamvault-login`
+- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/new-teamvault-password ./cmd/teamvault-password`
+- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/new-teamvault-username ./cmd/teamvault-username`
+- [ ] `TV_URL=$(jq -r .url ~/.teamvault.json)` (vault URL from existing config)
+- [ ] `TV_USER=$(jq -r .user ~/.teamvault.json)` (vault user from existing config)
+- [ ] `TV_PASS=$(security find-generic-password -s teamvault-utils -a "$TV_URL" -w)` (replay existing Keychain entry)
+- [ ] `WORK_DIR=$(mktemp -d)`
+- [ ] Write throwaway config without `pass`:
+      `printf '{"url":"%s","user":"%s"}\n' "$TV_URL" "$TV_USER" > "$WORK_DIR/teamvault.json"`
+- [ ] `TV_CONFIG="$WORK_DIR/teamvault.json"`
+- [ ] `TV_KEY=${TV_PROBE_KEY:-lO4K1w}`
+- [ ] `jq 'has("pass")' "$TV_CONFIG"` prints `false` (no plaintext password in the test config)
+
+## Action
+
+- [ ] `LOGIN_OUT=$(printf '%s\n' "$TV_PASS" | /tmp/new-teamvault-login --teamvault-config $TV_CONFIG 2>&1); LOGIN_RC=$?`
+- [ ] `PW_OUT=$(/tmp/new-teamvault-password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY </dev/null 2>/tmp/scenario-002-pw.err); PW_RC=$?`
+- [ ] `USER_OUT=$(/tmp/new-teamvault-username --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY </dev/null 2>/tmp/scenario-002-user.err); USER_RC=$?`
+
+## Expected
+
+- [ ] `[ "$LOGIN_RC" = "0" ]` (login succeeded)
+- [ ] `echo "$LOGIN_OUT" | grep -qi 'login successful'` (login confirmation message)
+- [ ] `[ "$(security find-generic-password -s teamvault-utils -a "$TV_URL" -w)" = "$TV_PASS" ]` (Keychain entry written/idempotent)
+- [ ] `[ "$PW_RC" = "0" ]` (password retrieval via Keychain succeeded)
+- [ ] `[ -n "$PW_OUT" ]` (password stdout non-empty — proves Keychain read from a no-`pass` config)
+- [ ] `! grep -qi 'password' /tmp/scenario-002-pw.err` (no password prompt appeared)
+- [ ] `[ "$USER_RC" = "0" ]`
+- [ ] `[ "$USER_OUT" = "longhorn" ]` (resolved password authenticated against the real API)
+- [ ] `! grep -qi 'password' /tmp/scenario-002-user.err`
+
+## Cleanup
+
+```bash
+rm -rf "$WORK_DIR" /tmp/new-teamvault-login /tmp/new-teamvault-password /tmp/new-teamvault-username /tmp/scenario-002-*.err
+```
+
+Keychain entry is intentionally left in place — it was reused, not created by this scenario.
