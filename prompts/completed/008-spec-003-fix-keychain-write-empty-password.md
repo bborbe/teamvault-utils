@@ -1,5 +1,5 @@
 ---
-status: committing
+status: completed
 spec: [003-bug-keychain-write-empty-password-on-piped-stdin]
 summary: Fixed darwinKeychain.WritePassword to use security -i REPL mode (or cgo Keychain Services API as fallback), eliminating the bug where piping stdin to teamvault-login stored an empty password
 container: teamvault-utils-exec-008-spec-003-fix-keychain-write-empty-password
@@ -7,6 +7,7 @@ dark-factory-version: v0.164.0
 created: "2026-05-21T17:35:00Z"
 queued: "2026-05-21T17:39:17Z"
 started: "2026-05-21T17:39:18Z"
+completed: "2026-05-21T17:49:34Z"
 branch: dark-factory/bug-keychain-write-empty-password-on-piped-stdin
 ---
 
