@@ -2,9 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v4.13.0
 
 - refactor: Migrate keychain implementation from hand-rolled `security` shell-out to `github.com/zalando/go-keyring`. Eliminates the REPL-script construction and quoting logic that produced bugs in v4.10–v4.12. Linux and Windows now have a working credential store as a side effect (Secret Service / Credential Manager). File renamed `keychain_darwin.go` → `keychain_impl.go` to drop the filename-implicit `_darwin` build constraint. The internal `Executor` interface, `osExecutor` type, and `NewKeychainWithExecutor` constructor are removed; new `NewKeychainWithClient(KeyringClient) Keychain` exposes the test seam. Backward-compatible read: Keychain entries written by v4.10–v4.12 remain readable. See spec 004.
+- docs: Add `docs/releasing-teamvault-utils.md` capturing the release gate (walk active scenarios before approving binary-surface prompts), the `autoRelease` semantics, the manual-release procedure for stuck-prompt-killed-then-finished-manually paths, the per-prompt gate cadence table, and the post-v4.13.0 keychain side-effect (zalando stores in its own encoded format; raw `security -w` shows the encoded blob, but downstream binaries round-trip correctly).
 
 ## v4.12.1
 
