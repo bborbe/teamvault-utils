@@ -1,9 +1,10 @@
 ---
-status: verifying
+status: completed
 approved: "2026-05-21T11:55:22Z"
 generating: "2026-05-21T12:03:02Z"
 prompted: "2026-05-21T12:06:25Z"
 verifying: "2026-05-21T13:03:14Z"
+completed: "2026-05-21T13:44:19Z"
 branch: dark-factory/cache-enable-and-timeout
 ---
 
