@@ -169,7 +169,7 @@ var _ = Describe("DarwinKeychain", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			It("calls security add-generic-password with -U flag and password via stdin", func() {
+			It("invokes security -i with the add-generic-password REPL script on stdin", func() {
 				_ = keychain.WritePassword(
 					ctx,
 					teamvault.Url("https://vault.example.com"),
@@ -178,10 +178,13 @@ var _ = Describe("DarwinKeychain", func() {
 				Expect(fakeExecutor.RunCallCount()).To(Equal(1))
 				_, name, args, stdin := fakeExecutor.RunArgsForCall(0)
 				Expect(name).To(Equal("security"))
-				Expect(args).To(Equal([]string{
-					"add-generic-password", "-U", "-s", "teamvault-utils", "-a", "https://vault.example.com", "-w",
-				}))
-				Expect(stdin).To(Equal("mysecret"))
+				Expect(args).To(Equal([]string{"-i"}))
+				Expect(stdin).To(ContainSubstring("add-generic-password"))
+				Expect(stdin).To(ContainSubstring("-U"))
+				Expect(stdin).To(ContainSubstring("-s teamvault-utils"))
+				Expect(stdin).To(ContainSubstring("-a https://vault.example.com"))
+				Expect(stdin).To(ContainSubstring("mysecret"))
+				Expect(stdin).NotTo(ContainSubstring("quit"))
 			})
 		})
 

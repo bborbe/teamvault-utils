@@ -1,4 +1,4 @@
-//go:build darwin && !cgo
+//go:build darwin
 
 // Copyright (c) 2016-2026 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -125,7 +125,7 @@ func (d *darwinKeychain) WritePassword(ctx context.Context, url Url, password Pa
 		url,
 	) + " -w " + quotePasswordForSecurity(
 		password,
-	) + "\nquit\n"
+	) + "\n"
 	stdout, stderr, exitCode, err := d.executor.Run(ctx, "security", []string{"-i"}, script)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "execute security -i command failed")
