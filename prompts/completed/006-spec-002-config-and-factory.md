@@ -1,5 +1,5 @@
 ---
-status: committing
+status: completed
 spec: [002-cache-enable-and-timeout]
 summary: Implemented Config.Timeout field, CreateConnectorWithConfigAndTimeout factory function with cache OR-logic fix, and corresponding tests
 container: teamvault-utils-exec-006-spec-002-config-and-factory
@@ -7,6 +7,7 @@ dark-factory-version: v0.164.0
 created: "2026-05-21T12:10:00Z"
 queued: "2026-05-21T12:38:20Z"
 started: "2026-05-21T12:38:22Z"
+completed: "2026-05-21T12:49:35Z"
 branch: dark-factory/cache-enable-and-timeout
 ---
 
