@@ -215,5 +215,118 @@ var _ = Describe("DarwinKeychain", func() {
 				Expect(err.Error()).To(ContainSubstring("exec error"))
 			})
 		})
+
+		Context("regression: password never appears in argv", func() {
+			It("uses security -i REPL mode with no -w flag in args", func() {
+				_ = keychain.WritePassword(
+					ctx,
+					teamvault.Url("https://vault.example.com"),
+					teamvault.Password("secret123"),
+				)
+				_, name, args, stdin := fakeExecutor.RunArgsForCall(0)
+				Expect(name).To(Equal("security"))
+				Expect(args).To(Equal([]string{"-i"}))
+				Expect(
+					stdin,
+				).To(ContainSubstring("add-generic-password -U -s teamvault-utils -a https://vault.example.com"))
+				Expect(stdin).To(ContainSubstring("-w secret123"))
+			})
+
+			It("does not pass password as a positional -w argument", func() {
+				_ = keychain.WritePassword(
+					ctx,
+					teamvault.Url("https://vault.example.com"),
+					teamvault.Password("secret123"),
+				)
+				_, _, args, _ := fakeExecutor.RunArgsForCall(0)
+				Expect(args).NotTo(ContainElement(ContainSubstring("-w")))
+			})
+		})
+
+		Context("metacharacter passthrough", func() {
+			It(
+				"passes dollar and backtick characters literally without shell interpretation",
+				func() {
+					_ = keychain.WritePassword(
+						ctx,
+						teamvault.Url("https://vault.example.com"),
+						teamvault.Password("pass$with`backticks"),
+					)
+					_, _, _, stdin := fakeExecutor.RunArgsForCall(0)
+					Expect(stdin).To(ContainSubstring("pass$with`backticks"))
+					Expect(stdin).NotTo(ContainSubstring("$("))
+				},
+			)
+		})
+
+		Context("space and quote bearing password", func() {
+			It("correctly quotes password containing spaces and double quotes", func() {
+				_ = keychain.WritePassword(
+					ctx,
+					teamvault.Url("https://vault.example.com"),
+					teamvault.Password(`hello "world" foo`),
+				)
+				_, _, _, stdin := fakeExecutor.RunArgsForCall(0)
+				Expect(stdin).To(ContainSubstring(`"hello \"world\" foo"`))
+			})
+		})
+
+		Context("NUL byte rejection", func() {
+			It("rejects password containing NUL byte without calling executor", func() {
+				err := keychain.WritePassword(
+					ctx,
+					teamvault.Url("https://vault.example.com"),
+					teamvault.Password("foo\x00bar"),
+				)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("NUL"))
+				Expect(fakeExecutor.RunCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("newline rejection", func() {
+			It("rejects password containing newline without calling executor", func() {
+				err := keychain.WritePassword(
+					ctx,
+					teamvault.Url("https://vault.example.com"),
+					teamvault.Password("foo\nbar"),
+				)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("newline"))
+				Expect(fakeExecutor.RunCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("locked Keychain error path", func() {
+			BeforeEach(func() {
+				fakeExecutor.RunReturns("", "Keychain could not be unlocked", 36, nil)
+			})
+
+			It("returns an error mentioning Keychain and unlock", func() {
+				err := keychain.WritePassword(
+					ctx,
+					teamvault.Url("https://vault.example.com"),
+					teamvault.Password("mysecret"),
+				)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("Keychain"))
+				Expect(err.Error()).To(ContainSubstring("unlock"))
+			})
+		})
+
+		Context("successful write", func() {
+			BeforeEach(func() {
+				fakeExecutor.RunReturns("", "", 0, nil)
+			})
+
+			It("returns nil error on success", func() {
+				err := keychain.WritePassword(
+					ctx,
+					teamvault.Url("https://vault.example.com"),
+					teamvault.Password("mysecret"),
+				)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
 	})
 })

@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -52,6 +53,20 @@ var _ = Describe("DarwinKeychain integration", func() {
 		got, err := keychain.ReadPassword(ctx, testURL)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(got).To(Equal(testPwd))
+	})
+
+	It("round-trips a password written via the new code path", func() {
+		// Uses a unique service-name per test run to avoid clobbering real entries.
+		svc := fmt.Sprintf("teamvault-utils-it-%d", time.Now().UnixNano())
+		url := teamvault.Url(svc)
+		pwd := teamvault.Password("integration,test,password,with,commas,and \"quotes\"")
+		DeferCleanup(func() {
+			_ = exec.Command("security", "delete-generic-password", "-s", svc, "-a", svc).Run()
+		})
+		Expect(keychain.WritePassword(ctx, url, pwd)).To(Succeed())
+		got, err := keychain.ReadPassword(ctx, url)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(got).To(Equal(pwd))
 	})
 
 	It("returns empty password for a missing entry", func() {

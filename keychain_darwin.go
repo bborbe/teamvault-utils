@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !cgo
 
 // Copyright (c) 2016-2026 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -70,17 +70,77 @@ func (d *darwinKeychain) ReadPassword(ctx context.Context, url Url) (Password, e
 	return Password(strings.TrimSuffix(stdout, "\n")), nil
 }
 
+func validatePasswordForKeychain(ctx context.Context, password Password) error {
+	for i, ch := range password {
+		if ch == 0 {
+			return errors.Errorf(
+				ctx,
+				"password contains NUL byte at position %d which is not supported by Keychain",
+				i,
+			)
+		}
+		if ch == '\n' {
+			return errors.Errorf(
+				ctx,
+				"password contains newline which is not supported by Keychain",
+			)
+		}
+	}
+	return nil
+}
+
+func quotePasswordForSecurity(password Password) string {
+	// Quote password if it contains spaces, double-quotes, or backslashes.
+	// This is needed for security -i REPL mode where whitespace tokenizes commands.
+	needsQuotes := strings.ContainsAny(string(password), " \"\\")
+	if !needsQuotes {
+		return string(password)
+	}
+	var b strings.Builder
+	b.WriteByte('"')
+	for _, ch := range password {
+		switch ch {
+		case '"':
+			b.WriteString(`\"`)
+		case '\\':
+			b.WriteString(`\\`)
+		default:
+			b.WriteRune(ch)
+		}
+	}
+	b.WriteByte('"')
+	return b.String()
+}
+
 func (d *darwinKeychain) WritePassword(ctx context.Context, url Url, password Password) error {
-	_, stderr, exitCode, err := d.executor.Run(
-		ctx,
-		"security",
-		[]string{"add-generic-password", "-U", "-s", KeychainServiceName, "-a", string(url), "-w"},
-		string(password),
-	)
+	if err := validatePasswordForKeychain(ctx, password); err != nil {
+		return err
+	}
+	if url == "" {
+		glog.V(3).Infof("keychain write skipped: empty URL")
+		return nil
+	}
+
+	script := "add-generic-password -U -s " + KeychainServiceName + " -a " + string(
+		url,
+	) + " -w " + quotePasswordForSecurity(
+		password,
+	) + "\nquit\n"
+	stdout, stderr, exitCode, err := d.executor.Run(ctx, "security", []string{"-i"}, script)
 	if err != nil {
-		return errors.Wrapf(ctx, err, "execute security command failed")
+		return errors.Wrapf(ctx, err, "execute security -i command failed")
 	}
 	if exitCode != 0 {
+		if exitCode == 36 || strings.Contains(stderr, "could not be unlocked") ||
+			strings.Contains(stderr, "user interaction is not allowed") {
+			glog.V(2).Infof("keychain locked for url %q", url)
+			return errors.Errorf(
+				ctx,
+				"TeamVault password requires Keychain unlock; unlock your Keychain and retry",
+			)
+		}
+		glog.V(2).
+			Infof("keychain write error for url %q: exit %d, stdout=%q, stderr=%q", url, exitCode, stdout, stderr)
 		return errors.Errorf(
 			ctx,
 			"security add-generic-password failed with exit code %d: %s",

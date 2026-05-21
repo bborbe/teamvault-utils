@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.12.1
+
+- fix: `teamvault-login` now reliably stores the password in the macOS Keychain when invoked with stdin piped (non-interactive shell). The previous implementation silently stored an empty password because `security add-generic-password -w` without a positional value prompts on `/dev/tty`. Fix uses `security -i` REPL mode (or the Keychain Services API via cgo as fallback) so the password is sent via stdin and never appears in `ps` output. See spec 003.
+
 ## v4.12.0
 
 - feat: `--teamvault-timeout` flag and `TEAMVAULT_TIMEOUT` env var across all `teamvault-*` CLI binaries; threads through to the new factory `CreateConnectorWithConfigAndTimeout`.
