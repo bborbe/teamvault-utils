@@ -46,6 +46,18 @@ linters:
       min-complexity: 4
     maintidx:
       min-maintainability-index: 20
+    errcheck:
+      exclude-functions:
+        - (io.Closer).Close
+        - (io.Writer).Write
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+
+    gosec:
+      excludes:
+        - G104
+
   exclusions:
     presets:
       - comments

@@ -33,7 +33,7 @@ test:
 	go run github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION) -r --randomize-all --race --cover --trace
 
 .PHONY: check
-check: lint vet errcheck vulncheck osv-scanner gosec trivy
+check: lint vet vulncheck osv-scanner trivy
 
 .PHONY: lint
 lint:
@@ -42,10 +42,6 @@ lint:
 .PHONY: vet
 vet:
 	go vet -mod=mod $(shell go list -mod=mod ./... | grep -v /vendor/)
-
-.PHONY: errcheck
-errcheck:
-	go run github.com/kisielk/errcheck@$(ERRCHECK_VERSION) -ignore '(Close|Write|Fprint)' $(shell go list -mod=mod ./... | grep -v /vendor/ | grep -v k8s/client)
 
 .PHONY: vulncheck
 vulncheck:
@@ -60,10 +56,6 @@ osv-scanner:
 		echo "No config found, running default scan"; \
 		go run github.com/google/osv-scanner/v2/cmd/osv-scanner@$(OSV_SCANNER_VERSION) --recursive .; \
 	fi
-
-.PHONY: gosec
-gosec:
-	go run github.com/securego/gosec/v2/cmd/gosec@$(GOSEC_VERSION) -exclude=G104 ./...
 
 .PHONY: trivy
 trivy:
