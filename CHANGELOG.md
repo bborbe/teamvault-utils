@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.13.1
+
+- bump go 1.26.3 → 1.26.4
+- update bborbe/* and golang.org/x/* dependencies
+- drop errcheck + gosec standalone tools; inline config in golangci.yml
+- add .maintainer.yaml (autoRelease + autoApprove)
+- disable dark-factory autoRelease
+
 ## v4.13.0
 
 - refactor: Migrate keychain implementation from hand-rolled `security` shell-out to `github.com/zalando/go-keyring`. Eliminates the REPL-script construction and quoting logic that produced bugs in v4.10–v4.12. Linux and Windows now have a working credential store as a side effect (Secret Service / Credential Manager). File renamed `keychain_darwin.go` → `keychain_impl.go` to drop the filename-implicit `_darwin` build constraint. The internal `Executor` interface, `osExecutor` type, and `NewKeychainWithExecutor` constructor are removed; new `NewKeychainWithClient(KeyringClient) Keychain` exposes the test seam. Backward-compatible read: Keychain entries written by v4.10–v4.12 remain readable. See spec 004.
