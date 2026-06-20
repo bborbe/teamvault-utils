@@ -53,17 +53,32 @@ vet:
 
 VULNCHECK_IGNORE ?= GO-2026-4923 GO-2026-4514 GO-2022-0470 GO-2026-4772 GO-2026-4771
 
+# Known-benign govulncheck failure modes we swallow. golang.org/x/tools v0.46.0
+# panics on packages containing generic *types.TypeParam during SSA analysis
+# (govulncheck v1.3.0+ surface via RuntimeTypes/AllFunctions). We treat that as
+# "no findings" because the panic happens AFTER the package scan; any real
+# vulnerabilities would have been emitted as JSON on stdout before the panic.
+# Any OTHER govulncheck failure (network, bad args, permissions) is surfaced.
 .PHONY: vulncheck
 vulncheck:
 	@PKGS="$(shell go list -mod=mod ./... | grep -v /vendor/)"; \
 	IGNORE_JSON=$$(printf '%s\n' $(VULNCHECK_IGNORE) | jq -R . | jq -s .); \
-	REMAIN=$$(go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) -format json $$PKGS 2>/dev/null | \
-		jq -rs --argjson ignore "$$IGNORE_JSON" \
-			'(map(select(.osv != null)) | map({key: .osv.id, value: (.osv.summary // "")}) | from_entries) as $$sum | \
-			 map(select(.finding != null) | .finding) | \
-			 map(select(.osv as $$o | $$ignore | index($$o) | not)) | \
-			 map("\(.osv)\t\(.trace[-1].module)@\(.trace[-1].version) -> \(.fixed_version)\t\($$sum[.osv] // "")") | \
-			 unique | .[]'); \
+	ERR=$$(mktemp); \
+	OUT=$$(go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) -format json $$PKGS 2>$$ERR); \
+	RC=$$?; \
+	if [ $$RC -ne 0 ] && ! grep -q "ForEachElement called on type containing" "$$ERR"; then \
+		echo "govulncheck failed (exit $$RC):" >&2; \
+		cat "$$ERR" >&2; \
+		rm -f "$$ERR"; \
+		exit $$RC; \
+	fi; \
+	rm -f "$$ERR"; \
+	REMAIN=$$(printf '%s' "$$OUT" | jq -rs --argjson ignore "$$IGNORE_JSON" \
+		'(map(select(.osv != null)) | map({key: .osv.id, value: (.osv.summary // "")}) | from_entries) as $$sum | \
+		 map(select(.finding != null) | .finding) | \
+		 map(select(.osv as $$o | $$ignore | index($$o) | not)) | \
+		 map("\(.osv)\t\(.trace[-1].module)@\(.trace[-1].version) -> \(.fixed_version)\t\($$sum[.osv] // "")") | \
+		 unique | .[]'); \
 	if [ -n "$$REMAIN" ]; then \
 		echo "Unexpected vulnerabilities (ignored: $(VULNCHECK_IGNORE)):"; \
 		printf '%s\n' "$$REMAIN" | column -t -s "$$(printf '\t')"; \
