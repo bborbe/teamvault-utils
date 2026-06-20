@@ -64,15 +64,14 @@ vulncheck:
 	@PKGS="$(shell go list -mod=mod ./... | grep -v /vendor/)"; \
 	IGNORE_JSON=$$(printf '%s\n' $(VULNCHECK_IGNORE) | jq -R . | jq -s .); \
 	ERR=$$(mktemp); \
+	trap 'rm -f "$$ERR"' EXIT INT TERM; \
 	OUT=$$(go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) -format json $$PKGS 2>$$ERR); \
 	RC=$$?; \
 	if [ $$RC -ne 0 ] && ! grep -q "ForEachElement called on type containing" "$$ERR"; then \
 		echo "govulncheck failed (exit $$RC):" >&2; \
 		cat "$$ERR" >&2; \
-		rm -f "$$ERR"; \
 		exit $$RC; \
 	fi; \
-	rm -f "$$ERR"; \
 	REMAIN=$$(printf '%s' "$$OUT" | jq -rs --argjson ignore "$$IGNORE_JSON" \
 		'(map(select(.osv != null)) | map({key: .osv.id, value: (.osv.summary // "")}) | from_entries) as $$sum | \
 		 map(select(.finding != null) | .finding) | \
