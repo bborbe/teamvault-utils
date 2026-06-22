@@ -1,6 +1,8 @@
 
 include tools.env
 
+GOPATH ?= $(shell go env GOPATH)
+
 .PHONY: default
 default: precommit
 
