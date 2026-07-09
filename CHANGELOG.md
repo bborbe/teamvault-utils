@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - fix(login): `teamvault login` now rejects a negative `--teamvault-timeout` (and config `timeout`) and honors the config-file timeout, matching the other subcommands — previously a negative value silently disabled the HTTP timeout.
 - test: harden CLI tests — the no-trailing-newline tests assert command success; add login-CLI-wiring tests (incl. the negative-timeout regression) and a `config generate` happy-path test.
 - refactor: deduplicate the four secret-reader subcommands and the login password-verify block into shared helpers; wrap previously-bare errors.
+- docs: refocus `README.md` on CLI usage for end users (install → login → read a secret → getting-started link); move the Go library examples out to `docs/library.md`.
 
 ## v5.0.0
 
