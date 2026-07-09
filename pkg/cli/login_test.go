@@ -174,7 +174,7 @@ var _ = Describe("loginFlow", func() {
 			fakeKeychain.WritePasswordReturns(nil)
 
 			stdOut := &bytes.Buffer{}
-			_ = loginFlow(
+			err := loginFlow(
 				ctx,
 				&bytes.Buffer{},
 				errOut,
@@ -185,6 +185,7 @@ var _ = Describe("loginFlow", func() {
 				"valid-pass",
 			)
 
+			Expect(err).NotTo(HaveOccurred())
 			Expect(stdOut.String()).To(BeEmpty())
 		})
 	})
@@ -250,6 +251,45 @@ var _ = Describe("loginFlow", func() {
 			Expect(err.Error()).To(ContainSubstring("initial factory error"))
 			Expect(fakeKeychain.WritePasswordCallCount()).To(Equal(0))
 		})
+	})
+})
+
+var _ = Describe("createLoginCommand wiring", func() {
+	var ctx context.Context
+
+	BeforeEach(func() {
+		ctx = context.Background()
+	})
+
+	It("rejects a negative --teamvault-timeout before any network call", func() {
+		// url+user+pass are supplied so validation reaches timeout resolution,
+		// which must reject the negative value before loginFlow / any connector.
+		sf := &sharedFlags{
+			url:     "https://vault.example.com",
+			user:    "alice",
+			pass:    "some-pass",
+			timeout: "-1s",
+		}
+		cmd := createLoginCommand(ctx, sf)
+		cmd.SetArgs([]string{})
+		cmd.SetOut(&bytes.Buffer{})
+		cmd.SetErr(&bytes.Buffer{})
+
+		err := cmd.Execute()
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("invalid timeout"))
+	})
+
+	It("errors when the teamvault URL is missing", func() {
+		sf := &sharedFlags{}
+		cmd := createLoginCommand(ctx, sf)
+		cmd.SetArgs([]string{})
+		cmd.SetOut(&bytes.Buffer{})
+		cmd.SetErr(&bytes.Buffer{})
+
+		err := cmd.Execute()
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("URL is required"))
 	})
 })
 

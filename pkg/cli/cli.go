@@ -97,10 +97,46 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	)
 
 	rootCmd.AddCommand(createLoginCommand(ctx, sf))
-	rootCmd.AddCommand(createPasswordCommand(ctx, sf))
-	rootCmd.AddCommand(createUsernameCommand(ctx, sf))
-	rootCmd.AddCommand(createUrlCommand(ctx, sf))
-	rootCmd.AddCommand(createFileCommand(ctx, sf))
+	rootCmd.AddCommand(createSecretCommand(
+		ctx,
+		sf,
+		"password",
+		"Retrieve a password from TeamVault",
+		"get password failed",
+		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
+			return conn.Password(ctx, key)
+		},
+	))
+	rootCmd.AddCommand(createSecretCommand(
+		ctx,
+		sf,
+		"username",
+		"Retrieve a username from TeamVault",
+		"get user failed",
+		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
+			return conn.User(ctx, key)
+		},
+	))
+	rootCmd.AddCommand(createSecretCommand(
+		ctx,
+		sf,
+		"url",
+		"Retrieve a URL from TeamVault",
+		"get url failed",
+		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
+			return conn.Url(ctx, key)
+		},
+	))
+	rootCmd.AddCommand(createSecretCommand(
+		ctx,
+		sf,
+		"file",
+		"Retrieve a file from TeamVault",
+		"get file failed",
+		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
+			return conn.File(ctx, key)
+		},
+	))
 	rootCmd.AddCommand(createConfigCommand(ctx, sf))
 
 	return rootCmd
@@ -111,11 +147,19 @@ func envBool(name string) bool {
 	return os.Getenv(name) == "true"
 }
 
-// createPasswordCommand creates the password subcommand.
-func createPasswordCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
+// createSecretCommand builds a secret-reader subcommand. The four secret
+// readers (password/username/url/file) differ only in their Use/Short strings,
+// the connector method invoked, and the error message; this helper captures the
+// shared wiring (required --teamvault-key, buildConnector, writeSecret).
+func createSecretCommand(
+	ctx context.Context,
+	sf *sharedFlags,
+	use, short, errMsg string,
+	fetch func(context.Context, teamvault.Connector, teamvault.Key) (fmt.Stringer, error),
+) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "password",
-		Short: "Retrieve a password from TeamVault",
+		Use:   use,
+		Short: short,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			key, _ := cmd.Flags().GetString("teamvault-key")
@@ -123,92 +167,11 @@ func createPasswordCommand(ctx context.Context, sf *sharedFlags) *cobra.Command 
 			if err != nil {
 				return err
 			}
-			result, err := conn.Password(ctx, teamvault.Key(key))
+			result, err := fetch(ctx, conn, teamvault.Key(key))
 			if err != nil {
-				return errors.Wrapf(ctx, err, "get password failed")
+				return errors.Wrapf(ctx, err, "%s", errMsg)
 			}
-			return writeSecret(cmd.OutOrStdout(), result)
-		},
-	}
-
-	var key string
-	cmd.Flags().StringVar(&key, "teamvault-key", "", "teamvault key")
-	_ = cmd.MarkFlagRequired("teamvault-key")
-
-	return cmd
-}
-
-// createUsernameCommand creates the username subcommand.
-func createUsernameCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "username",
-		Short: "Retrieve a username from TeamVault",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			key, _ := cmd.Flags().GetString("teamvault-key")
-			conn, err := sf.buildConnector(ctx)
-			if err != nil {
-				return err
-			}
-			result, err := conn.User(ctx, teamvault.Key(key))
-			if err != nil {
-				return errors.Wrapf(ctx, err, "get user failed")
-			}
-			return writeSecret(cmd.OutOrStdout(), result)
-		},
-	}
-
-	var key string
-	cmd.Flags().StringVar(&key, "teamvault-key", "", "teamvault key")
-	_ = cmd.MarkFlagRequired("teamvault-key")
-
-	return cmd
-}
-
-// createUrlCommand creates the url subcommand.
-func createUrlCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "url",
-		Short: "Retrieve a URL from TeamVault",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			key, _ := cmd.Flags().GetString("teamvault-key")
-			conn, err := sf.buildConnector(ctx)
-			if err != nil {
-				return err
-			}
-			result, err := conn.Url(ctx, teamvault.Key(key))
-			if err != nil {
-				return errors.Wrapf(ctx, err, "get url failed")
-			}
-			return writeSecret(cmd.OutOrStdout(), result)
-		},
-	}
-
-	var key string
-	cmd.Flags().StringVar(&key, "teamvault-key", "", "teamvault key")
-	_ = cmd.MarkFlagRequired("teamvault-key")
-
-	return cmd
-}
-
-// createFileCommand creates the file subcommand.
-func createFileCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "file",
-		Short: "Retrieve a file from TeamVault",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			key, _ := cmd.Flags().GetString("teamvault-key")
-			conn, err := sf.buildConnector(ctx)
-			if err != nil {
-				return err
-			}
-			result, err := conn.File(ctx, teamvault.Key(key))
-			if err != nil {
-				return errors.Wrapf(ctx, err, "get file failed")
-			}
-			return writeSecret(cmd.OutOrStdout(), result)
+			return writeSecret(ctx, cmd.OutOrStdout(), result)
 		},
 	}
 
@@ -221,9 +184,11 @@ func createFileCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
 
 // writeSecret writes the secret value to the given writer with no trailing newline.
 // This ensures curl -u style basic-auth usage works correctly.
-func writeSecret(out io.Writer, value fmt.Stringer) error {
-	_, err := fmt.Fprintf(out, "%v", value)
-	return err
+func writeSecret(ctx context.Context, out io.Writer, value fmt.Stringer) error {
+	if _, err := fmt.Fprintf(out, "%v", value); err != nil {
+		return errors.Wrapf(ctx, err, "write secret failed")
+	}
+	return nil
 }
 
 // buildConnector creates a TeamVault connector using the shared flags.
