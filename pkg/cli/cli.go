@@ -169,7 +169,7 @@ func createSecretCommand(
 			}
 			result, err := fetch(ctx, conn, teamvault.Key(key))
 			if err != nil {
-				return errors.Wrapf(ctx, err, "%s", errMsg)
+				return errors.Wrap(ctx, err, errMsg)
 			}
 			return writeSecret(ctx, cmd.OutOrStdout(), result)
 		},
