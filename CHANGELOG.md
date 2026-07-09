@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+**Breaking (v5): the seven `teamvault-*` binaries are replaced by a single `teamvault` command.**
+
+- feat: Consolidate the seven binaries (`teamvault-login`, `teamvault-password`, `teamvault-username`, `teamvault-url`, `teamvault-file`, `teamvault-config-parser`, `teamvault-config-dir-generator`) into one `teamvault` command built with `spf13/cobra`. Subcommands: `login`, `password`, `username`, `url`, `file`, and `config parse` / `config generate`. Install with `go install github.com/bborbe/teamvault-utils/v5@latest`.
+- build: bump module path to `github.com/bborbe/teamvault-utils/v5` (major/breaking). The library moves from the module root into `pkg/teamvault` (and the factory into `pkg/factory`), with a thin root `main.go`; library consumers update imports from `github.com/bborbe/teamvault-utils/v5` to `github.com/bborbe/teamvault-utils/v5/pkg/teamvault`.
+- feat: the seven shared flags (`--teamvault-url/-user/-pass/-config`, `--staging`, `--cache`, `--teamvault-timeout`) are persistent on the root command, each still falling back to its `TEAMVAULT_*`/`STAGING`/`CACHE` env var — the existing `.envrc`/direnv contract is preserved; only the invocation changes (`teamvault-password …` → `teamvault password …`).
+- fix: `password`/`username`/`url`/`file` print the resolved value with NO trailing newline, fixing the `curl -u` basic-auth breakage.
+- feat: clean `--help` — cobra/pflag use a private flag set, eliminating the Ginkgo/glog flag pollution the old `argument/v2`-based binaries leaked into `--help`.
+- fix: errors print exactly once (`SilenceErrors: true`) with a non-zero exit, instead of the doubled cobra + handler message.
+- build: drop the now-unused `github.com/bborbe/service` and `github.com/bborbe/argument/v2` dependencies.
+
 ## v4.13.2
 
 - fix(security): unblock `make precommit` baseline. Bump `go` directive 1.26.4 → 1.26.5 to clear stdlib advisory GO-2026-5856 (osv-scanner). Suppress GO-2026-5932 (`golang.org/x/crypto/openpgp` unmaintained/unsafe, no fix version, package not imported) in `VULNCHECK_IGNORE` (govulncheck) and `.trivyignore` (trivy).

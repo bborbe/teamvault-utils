@@ -8,7 +8,7 @@ Validates that when TeamVault is unreachable and cache is disabled, the binary e
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/new-teamvault-password ./cmd/teamvault-password`
+- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/teamvault .`
 - [ ] `WORK_DIR=$(mktemp -d)`
 - [ ] `TV_HOME="$WORK_DIR/home"; mkdir -p "$TV_HOME"`
 - [ ] `TV_KEY=probe-key-004`
@@ -19,7 +19,7 @@ Validates that when TeamVault is unreachable and cache is disabled, the binary e
 
 ## Action
 
-- [ ] `START=$(date +%s); OUT=$(env HOME="$TV_HOME" /tmp/new-teamvault-password --teamvault-config $WORK_DIR/no-cache.json --teamvault-key $TV_KEY 2>/tmp/scenario-004.err); RC=$?; END=$(date +%s); DURATION=$((END - START))`
+- [ ] `START=$(date +%s); OUT=$(env HOME="$TV_HOME" /tmp/teamvault password --teamvault-config $WORK_DIR/no-cache.json --teamvault-key $TV_KEY 2>/tmp/scenario-004.err); RC=$?; END=$(date +%s); DURATION=$((END - START))`
 
 ## Expected
 
@@ -31,5 +31,5 @@ Validates that when TeamVault is unreachable and cache is disabled, the binary e
 ## Cleanup
 
 ```bash
-rm -rf "$WORK_DIR" /tmp/new-teamvault-password /tmp/scenario-004.err
+rm -rf "$WORK_DIR" /tmp/teamvault /tmp/scenario-004.err
 ```
