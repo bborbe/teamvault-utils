@@ -3,10 +3,8 @@ module github.com/bborbe/teamvault-utils/v5
 go 1.26.5
 
 require (
-	github.com/bborbe/argument/v2 v2.12.27
 	github.com/bborbe/errors v1.5.13
 	github.com/bborbe/http v1.26.13
-	github.com/bborbe/service v1.10.1
 	github.com/bborbe/time v1.27.1
 	github.com/bborbe/validation v1.4.14
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c

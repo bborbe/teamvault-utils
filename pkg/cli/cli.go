@@ -18,8 +18,8 @@ import (
 	libtime "github.com/bborbe/time"
 	"github.com/spf13/cobra"
 
-	"github.com/bborbe/teamvault-utils/v5"
-	"github.com/bborbe/teamvault-utils/v5/factory"
+	"github.com/bborbe/teamvault-utils/v5/pkg/factory"
+	"github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
 )
 
 // Execute runs the CLI application. It sets up signal handling for SIGINT and
@@ -95,10 +95,12 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 		"HTTP request timeout for TeamVault API calls (e.g. 5s, 30s); 0 = default 5s",
 	)
 
+	rootCmd.AddCommand(createLoginCommand(ctx, sf))
 	rootCmd.AddCommand(createPasswordCommand(ctx, sf))
 	rootCmd.AddCommand(createUsernameCommand(ctx, sf))
 	rootCmd.AddCommand(createUrlCommand(ctx, sf))
 	rootCmd.AddCommand(createFileCommand(ctx, sf))
+	rootCmd.AddCommand(createConfigCommand(ctx, sf))
 
 	return rootCmd
 }

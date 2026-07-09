@@ -3,8 +3,6 @@ github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5 h1:IEjq88XO4PuBDcv
 github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5/go.mod h1:exZ0C/1emQJAw5tHOaUDyY1ycttqBAPcxuzf7QbY6ec=
 github.com/Masterminds/semver/v3 v3.5.0 h1:kQceYJfbupGfZOKZQg0kou0DgAKhzDg2NZPAwZ/2OOE=
 github.com/Masterminds/semver/v3 v3.5.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
-github.com/bborbe/argument/v2 v2.12.27 h1:utahD9wtelfepQr3OanWy7tWkPWZp0EyZDqG61rmhNI=
-github.com/bborbe/argument/v2 v2.12.27/go.mod h1:R/61J5LW6sqbtEGPDSKiYOqLyXwBkwFQebaIpoX/AlM=
 github.com/bborbe/collection v1.20.12 h1:FUiCMioYDmNlPidUQ26NbnN7D0JBsiZfHUVjvCdS+YU=
 github.com/bborbe/collection v1.20.12/go.mod h1:S+agk3S8rIFGh7/XstkM5jBdl/DMec2TxQRGoeYx+fc=
 github.com/bborbe/errors v1.5.13 h1:h2F5R6cL5R+DnUmwFEKziRTzcsKrLlhCrPbKwzfcBo4=
@@ -23,8 +21,6 @@ github.com/bborbe/run v1.9.28 h1:5efpCn2urEF07Xqe9hgcsQ+nIqVUgywC7fOAC2cApTQ=
 github.com/bborbe/run v1.9.28/go.mod h1:fN5XR1okWR//CNofAcgIZPV/BrCn0/vEQNbg3+WNkNM=
 github.com/bborbe/sentry v1.9.18 h1:F33kkGfX7f+YmiDpOH6jzdozn4D+EFKqkN1AQv8Wepc=
 github.com/bborbe/sentry v1.9.18/go.mod h1:+tz4I1yvvtxZGVtRNoqSqHyMn0Tkc/K0hTr+6cDhhk4=
-github.com/bborbe/service v1.10.1 h1:UoUD5b+FH/bWO4+l2i/29uhGFsNcj1/vlM1gok3WzqM=
-github.com/bborbe/service v1.10.1/go.mod h1:xzZgWU6w3pGLdARf51WycQbf5lWXZl3FZhr2/XNioI0=
 github.com/bborbe/time v1.27.1 h1:KVLEuBFFU/AzAGQM9ZGj196m2dTzY+2tTc7bnoegW4E=
 github.com/bborbe/time v1.27.1/go.mod h1:UnsAvfi8EjALCi3bU1z2ON0/OsMZ71bwonYQHkkLsgU=
 github.com/bborbe/validation v1.4.14 h1:XZZUG4/T+ixYYynn5AHN5ZWn/DY0cM0qAKSp+o/vyWk=

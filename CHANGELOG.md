@@ -4,9 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-- build: bump module path to `github.com/bborbe/teamvault-utils/v5` (breaking — major version bump preparing the single-`teamvault`-binary consolidation).
-- feat: Add cobra CLI skeleton at `cmd/teamvault/` with four secret-reader subcommands (`password`, `username`, `url`, `file`), each taking `--teamvault-key`. All four reuse `factory.CreateConnectorWithConfigAndTimeout` unchanged and print the resolved value with NO trailing newline (fixing the `curl -u` basic-auth breakage).
-- feat: Add `pkg/cli` with `Execute()`/`Run()` pattern, seven shared persistent flags seeded from their `TEAMVAULT_*`/`STAGING`/`CACHE`/`TEAMVAULT_TIMEOUT` env vars, and `SilenceUsage: true` for clean error output.
+**Breaking (v5): the seven `teamvault-*` binaries are replaced by a single `teamvault` command.**
+
+- feat: Consolidate the seven binaries (`teamvault-login`, `teamvault-password`, `teamvault-username`, `teamvault-url`, `teamvault-file`, `teamvault-config-parser`, `teamvault-config-dir-generator`) into one `teamvault` command built with `spf13/cobra`. Subcommands: `login`, `password`, `username`, `url`, `file`, and `config parse` / `config generate`. Install with `go install github.com/bborbe/teamvault-utils/v5@latest`.
+- build: bump module path to `github.com/bborbe/teamvault-utils/v5` (major/breaking). The library moves from the module root into `pkg/teamvault` (and the factory into `pkg/factory`), with a thin root `main.go`; library consumers update imports from `github.com/bborbe/teamvault-utils/v5` to `github.com/bborbe/teamvault-utils/v5/pkg/teamvault`.
+- feat: the seven shared flags (`--teamvault-url/-user/-pass/-config`, `--staging`, `--cache`, `--teamvault-timeout`) are persistent on the root command, each still falling back to its `TEAMVAULT_*`/`STAGING`/`CACHE` env var — the existing `.envrc`/direnv contract is preserved; only the invocation changes (`teamvault-password …` → `teamvault password …`).
+- fix: `password`/`username`/`url`/`file` print the resolved value with NO trailing newline, fixing the `curl -u` basic-auth breakage.
+- feat: clean `--help` — cobra/pflag use a private flag set, eliminating the Ginkgo/glog flag pollution the old `argument/v2`-based binaries leaked into `--help`.
+- build: drop the now-unused `github.com/bborbe/service` and `github.com/bborbe/argument/v2` dependencies.
 
 ## v4.13.2
 
