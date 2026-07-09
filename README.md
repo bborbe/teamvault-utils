@@ -1,8 +1,8 @@
 # Teamvault Utils
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/bborbe/teamvault-utils/v4.svg)](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v4)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bborbe/teamvault-utils/v5.svg)](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v5)
 [![CI](https://github.com/bborbe/teamvault-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/bborbe/teamvault-utils/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bborbe/teamvault-utils/v4)](https://goreportcard.com/report/github.com/bborbe/teamvault-utils/v4)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bborbe/teamvault-utils/v5)](https://goreportcard.com/report/github.com/bborbe/teamvault-utils/v5)
 
 A Go library and CLI tools for interacting with TeamVault secret management system. Provides type-safe access to passwords, usernames, URLs, and files stored in TeamVault, with support for template parsing and configuration generation.
 
@@ -42,10 +42,10 @@ On macOS, store your TeamVault password in the login Keychain so it never needs 
    }
    ```
 
-2. Run `teamvault-login` once to verify your credentials and store the password in the Keychain:
+2. Run `teamvault login` once to verify your credentials and store the password in the Keychain:
 
    ```bash
-   teamvault-login --teamvault-config ~/.teamvault.json
+   teamvault login --teamvault-config ~/.teamvault.json
    ```
 
    The command prompts for your TeamVault password (hidden), verifies it against the API, and writes it to the macOS login Keychain on success.
@@ -53,8 +53,8 @@ On macOS, store your TeamVault password in the login Keychain so it never needs 
 **Multi-vault setup:** repeat for each config file:
 
 ```bash
-teamvault-login --teamvault-config ~/.teamvault.json
-teamvault-login --teamvault-config ~/.teamvault-sm.json
+teamvault login --teamvault-config ~/.teamvault.json
+teamvault login --teamvault-config ~/.teamvault-sm.json
 ```
 
 **Removing a stored password:**
@@ -65,14 +65,22 @@ security delete-generic-password -s teamvault-utils -a https://teamvault.example
 
 > **Note:** Putting `pass` directly in the config file still works (the legacy path), but the password is stored in plaintext on disk. The Keychain path is strongly preferred on macOS.
 
-> **Non-macOS:** `teamvault-login` verifies credentials but does not persist them. Users on Linux/Windows should continue to supply the password via flag, environment variable, or config file for now.
+> **Non-macOS:** `teamvault login` verifies credentials but does not persist them. Users on Linux/Windows should continue to supply the password via flag, environment variable, or config file for now.
 
 ---
 
 ## Installation
 
+Install the `teamvault` CLI:
+
 ```bash
-go get github.com/bborbe/teamvault-utils/v4
+go install github.com/bborbe/teamvault-utils/v5@latest
+```
+
+Add the library to a Go project:
+
+```bash
+go get github.com/bborbe/teamvault-utils/v5/pkg/teamvault
 ```
 
 ## Quick Start
@@ -85,7 +93,7 @@ import (
     "fmt"
     "net/http"
 
-    teamvault "github.com/bborbe/teamvault-utils/v4"
+    teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
     libtime "github.com/bborbe/time"
 )
 
@@ -122,7 +130,7 @@ import (
     "context"
     "net/http"
 
-    teamvault "github.com/bborbe/teamvault-utils/v4"
+    teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
     libtime "github.com/bborbe/time"
 )
 
@@ -177,7 +185,7 @@ Parse configuration templates containing TeamVault placeholders:
 import (
     "context"
 
-    teamvault "github.com/bborbe/teamvault-utils/v4"
+    teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
 )
 
 func parseConfig(connector teamvault.Connector) {
@@ -246,8 +254,8 @@ import (
     "context"
     "net/http"
 
-    teamvault "github.com/bborbe/teamvault-utils/v4"
-    "github.com/bborbe/teamvault-utils/v4/factory"
+    teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
+    "github.com/bborbe/teamvault-utils/v5/pkg/factory"
     libtime "github.com/bborbe/time"
 )
 
@@ -280,17 +288,17 @@ func createConnector() (teamvault.Connector, error) {
 
 ## API Documentation
 
-For complete API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v4).
+For complete API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v5/pkg/teamvault).
 
 ---
 
 ## CLI Tools
 
-The library includes several command-line tools for quick secret access.
+The library ships a single `teamvault` command with subcommands for quick secret access.
 
 ### Common flags
 
-All `teamvault-*` CLI tools accept these flags:
+All `teamvault` subcommands accept these persistent flags:
 
 ```bash
 --teamvault-timeout=5s   HTTP request timeout for TeamVault API calls (env: TEAMVAULT_TIMEOUT; default: 5s)
@@ -306,13 +314,13 @@ Verify TeamVault credentials and store the password in the macOS Keychain. Recom
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-login
+go install github.com/bborbe/teamvault-utils/v5@latest
 ```
 
 Run:
 
 ```bash
-teamvault-login --teamvault-config ~/.teamvault.json
+teamvault login --teamvault-config ~/.teamvault.json
 ```
 
 The command prompts for your TeamVault password (hidden input), verifies it against the API, and on success stores it in the macOS login Keychain. On non-macOS platforms it verifies only — no Keychain write.
@@ -322,29 +330,31 @@ The command prompts for your TeamVault password (hidden input), verifies it agai
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-password
+go install github.com/bborbe/teamvault-utils/v5@latest
 ```
 
 Run:
 
 ```bash
-teamvault-password \
+teamvault password \
   --teamvault-config ~/.teamvault.json \
   --teamvault-key vLVLbm
 ```
+
+The resolved password is printed to stdout with no trailing newline, so it can be piped directly into tools like `curl -u` without corrupting basic-auth credentials.
 
 ### Teamvault Get Username
 
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-username
+go install github.com/bborbe/teamvault-utils/v5@latest
 ```
 
 Run:
 
 ```bash
-teamvault-username \
+teamvault username \
   --teamvault-config ~/.teamvault.json \
   --teamvault-key vLVLbm
 ```
@@ -354,23 +364,41 @@ teamvault-username \
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-url
+go install github.com/bborbe/teamvault-utils/v5@latest
 ```
 
 Run:
 
 ```bash
-teamvault-url \
+teamvault url \
+  --teamvault-config ~/.teamvault.json \
+  --teamvault-key vLVLbm
+```
+
+### Teamvault Get File
+
+Install:
+
+```bash
+go install github.com/bborbe/teamvault-utils/v5@latest
+```
+
+Run:
+
+```bash
+teamvault file \
   --teamvault-config ~/.teamvault.json \
   --teamvault-key vLVLbm
 ```
 
 ### Parse Config with Teamvault Secrets
 
+Reads a template from stdin and writes the resolved config to stdout.
+
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-parser
+go install github.com/bborbe/teamvault-utils/v5@latest
 ```
 
 Sample config template:
@@ -385,7 +413,7 @@ url={{ "vLVLbm" | teamvaultUrl }}
 Run:
 
 ```bash
-cat my.config | teamvault-config-parser \
+cat my.config | teamvault config parse \
   --teamvault-config ~/.teamvault.json \
   --logtostderr \
   -v=2
@@ -396,7 +424,7 @@ cat my.config | teamvault-config-parser \
 Install:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-dir-generator
+go install github.com/bborbe/teamvault-utils/v5@latest
 ```
 
 TeamVault config file (~/.teamvault.json):
@@ -416,7 +444,7 @@ TeamVault config file (~/.teamvault.json):
 Run:
 
 ```bash
-teamvault-config-dir-generator \
+teamvault config generate \
   --teamvault-config ~/.teamvault.json \
   --source-dir templates \
   --target-dir results \
@@ -461,7 +489,7 @@ import (
     "net/http"
     "os"
 
-    teamvault "github.com/bborbe/teamvault-utils/v4"
+    teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
     libtime "github.com/bborbe/time"
 )
 
@@ -554,8 +582,8 @@ import (
     "context"
     "testing"
 
-    teamvault "github.com/bborbe/teamvault-utils/v4"
-    "github.com/bborbe/teamvault-utils/v4/mocks"
+    teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
+    "github.com/bborbe/teamvault-utils/v5/mocks"
 )
 
 func TestYourCode(t *testing.T) {

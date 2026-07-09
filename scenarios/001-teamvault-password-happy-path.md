@@ -2,16 +2,15 @@
 status: active
 ---
 
-# Scenario 001: teamvault-password and teamvault-username read a secret end-to-end
+# Scenario 001: teamvault password and teamvault username read a secret end-to-end
 
-Validates that `teamvault-password` and `teamvault-username` resolve config + keychain + remote and print the resolved value to stdout. Smoke test proving libargument parsing, factory wiring, and remote call work in the shipped binaries.
+Validates that `teamvault password` and `teamvault username` resolve config + keychain + remote and print the resolved value to stdout. Smoke test proving libargument parsing, factory wiring, and remote call work in the shipped binary. Also asserts the value is printed with NO trailing newline (basic-auth-safe).
 
-Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password already in the macOS Keychain via `teamvault-login`. Probe key `lO4K1w` (personal vault, username "longhorn"). Override via `TV_PROBE_KEY` for other setups.
+Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password already in the macOS Keychain via `teamvault login`. Probe key `lO4K1w` (personal vault, username "longhorn"). Override via `TV_PROBE_KEY` for other setups.
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/new-teamvault-password ./cmd/teamvault-password`
-- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/new-teamvault-username ./cmd/teamvault-username`
+- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/teamvault .`
 - [ ] `TV_CONFIG=~/.teamvault.json`
 - [ ] `TV_KEY=${TV_PROBE_KEY:-lO4K1w}`
 - [ ] `[ -f "$TV_CONFIG" ]` (config file exists)
@@ -19,8 +18,9 @@ Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password 
 
 ## Action
 
-- [ ] `PASS_OUT=$(/tmp/new-teamvault-password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-pw.err); PASS_RC=$?`
-- [ ] `USER_OUT=$(/tmp/new-teamvault-username --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-user.err); USER_RC=$?`
+- [ ] `PASS_OUT=$(/tmp/teamvault password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-pw.err); PASS_RC=$?`
+- [ ] `USER_OUT=$(/tmp/teamvault username --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-user.err); USER_RC=$?`
+- [ ] `LAST_BYTE=$(/tmp/teamvault password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/dev/null | xxd | tail -1)`
 
 ## Expected
 
@@ -30,9 +30,10 @@ Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password 
 - [ ] `[ "$USER_RC" = "0" ]` (username command exit 0)
 - [ ] `[ "$USER_OUT" = "longhorn" ]` (username stdout exactly `longhorn`)
 - [ ] `[ ! -s /tmp/scenario-001-user.err ]` (username stderr empty)
+- [ ] `echo "$LAST_BYTE" | grep -vq '0a$'` (last byte of password output is NOT `0a` — no trailing newline, so `curl -u` basic-auth is not corrupted)
 
 ## Cleanup
 
 ```bash
-rm -f /tmp/new-teamvault-password /tmp/new-teamvault-username /tmp/scenario-001-pw.err /tmp/scenario-001-user.err
+rm -f /tmp/teamvault /tmp/scenario-001-pw.err /tmp/scenario-001-user.err
 ```
