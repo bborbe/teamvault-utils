@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2016-2026 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -154,7 +154,8 @@ var _ = Describe("CLI", func() {
 			cmd.SetArgs([]string{"password", "--teamvault-key", "testkey"})
 			cmd.SetOut(&buf)
 			cmd.SetErr(&bytes.Buffer{})
-			_ = cmd.Execute()
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
 			// Staging connector returns a dummy password; verify no trailing newline
 			Expect(buf.String()).ToNot(HaveSuffix("\n"))
 		})
@@ -169,7 +170,8 @@ var _ = Describe("CLI", func() {
 			cmd.SetArgs([]string{"username", "--teamvault-key", "testkey"})
 			cmd.SetOut(&buf)
 			cmd.SetErr(&bytes.Buffer{})
-			_ = cmd.Execute()
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
 			Expect(buf.String()).ToNot(HaveSuffix("\n"))
 		})
 
@@ -183,7 +185,8 @@ var _ = Describe("CLI", func() {
 			cmd.SetArgs([]string{"url", "--teamvault-key", "testkey"})
 			cmd.SetOut(&buf)
 			cmd.SetErr(&bytes.Buffer{})
-			_ = cmd.Execute()
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
 			Expect(buf.String()).ToNot(HaveSuffix("\n"))
 		})
 
@@ -197,7 +200,8 @@ var _ = Describe("CLI", func() {
 			cmd.SetArgs([]string{"file", "--teamvault-key", "testkey"})
 			cmd.SetOut(&buf)
 			cmd.SetErr(&bytes.Buffer{})
-			_ = cmd.Execute()
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
 			Expect(buf.String()).ToNot(HaveSuffix("\n"))
 		})
 	})

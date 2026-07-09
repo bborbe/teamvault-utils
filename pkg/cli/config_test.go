@@ -7,10 +7,15 @@ package cli
 import (
 	"bytes"
 	"context"
+	"os"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/cobra"
+
+	"github.com/bborbe/teamvault-utils/v5/mocks"
+	teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
 )
 
 var _ = Describe("config parse", func() {
@@ -62,7 +67,67 @@ var _ = Describe("config parse", func() {
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring(`required flag(s)`))
 				Expect(err.Error()).To(ContainSubstring("source-dir"))
+				Expect(err.Error()).To(ContainSubstring("target-dir"))
 			},
 		)
+	})
+
+	Describe("config generate happy path", func() {
+		It("renders a template file from source to target using the connector", func() {
+			srcDir, err := os.MkdirTemp("", "tvsrc")
+			Expect(err).NotTo(HaveOccurred())
+			DeferCleanup(func() { _ = os.RemoveAll(srcDir) })
+			dstDir, err := os.MkdirTemp("", "tvdst")
+			Expect(err).NotTo(HaveOccurred())
+			DeferCleanup(func() { _ = os.RemoveAll(dstDir) })
+
+			template := `{{ "my-key" | teamvaultPassword }}`
+			Expect(
+				os.WriteFile(filepath.Join(srcDir, "secret.txt"), []byte(template), 0600),
+			).To(Succeed())
+
+			fakeConn := &mocks.Connector{}
+			fakeConn.PasswordReturns(teamvault.Password("s3cr3t"), nil)
+
+			gen := teamvault.NewConfigGenerator(teamvault.NewConfigParser(fakeConn))
+			err = gen.Generate(
+				ctx,
+				teamvault.SourceDirectory(srcDir),
+				teamvault.TargetDirectory(dstDir),
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			got, err := os.ReadFile(filepath.Join(dstDir, "secret.txt"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(got)).To(Equal("s3cr3t"))
+			Expect(fakeConn.PasswordCallCount()).To(Equal(1))
+		})
+
+		It("generates through the CLI command wiring with a staging connector", func() {
+			srcDir, err := os.MkdirTemp("", "tvsrc")
+			Expect(err).NotTo(HaveOccurred())
+			DeferCleanup(func() { _ = os.RemoveAll(srcDir) })
+			dstDir, err := os.MkdirTemp("", "tvdst")
+			Expect(err).NotTo(HaveOccurred())
+			DeferCleanup(func() { _ = os.RemoveAll(dstDir) })
+
+			content := "plain text, no placeholders"
+			Expect(
+				os.WriteFile(filepath.Join(srcDir, "config.txt"), []byte(content), 0600),
+			).To(Succeed())
+
+			sf := &sharedFlags{staging: true}
+			cmd = createConfigGenerateCommand(ctx, sf)
+			cmd.SetArgs([]string{"--source-dir", srcDir, "--target-dir", dstDir})
+			cmd.SetOut(&bytes.Buffer{})
+			cmd.SetErr(&bytes.Buffer{})
+
+			err = cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+
+			got, err := os.ReadFile(filepath.Join(dstDir, "config.txt"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(got)).To(Equal(content))
+		})
 	})
 })

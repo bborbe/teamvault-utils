@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- fix(install): remove the `exclude (cloud.google.com/go v0.26.0)` directive from `go.mod` — Go forbids `exclude`/`replace` directives when installing a module as a tool, so it made `go install github.com/bborbe/teamvault-utils/v5@latest` fail. (v5.0.0 is tagged but not installable; v5.0.1 is the first installable v5.)
+- fix(login): `teamvault login` now rejects a negative `--teamvault-timeout` (and config `timeout`) and honors the config-file timeout, matching the other subcommands — previously a negative value silently disabled the HTTP timeout.
+- test: harden CLI tests — the no-trailing-newline tests assert command success; add login-CLI-wiring tests (incl. the negative-timeout regression) and a `config generate` happy-path test.
+- refactor: deduplicate the four secret-reader subcommands and the login password-verify block into shared helpers; wrap previously-bare errors.
+- docs: refocus `README.md` on CLI usage for end users (install → login → read a secret → getting-started link); move the Go library examples out to `docs/library.md`.
+
+## v5.0.0
+
 **Breaking (v5): the seven `teamvault-*` binaries are replaced by a single `teamvault` command.**
 
 - feat: Consolidate the seven binaries (`teamvault-login`, `teamvault-password`, `teamvault-username`, `teamvault-url`, `teamvault-file`, `teamvault-config-parser`, `teamvault-config-dir-generator`) into one `teamvault` command built with `spf13/cobra`. Subcommands: `login`, `password`, `username`, `url`, `file`, and `config parse` / `config generate`. Install with `go install github.com/bborbe/teamvault-utils/v5@latest`.

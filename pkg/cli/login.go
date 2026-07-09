@@ -25,6 +25,17 @@ import (
 // connectorFactory creates a TeamVault connector given a context and password.
 type connectorFactory func(context.Context, teamvault.Password) (teamvault.Connector, error)
 
+const (
+	// maxLoginAttempts is the number of interactive password prompts before giving up.
+	maxLoginAttempts = 3
+	// verifyProbeTimeout bounds each credential-verification Search call.
+	verifyProbeTimeout = 10 * time.Second
+	// loginProbeName is the throwaway search term used to verify credentials.
+	loginProbeName = "_login_probe_"
+	// defaultTimeout is the fallback HTTP timeout when none is configured.
+	defaultTimeout = 5 * time.Second
+)
+
 // createLoginCommand creates the login subcommand.
 func createLoginCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
 	cmd := &cobra.Command{
@@ -37,6 +48,7 @@ func createLoginCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
 			resolvedURL := teamvault.Url(sf.url)
 			resolvedUser := teamvault.User(sf.user)
 			initialPass := teamvault.Password(sf.pass)
+			var configTimeout libtime.Duration
 
 			configPath := teamvault.TeamvaultConfigPath(sf.configPath)
 			if configPath.Exists() {
@@ -49,6 +61,7 @@ func createLoginCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
 				if initialPass == "" {
 					initialPass = config.Password
 				}
+				configTimeout = config.Timeout
 			}
 
 			if resolvedURL == "" {
@@ -82,18 +95,32 @@ func createLoginCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
 			if err != nil {
 				return errors.Wrapf(ctx, err, "create httpClient failed")
 			}
-			timeout := time.Duration(0)
+			var cliTimeout libtime.Duration
 			if sf.timeout != "" {
 				d, err := libtime.ParseDuration(ctx, sf.timeout)
 				if err != nil {
 					return errors.Wrapf(ctx, err, "parse teamvault-timeout %q failed", sf.timeout)
 				}
-				timeout = d.Duration()
+				cliTimeout = *d
 			}
-			if timeout == 0 {
-				timeout = 5 * time.Second
+			if cliTimeout.Duration() < 0 {
+				return errors.Errorf(ctx, "invalid timeout %v: must be >= 0", cliTimeout.Duration())
 			}
-			httpClient.Timeout = timeout
+			if configTimeout.Duration() < 0 {
+				return errors.Errorf(
+					ctx,
+					"invalid timeout %v: must be >= 0",
+					configTimeout.Duration(),
+				)
+			}
+			effective := cliTimeout.Duration()
+			if effective == 0 {
+				effective = configTimeout.Duration()
+				if effective == 0 {
+					effective = defaultTimeout
+				}
+			}
+			httpClient.Timeout = effective
 			currentDateTime := libtime.NewCurrentDateTime()
 			staging := teamvault.Staging(sf.staging)
 
@@ -137,23 +164,17 @@ func loginFlow(
 	initialPass teamvault.Password,
 ) error {
 	if initialPass != "" {
-		conn, err := makeConnector(ctx, initialPass)
+		ok, err := tryPassword(ctx, makeConnector, url, initialPass)
 		if err != nil {
-			return errors.Wrapf(ctx, err, "create connector for %s failed", url)
+			return err
 		}
-		verifyCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-		_, err = conn.Search(verifyCtx, "_login_probe_")
-		cancel()
-		if err == nil {
+		if ok {
 			return writeAndReport(ctx, errOut, kc, url, initialPass)
-		}
-		if !isAuthError(err) {
-			return errors.Wrapf(ctx, err, "connect to %s failed", url)
 		}
 	}
 
 	reader := bufio.NewReader(in)
-	for attempt := 1; attempt <= 3; attempt++ {
+	for attempt := 1; attempt <= maxLoginAttempts; attempt++ {
 		if ctx.Err() != nil {
 			return errors.Wrapf(ctx, ctx.Err(), "login aborted")
 		}
@@ -167,25 +188,46 @@ func loginFlow(
 		}
 		typedPass := teamvault.Password(strings.TrimRight(line, "\n\r"))
 
-		conn, err := makeConnector(ctx, typedPass)
+		ok, err := tryPassword(ctx, makeConnector, url, typedPass)
 		if err != nil {
-			return errors.Wrapf(ctx, err, "create connector for %s failed", url)
+			return err
 		}
-		verifyCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-		_, err = conn.Search(verifyCtx, "_login_probe_")
-		cancel()
-		if err == nil {
+		if ok {
 			return writeAndReport(ctx, errOut, kc, url, typedPass)
 		}
-		if !isAuthError(err) {
-			return errors.Wrapf(ctx, err, "connect to %s failed", url)
-		}
-		if attempt < 3 {
+		if attempt < maxLoginAttempts {
 			fmt.Fprintln(errOut, "Invalid password, try again.")
 		}
 	}
 
 	return errors.New(ctx, "login failed: 3 invalid password attempts")
+}
+
+// tryPassword builds a connector for the given password and verifies the
+// credentials with a bounded probe Search. It returns (true, nil) when the
+// credentials are valid, (false, nil) on an authentication failure (caller
+// should retry), and (false, err) on any hard error (connector creation or a
+// non-auth verification failure).
+func tryPassword(
+	ctx context.Context,
+	makeConnector connectorFactory,
+	url teamvault.Url,
+	pass teamvault.Password,
+) (bool, error) {
+	conn, err := makeConnector(ctx, pass)
+	if err != nil {
+		return false, errors.Wrapf(ctx, err, "create connector for %s failed", url)
+	}
+	verifyCtx, cancel := context.WithTimeout(ctx, verifyProbeTimeout)
+	_, err = conn.Search(verifyCtx, loginProbeName)
+	cancel()
+	if err == nil {
+		return true, nil
+	}
+	if !isAuthError(err) {
+		return false, errors.Wrapf(ctx, err, "connect to %s failed", url)
+	}
+	return false, nil
 }
 
 // writeAndReport writes the validated password to the keychain and reports status.

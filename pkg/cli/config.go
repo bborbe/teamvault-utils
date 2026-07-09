@@ -44,8 +44,10 @@ func createConfigParseCommand(ctx context.Context, sf *sharedFlags) *cobra.Comma
 			if err != nil {
 				return errors.Wrapf(ctx, err, "parse config failed")
 			}
-			_, err = cmd.OutOrStdout().Write(output)
-			return err
+			if _, err := cmd.OutOrStdout().Write(output); err != nil {
+				return errors.Wrapf(ctx, err, "write output failed")
+			}
+			return nil
 		},
 	}
 	return cmd
