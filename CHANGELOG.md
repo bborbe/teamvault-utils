@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - feat: the seven shared flags (`--teamvault-url/-user/-pass/-config`, `--staging`, `--cache`, `--teamvault-timeout`) are persistent on the root command, each still falling back to its `TEAMVAULT_*`/`STAGING`/`CACHE` env var — the existing `.envrc`/direnv contract is preserved; only the invocation changes (`teamvault-password …` → `teamvault password …`).
 - fix: `password`/`username`/`url`/`file` print the resolved value with NO trailing newline, fixing the `curl -u` basic-auth breakage.
 - feat: clean `--help` — cobra/pflag use a private flag set, eliminating the Ginkgo/glog flag pollution the old `argument/v2`-based binaries leaked into `--help`.
+- fix: errors print exactly once (`SilenceErrors: true`) with a non-zero exit, instead of the doubled cobra + handler message.
 - build: drop the now-unused `github.com/bborbe/service` and `github.com/bborbe/argument/v2` dependencies.
 
 ## v4.13.2

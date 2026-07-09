@@ -71,9 +71,10 @@ type sharedFlags struct {
 func NewRootCommand(ctx context.Context) *cobra.Command {
 	sf := &sharedFlags{}
 	rootCmd := &cobra.Command{
-		Use:          "teamvault",
-		Short:        "TeamVault CLI for retrieving secrets",
-		SilenceUsage: true,
+		Use:           "teamvault",
+		Short:         "TeamVault CLI for retrieving secrets",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	pf := rootCmd.PersistentFlags()
