@@ -10,7 +10,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
-//counterfeiter:generate -o ../../mocks/keychain.go --fake-name Keychain . Keychain
+//counterfeiter:generate -o mocks/keychain.go --fake-name Keychain . Keychain
 
 // KeychainServiceName is the constant service name used for all teamvault-utils
 // Keychain entries. The account key is the TeamVault URL, which keeps multi-vault

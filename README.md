@@ -9,7 +9,7 @@ A single command-line tool for reading secrets from [TeamVault](https://github.c
 ## Install
 
 ```bash
-go install github.com/bborbe/teamvault-utils/v5@latest
+go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest
 ```
 
 ## Quick start
@@ -58,9 +58,27 @@ Shared flags (persistent on every subcommand) — each also reads an env var: `-
 
 Have the agent call `teamvault` for credentials instead of embedding secrets in prompts or code — the value is resolved just-in-time and never written to the conversation or the repo. See the [getting-started guide](docs/getting-started.md#6-use-it-with-an-ai-agent-claude-code).
 
+## Claude Code Plugin
+
+teamvault-utils ships a Claude Code plugin — a `teamvault` skill that helps you (or an agent) set up the CLI and fetch secrets from a Claude Code session, with a hard rule to never write a secret into the conversation, a file, or a commit.
+
+```bash
+# Install
+claude plugin marketplace add bborbe/teamvault-utils
+claude plugin install teamvault-utils
+
+# Update
+claude plugin marketplace update teamvault-utils
+claude plugin update teamvault-utils@teamvault-utils
+```
+
+| Command | Description |
+|---------|-------------|
+| `/teamvault` | Fetch a secret (password/username/url/file) or set up the `teamvault` CLI |
+
 ## Go library
 
-`teamvault-utils` is also a Go library (`github.com/bborbe/teamvault-utils/v5/pkg/teamvault`). See **[docs/library.md](docs/library.md)** and the [API reference](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v5/pkg/teamvault).
+`teamvault-utils` is also a Go library (`github.com/bborbe/teamvault-utils/v5`). See **[docs/library.md](docs/library.md)** and the [API reference](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v5).
 
 ## Development
 

@@ -114,4 +114,4 @@ addlicense:
 
 .PHONY: install
 install:
-	go build -o $(GOPATH)/bin/teamvault .
+	go build -o $(GOPATH)/bin/teamvault ./cmd/teamvault
