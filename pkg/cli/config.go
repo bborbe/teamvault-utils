@@ -11,7 +11,7 @@ import (
 	"github.com/bborbe/errors"
 	"github.com/spf13/cobra"
 
-	teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
+	teamvault "github.com/bborbe/teamvault-utils/v5"
 )
 
 // createConfigCommand creates the config parent command.

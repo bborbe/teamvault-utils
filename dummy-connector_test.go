@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
+	"github.com/bborbe/teamvault-utils/v5"
 )
 
 var _ = Describe("", func() {

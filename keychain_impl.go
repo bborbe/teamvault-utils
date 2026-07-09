@@ -15,7 +15,7 @@ import (
 	"github.com/zalando/go-keyring"
 )
 
-//counterfeiter:generate -o ../../mocks/keyring_client.go --fake-name KeyringClient . KeyringClient
+//counterfeiter:generate -o mocks/keyring_client.go --fake-name KeyringClient . KeyringClient
 
 // KeyringClient is the package-private seam over zalando/go-keyring used by
 // darwinKeychain. It exists so unit tests can drive WritePassword/ReadPassword

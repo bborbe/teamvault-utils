@@ -14,8 +14,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/spf13/cobra"
 
+	teamvault "github.com/bborbe/teamvault-utils/v5"
 	"github.com/bborbe/teamvault-utils/v5/mocks"
-	teamvault "github.com/bborbe/teamvault-utils/v5/pkg/teamvault"
 )
 
 var _ = Describe("config parse", func() {

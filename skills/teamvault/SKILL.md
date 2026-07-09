@@ -14,7 +14,7 @@ Full walkthrough for humans: `docs/getting-started.md` in the teamvault-utils re
 Run `teamvault --help`. If the command is missing:
 
 ```bash
-go install github.com/bborbe/teamvault-utils/v5@latest   # installs to $(go env GOPATH)/bin
+go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest   # installs to $(go env GOPATH)/bin
 ```
 
 Config: `teamvault` needs a URL + username. Check for `~/.teamvault.json`:
