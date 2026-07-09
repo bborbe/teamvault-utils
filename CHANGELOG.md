@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- fix(security): unblock `make precommit` baseline. Bump `go` directive 1.26.4 → 1.26.5 to clear stdlib advisory GO-2026-5856 (osv-scanner). Suppress GO-2026-5932 (`golang.org/x/crypto/openpgp` unmaintained/unsafe, no fix version, package not imported) in `VULNCHECK_IGNORE` (govulncheck) and `.trivyignore` (trivy).
+
 ## v4.13.1
 
 - bump go 1.26.3 → 1.26.4
