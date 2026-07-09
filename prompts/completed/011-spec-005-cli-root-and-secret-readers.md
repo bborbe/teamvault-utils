@@ -1,8 +1,13 @@
 ---
-status: approved
+status: completed
 spec: [005-consolidate-cli-into-teamvault-command]
+summary: Added cobra CLI skeleton at cmd/teamvault/ with Execute/Run pattern, seven shared env-seeded persistent flags, and four secret-reader subcommands (password/username/url/file) that print without trailing newline
+execution_id: teamvault-utils-consolidate-cli-exec-011-spec-005-cli-root-and-secret-readers
+dark-factory-version: v0.191.0
 created: "2026-07-09T15:01:03Z"
 queued: "2026-07-09T15:16:04Z"
+started: "2026-07-09T15:19:51Z"
+completed: "2026-07-09T15:27:08Z"
 ---
 
 <summary>

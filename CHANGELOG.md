@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 - build: bump module path to `github.com/bborbe/teamvault-utils/v5` (breaking — major version bump preparing the single-`teamvault`-binary consolidation).
+- feat: Add cobra CLI skeleton at `cmd/teamvault/` with four secret-reader subcommands (`password`, `username`, `url`, `file`), each taking `--teamvault-key`. All four reuse `factory.CreateConnectorWithConfigAndTimeout` unchanged and print the resolved value with NO trailing newline (fixing the `curl -u` basic-auth breakage).
+- feat: Add `pkg/cli` with `Execute()`/`Run()` pattern, seven shared persistent flags seeded from their `TEAMVAULT_*`/`STAGING`/`CACHE`/`TEAMVAULT_TIMEOUT` env vars, and `SilenceUsage: true` for clean error output.
 
 ## v4.13.2
 
