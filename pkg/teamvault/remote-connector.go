@@ -234,7 +234,8 @@ func (r *remoteConnector) call(
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode/100 != 2 {
-		glog.V(2).Infof("request to %s failed with status: %d", url, resp.StatusCode)
+		// V(4): the URL path contains the lookup key; keep it out of the common V(2) log tier.
+		glog.V(4).Infof("request to %s failed with status: %d", url, resp.StatusCode)
 		return fmt.Errorf("request to %s failed with status: %d", url, resp.StatusCode)
 	}
 	if response != nil {

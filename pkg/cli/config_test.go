@@ -47,4 +47,22 @@ var _ = Describe("config parse", func() {
 			Expect(outBuf.String()).To(Equal(template))
 		})
 	})
+
+	Describe("config generate required flags", func() {
+		It(
+			"errors when --source-dir and --target-dir are missing, before any connector call",
+			func() {
+				sf := &sharedFlags{url: "https://vault.example.com", user: "alice"}
+				cmd = createConfigGenerateCommand(ctx, sf)
+				cmd.SetArgs([]string{})
+				cmd.SetOut(outBuf)
+				cmd.SetErr(&bytes.Buffer{})
+
+				err := cmd.Execute()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring(`required flag(s)`))
+				Expect(err.Error()).To(ContainSubstring("source-dir"))
+			},
+		)
+	})
 })
