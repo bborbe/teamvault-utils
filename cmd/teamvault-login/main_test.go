@@ -15,8 +15,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 
-	teamvault "github.com/bborbe/teamvault-utils/v4"
-	"github.com/bborbe/teamvault-utils/v4/mocks"
+	teamvault "github.com/bborbe/teamvault-utils/v5"
+	"github.com/bborbe/teamvault-utils/v5/mocks"
 )
 
 func TestSuite(t *testing.T) {
@@ -27,7 +27,7 @@ func TestSuite(t *testing.T) {
 var _ = Describe("teamvault-login", func() {
 	It("Compiles", func() {
 		var err error
-		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v4/cmd/teamvault-login")
+		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v5/cmd/teamvault-login")
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

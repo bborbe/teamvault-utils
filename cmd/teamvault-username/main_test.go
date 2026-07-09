@@ -15,7 +15,7 @@ import (
 var _ = Describe("Teamvault Username", func() {
 	It("Compiles", func() {
 		var err error
-		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v4/cmd/teamvault-username")
+		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v5/cmd/teamvault-username")
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

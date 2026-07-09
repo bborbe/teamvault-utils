@@ -13,8 +13,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/bborbe/teamvault-utils/v4"
-	"github.com/bborbe/teamvault-utils/v4/mocks"
+	"github.com/bborbe/teamvault-utils/v5"
+	"github.com/bborbe/teamvault-utils/v5/mocks"
 )
 
 var _ = Describe("Parser", func() {

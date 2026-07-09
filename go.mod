@@ -1,4 +1,4 @@
-module github.com/bborbe/teamvault-utils/v4
+module github.com/bborbe/teamvault-utils/v5
 
 go 1.26.5
 

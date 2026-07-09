@@ -13,8 +13,8 @@ import (
 	libservice "github.com/bborbe/service"
 	libtime "github.com/bborbe/time"
 
-	"github.com/bborbe/teamvault-utils/v4"
-	"github.com/bborbe/teamvault-utils/v4/factory"
+	"github.com/bborbe/teamvault-utils/v5"
+	"github.com/bborbe/teamvault-utils/v5/factory"
 )
 
 func main() {

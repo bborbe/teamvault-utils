@@ -16,7 +16,7 @@ var _ = Describe("Teamvault Config Dir Generator", func() {
 	It("Compiles", func() {
 		var err error
 		_, err = gexec.Build(
-			"github.com/bborbe/teamvault-utils/v4/cmd/teamvault-config-dir-generator",
+			"github.com/bborbe/teamvault-utils/v5/cmd/teamvault-config-dir-generator",
 		)
 		Expect(err).NotTo(HaveOccurred())
 	})

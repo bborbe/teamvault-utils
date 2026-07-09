@@ -14,8 +14,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/zalando/go-keyring"
 
-	"github.com/bborbe/teamvault-utils/v4"
-	"github.com/bborbe/teamvault-utils/v4/mocks"
+	"github.com/bborbe/teamvault-utils/v5"
+	"github.com/bborbe/teamvault-utils/v5/mocks"
 )
 
 var _ = Describe("darwinKeychain", func() {

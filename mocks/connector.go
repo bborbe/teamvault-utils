@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	teamvault "github.com/bborbe/teamvault-utils/v4"
+	teamvault "github.com/bborbe/teamvault-utils/v5"
 )
 
 type Connector struct {

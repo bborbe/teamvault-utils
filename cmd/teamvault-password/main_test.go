@@ -40,7 +40,7 @@ var _ = Describe("TeamvaultTimeout CLI parse contract", func() {
 var _ = Describe("Teamvault Password", func() {
 	It("Compiles", func() {
 		var err error
-		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v4/cmd/teamvault-password")
+		_, err = gexec.Build("github.com/bborbe/teamvault-utils/v5/cmd/teamvault-password")
 		Expect(err).NotTo(HaveOccurred())
 	})
 })

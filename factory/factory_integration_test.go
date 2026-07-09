@@ -16,9 +16,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	teamvault "github.com/bborbe/teamvault-utils/v4"
-	"github.com/bborbe/teamvault-utils/v4/factory"
-	"github.com/bborbe/teamvault-utils/v4/mocks"
+	teamvault "github.com/bborbe/teamvault-utils/v5"
+	"github.com/bborbe/teamvault-utils/v5/factory"
+	"github.com/bborbe/teamvault-utils/v5/mocks"
 )
 
 var _ = Describe("Factory Integration", func() {
