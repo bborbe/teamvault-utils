@@ -1,6 +1,6 @@
 module github.com/bborbe/teamvault-utils/v4
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/bborbe/argument/v2 v2.12.27
