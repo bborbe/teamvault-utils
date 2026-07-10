@@ -17,7 +17,7 @@ import (
 
 var _ = Describe("Keychain", func() {
 	It("KeychainServiceName has expected value", func() {
-		Expect(teamvault.KeychainServiceName).To(Equal("teamvault-utils"))
+		Expect(teamvault.KeychainServiceName).To(Equal("teamvault-cli"))
 	})
 
 	It("ErrKeychainNotSupported matches itself via errors.Is", func() {

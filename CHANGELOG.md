@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- change(keychain): rename the macOS Keychain service name `teamvault-utils` → `teamvault-cli`. After upgrading, run `teamvault login` once to store the password under the new service name. The old `teamvault-utils` entry is left intact, so a previously-installed `teamvault-utils` binary keeps working in parallel.
+- docs: finish the `teamvault-utils` → `teamvault-cli` rename in the plugin command, docs prose, scenario build paths, and the `docs/releasing-*` filename (the Go library import paths and module path already moved in v5.1.0).
+
 ## v5.1.0
 
 - chore(repo): the project is now company-owned at **`github.com/seibert-media/teamvault-cli`** (transferred from `github.com/bborbe/teamvault-utils`, IT-44264). Module path becomes `github.com/seibert-media/teamvault-cli/v5` — install with `go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@latest`. The `teamvault` binary name and `cmd/teamvault` layout are unchanged; only Go library importers must update the import path. The Claude Code plugin is renamed `teamvault-utils` → `teamvault-cli` (the `teamvault` skill inside is unchanged); re-add via `claude plugin marketplace add seibert-media/teamvault-cli`.

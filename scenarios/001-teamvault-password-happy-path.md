@@ -14,7 +14,7 @@ Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password 
 - [ ] `TV_CONFIG=~/.teamvault.json`
 - [ ] `TV_KEY=${TV_PROBE_KEY:-lO4K1w}`
 - [ ] `[ -f "$TV_CONFIG" ]` (config file exists)
-- [ ] `security find-generic-password -s teamvault-utils -a "$(jq -r .url $TV_CONFIG)"` returns an entry (Keychain has the password)
+- [ ] `security find-generic-password -s teamvault-cli -a "$(jq -r .url $TV_CONFIG)"` returns an entry (Keychain has the password)
 
 ## Action
 

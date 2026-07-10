@@ -12,10 +12,10 @@ import (
 
 //counterfeiter:generate -o mocks/keychain.go --fake-name Keychain . Keychain
 
-// KeychainServiceName is the constant service name used for all teamvault-utils
+// KeychainServiceName is the constant service name used for all teamvault-cli
 // Keychain entries. The account key is the TeamVault URL, which keeps multi-vault
 // setups isolated automatically.
-const KeychainServiceName = "teamvault-utils"
+const KeychainServiceName = "teamvault-cli"
 
 // ErrKeychainNotSupported indicates the current platform has no supported
 // credential store backend. Callers may match this with errors.Is to

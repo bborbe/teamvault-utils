@@ -12,7 +12,7 @@ Validates that `teamvault login` stores the password in the macOS Keychain and t
 - [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
 - [ ] `TV_URL=$(jq -r .url ~/.teamvault.json)` (vault URL from existing config)
 - [ ] `TV_USER=$(jq -r .user ~/.teamvault.json)` (vault user from existing config)
-- [ ] `TV_PASS=$(security find-generic-password -s teamvault-utils -a "$TV_URL" -w)` (replay existing Keychain entry)
+- [ ] `TV_PASS=$(security find-generic-password -s teamvault-cli -a "$TV_URL" -w)` (replay existing Keychain entry)
 - [ ] `WORK_DIR=$(mktemp -d)`
 - [ ] Write throwaway config without `pass`:
       `printf '{"url":"%s","user":"%s"}\n' "$TV_URL" "$TV_USER" > "$WORK_DIR/teamvault.json"`
@@ -30,7 +30,7 @@ Validates that `teamvault login` stores the password in the macOS Keychain and t
 
 - [ ] `[ "$LOGIN_RC" = "0" ]` (login succeeded)
 - [ ] `echo "$LOGIN_OUT" | grep -qi 'login successful'` (login confirmation message)
-- [ ] `[ -n "$(security find-generic-password -s teamvault-utils -a "$TV_URL" -w 2>/dev/null)" ]` (Keychain entry exists after login; raw value is zalando-encoded post-v0.9.10+ migration, so a byte-equal comparison to the input password is no longer meaningful — user-facing round-trip is verified via `teamvault password` / `teamvault username` below)
+- [ ] `[ -n "$(security find-generic-password -s teamvault-cli -a "$TV_URL" -w 2>/dev/null)" ]` (Keychain entry exists after login; raw value is zalando-encoded post-v0.9.10+ migration, so a byte-equal comparison to the input password is no longer meaningful — user-facing round-trip is verified via `teamvault password` / `teamvault username` below)
 - [ ] `[ "$PW_RC" = "0" ]` (password retrieval via Keychain succeeded)
 - [ ] `[ -n "$PW_OUT" ]` (password stdout non-empty — proves Keychain read from a no-`pass` config)
 - [ ] `! grep -qi 'password' /tmp/scenario-002-pw.err` (no password prompt appeared)
