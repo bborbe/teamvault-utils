@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- refactor(library): move the Go library package from the module root into `pkg/` — import `github.com/bborbe/teamvault-utils/v5/pkg` (package `teamvault`), was `github.com/bborbe/teamvault-utils/v5`. Aligns the layout with the go-package-layout guide (all production code under `pkg/`; the module root now holds only `cmd/` and `pkg/`). The `teamvault` binary and its `go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest` install path are unchanged — only Go library importers must update the import path.
+
+## v5.0.2
+
 - fix(cli): the installed binary is now named **`teamvault`** — the entry point moved to `cmd/teamvault/`. Install with `go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest` (v5.0.1 installed a `teamvault-utils` binary because the entry point was at the module root).
 - refactor(library): the Go library moves back to the module root — import `github.com/bborbe/teamvault-utils/v5` again (was `github.com/bborbe/teamvault-utils/v5/pkg/teamvault` in v5.0.0/v5.0.1). Minimal `/v4`→`/v5` bump for library consumers.
 - feat(plugin): add a Claude Code plugin — a `teamvault` skill and `/teamvault` command that help set up the CLI and fetch TeamVault secrets from a Claude Code session, with a hard rule to never write a secret into the conversation, a file, or a commit.

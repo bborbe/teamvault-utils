@@ -162,7 +162,7 @@ git push origin master "$NEXT_TAG"
 gh release view "$NEXT_TAG" 2>/dev/null || echo "no GitHub Release yet (optional — see below)"
 ```
 
-The git tag is sufficient for `go install github.com/bborbe/teamvault-utils/v5@vX.Y.Z`. A GitHub Release object is separate (see next section).
+The git tag is sufficient for `go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@vX.Y.Z`. A GitHub Release object is separate (see next section).
 
 ## GitHub Release (manual — when to surface a milestone)
 
@@ -196,11 +196,11 @@ go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest
 teamvault --help 2>&1 | head -1  # sanity check
 
 # Downstream / fresh machine:
-go install github.com/bborbe/teamvault-utils/v5@vX.Y.Z
+go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@vX.Y.Z
 
 # Library import (downstream Go projects):
 #   go.mod: require github.com/bborbe/teamvault-utils/v5 vX.Y.Z
-#   import: github.com/bborbe/teamvault-utils/v5
+#   import: github.com/bborbe/teamvault-utils/v5/pkg
 ```
 
 This is the step that bites downstream consumers if the gate was skipped. Other Go projects that import this library and any user's `teamvault` CLI on the next `go install` pick up the new binary. A regression in the new binary surfaces in their workflow, not yours.
