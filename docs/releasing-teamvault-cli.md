@@ -4,7 +4,7 @@ How to ship a new version of teamvault-cli. Mandatory reading before tagging.
 
 ## One surface, one version stream
 
-Unlike `vault-cli` / `dark-factory` / `coding` which ship both a binary and a Claude Code plugin, `teamvault-cli` is **binary-only**: a Go library + a single `teamvault` CLI binary (spf13/cobra) with subcommands (`teamvault login`, `teamvault password`, `teamvault username`, `teamvault url`, `teamvault file`, `teamvault config parse`, `teamvault config generate`) distributed via Go modules.
+Unlike `vault-cli` / `dark-factory` / `coding` which ship both a binary and a Claude Code plugin, `teamvault-cli` is **binary-only**: a Go library + a single `teamvault-cli` CLI binary (spf13/cobra) with subcommands (`teamvault-cli login`, `teamvault-cli password`, `teamvault-cli username`, `teamvault-cli url`, `teamvault-cli file`, `teamvault-cli config parse`, `teamvault-cli config generate`) distributed via Go modules.
 
 | Surface | Versioned by | Consumed by | Bumped how |
 |---------|--------------|-------------|------------|
@@ -16,7 +16,7 @@ There is no plugin to maintain. No marketplace JSONs to align. The CHANGELOG top
 
 `make precommit` does NOT cover real macOS Keychain behavior, real TeamVault API behavior, or libargument-CLI-flag wiring. Unit tests pass while runtime behavior is broken — that has bitten this project twice in a month:
 
-- **v4.10.1** shipped a `security add-generic-password -w` invocation that prompted on `/dev/tty` instead of reading the password from stdin. Result: piped-stdin `teamvault login` silently stored an empty password. All unit tests passed because the agent mocked the `Executor` interface; the real `security` binary contract was never exercised.
+- **v4.10.1** shipped a `security add-generic-password -w` invocation that prompted on `/dev/tty` instead of reading the password from stdin. Result: piped-stdin `teamvault-cli login` silently stored an empty password. All unit tests passed because the agent mocked the `Executor` interface; the real `security` binary contract was never exercised.
 - **v4.12.1** replaced the broken shell-out with a `security -i` REPL invocation that appended `\nquit\n` as a terminator. `security` rejects `quit` as an unknown command and exits 1, even though `add-generic-password` already ran successfully. The Go caller treated the exit code as a write failure and surfaced "store password in keychain failed" despite the keychain having been written correctly.
 
 Both bugs were caught only when a scenario was walked against a built binary against the real macOS Keychain. The rule: **before approving any dark-factory prompt that touches `keychain*.go`, `pkg/factory/`, or `cmd/`, walk the relevant active scenarios against a freshly built binary.** Surface-scoped skipping is acceptable when the diff is genuinely empty (see below).
@@ -62,7 +62,7 @@ security add-generic-password -U -s teamvault-cli -a "$(jq -r .url ~/.teamvault.
 
 ```bash
 # 1. Build a fresh binary (NOT the installed one) — one binary, all subcommands
-go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/new-teamvault .
+go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/new-teamvault-cli .
 
 # 2. Walk each active scenario by hand
 #    Each file's Setup → Action → Expected must pass.
@@ -75,14 +75,14 @@ If any active scenario fails: do NOT proceed to install or tag. Fix the regressi
 
 | Symptom | Most likely surface |
 |---------|---------------------|
-| `teamvault login` returns "inappropriate ioctl for device" when piped | the `login` subcommand's `termReader.Read` — `term.ReadPassword(stdin.Fd())` requires a real tty; the bufio prompt path is not reachable from piped stdin. The pre-existing behavior is "keychain has a password OR user types at tty" |
-| Keychain entry stored but raw `security -w` shows different bytes than input | Expected post-v4.13.0. `zalando/go-keyring` stores in its own encoded format (a 32-char input shows as ~62 chars when read back via `security -w`). The user-facing round-trip via `teamvault password` / `teamvault username` is what matters — the raw security CLI value is library implementation detail |
-| `teamvault username` returns 403 | Keychain was zeroed by an earlier scenario or test. Restore via the preflight command above. |
+| `teamvault-cli login` returns "inappropriate ioctl for device" when piped | the `login` subcommand's `termReader.Read` — `term.ReadPassword(stdin.Fd())` requires a real tty; the bufio prompt path is not reachable from piped stdin. The pre-existing behavior is "keychain has a password OR user types at tty" |
+| Keychain entry stored but raw `security -w` shows different bytes than input | Expected post-v4.13.0. `zalando/go-keyring` stores in its own encoded format (a 32-char input shows as ~62 chars when read back via `security -w`). The user-facing round-trip via `teamvault-cli password` / `teamvault-cli username` is what matters — the raw security CLI value is library implementation detail |
+| `teamvault-cli username` returns 403 | Keychain was zeroed by an earlier scenario or test. Restore via the preflight command above. |
 | Timeout test fails on a non-routable IP | macOS network stack quirks — 10.255.255.1 should hang on connect, but some VPN configurations route or RST it. Switch to another non-routable address (RFC 5737 test-net: 192.0.2.1, 198.51.100.1, 203.0.113.1) |
 
 ### Scenario-walk side effects
 
-Scenarios 002 and any test that calls `teamvault login` will OVERWRITE the operator's existing keychain entry (zalando-encoded format post-v4.13.0). The downstream binaries read it back correctly, but a subsequent `security find-generic-password -w` shows zalando's storage shape, not the raw password. This is benign — the keychain works — but if you script automation around `security find-generic-password -w` extraction, that breaks. Restore the raw format if needed via the preflight command.
+Scenarios 002 and any test that calls `teamvault-cli login` will OVERWRITE the operator's existing keychain entry (zalando-encoded format post-v4.13.0). The downstream binaries read it back correctly, but a subsequent `security find-generic-password -w` shows zalando's storage shape, not the raw password. This is benign — the keychain works — but if you script automation around `security find-generic-password -w` extraction, that breaks. Restore the raw format if needed via the preflight command.
 
 Scenario 003 pre-populates `~/.teamvault-cache/<key>/password` with a fake value and uses a temp `$HOME`. The temp HOME is cleaned up by the scenario; the real `~/.teamvault-cache` is not touched.
 
@@ -93,7 +93,7 @@ The one valid skip: nothing on the binary surface changed since the latest tag.
 ```bash
 LAST_TAG=$(git describe --tags --abbrev=0)
 git diff "$LAST_TAG"..HEAD --name-only | grep -E '\.(go|mod|sum)$|^Makefile$'
-# empty output → installed binary is byte-equivalent to /tmp/new-teamvault → skip
+# empty output → installed binary is byte-equivalent to /tmp/new-teamvault-cli → skip
 ```
 
 This is the ONLY documented skip. Do not invent others ("doc-only changes shouldn't break anything") — surface mappings are fragile.
@@ -203,14 +203,14 @@ go install github.com/Seibert-Data/teamvault-cli/v5@vX.Y.Z
 #   import: github.com/Seibert-Data/teamvault-cli/v5/pkg
 ```
 
-This is the step that bites downstream consumers if the gate was skipped. Other Go projects that import this library and any user's `teamvault` CLI on the next `go install` pick up the new binary. A regression in the new binary surfaces in their workflow, not yours.
+This is the step that bites downstream consumers if the gate was skipped. Other Go projects that import this library and any user's `teamvault-cli` CLI on the next `go install` pick up the new binary. A regression in the new binary surfaces in their workflow, not yours.
 
 ## Release session checklist (operator template)
 
 Copy this into a scratch note at the start of a release session. Flip `⬜` → `✅` as items tick off.
 
 ```text
-⬜ Release gate: walk active scenarios 001–005 against /tmp/new-teamvault
+⬜ Release gate: walk active scenarios 001–005 against /tmp/new-teamvault-cli
 ⬜ Real keychain is intact (preflight `security find-generic-password ... | wc -c` > 0)
 ⬜ CHANGELOG.md `## Unreleased` describes user-facing changes (not commit log)
 ⬜ Decide bump: patch / minor / major based on diff

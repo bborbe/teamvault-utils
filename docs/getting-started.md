@@ -18,7 +18,7 @@ teamvault-cli --help
 
 ## 2. Configure
 
-`teamvault-cli` needs to know your TeamVault URL and username. The password is best left out of the config file and stored in your macOS Keychain via `teamvault login` (see step 3).
+`teamvault-cli` needs to know your TeamVault URL and username. The password is best left out of the config file and stored in your macOS Keychain via `teamvault-cli login` (see step 3).
 
 Create `~/.teamvault.json`:
 
@@ -95,19 +95,19 @@ The agent gets the value it needs, the secret is resolved just-in-time from Team
 
 Render config files with secrets pulled from TeamVault at build time:
 
-- `teamvault config parse` — reads a template from stdin, writes the rendered result to stdout.
-- `teamvault config generate --source-dir templates/ --target-dir out/` — renders every file in a directory tree.
+- `teamvault-cli config parse` — reads a template from stdin, writes the rendered result to stdout.
+- `teamvault-cli config generate --source-dir templates/ --target-dir out/` — renders every file in a directory tree.
 
 ## Command reference
 
 | Command | Purpose |
 |---------|---------|
-| `teamvault login` | verify credentials and store the password in the macOS Keychain |
-| `teamvault password --teamvault-key <KEY>` | print a secret's password |
-| `teamvault username --teamvault-key <KEY>` | print a secret's username |
-| `teamvault url --teamvault-key <KEY>` | print a secret's URL |
-| `teamvault file --teamvault-key <KEY>` | print a secret's file contents |
-| `teamvault config parse` | render a template from stdin |
-| `teamvault config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
+| `teamvault-cli login` | verify credentials and store the password in the macOS Keychain |
+| `teamvault-cli password --teamvault-key <KEY>` | print a secret's password |
+| `teamvault-cli username --teamvault-key <KEY>` | print a secret's username |
+| `teamvault-cli url --teamvault-key <KEY>` | print a secret's URL |
+| `teamvault-cli file --teamvault-key <KEY>` | print a secret's file contents |
+| `teamvault-cli config parse` | render a template from stdin |
+| `teamvault-cli config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
 
-Run `teamvault <command> --help` for the full flag list on any subcommand.
+Run `teamvault-cli <command> --help` for the full flag list on any subcommand.

@@ -11,7 +11,7 @@ Full walkthrough for humans: `docs/getting-started.md` in the teamvault-cli repo
 
 ## Prerequisites (check first, set up if missing)
 
-Run `teamvault --help`. If the command is missing:
+Run `teamvault-cli --help`. If the command is missing:
 
 ```bash
 go install github.com/Seibert-Data/teamvault-cli/v5@latest   # installs to $(go env GOPATH)/bin
@@ -25,7 +25,7 @@ Config: `teamvault-cli` needs a URL + username. Check for `~/.teamvault.json`:
 
 Point at it with `--teamvault-config ~/.teamvault.json` or `export TEAMVAULT_CONFIG=~/.teamvault.json`. Every setting also has a flag (`--teamvault-url`, `--teamvault-user`, …) and env var (`TEAMVAULT_URL`, `TEAMVAULT_USER`, …); precedence is flag → env → config file.
 
-Password: prefer the Keychain over the config file. Run `teamvault login` once — it verifies the password and stores it in the macOS Keychain, after which every command reads it automatically.
+Password: prefer the Keychain over the config file. Run `teamvault-cli login` once — it verifies the password and stores it in the macOS Keychain, after which every command reads it automatically.
 
 ## Retrieving a secret
 
@@ -55,10 +55,10 @@ curl -u "$(teamvault-cli username --teamvault-key <KEY>):$(teamvault-cli passwor
 
 Render config files with TeamVault values at build time:
 
-- `teamvault config parse` — reads a template from stdin, writes rendered output to stdout.
-- `teamvault config generate --source-dir <DIR> --target-dir <DIR>` — renders a directory tree.
+- `teamvault-cli config parse` — reads a template from stdin, writes rendered output to stdout.
+- `teamvault-cli config generate --source-dir <DIR> --target-dir <DIR>` — renders a directory tree.
 
 ## Success criteria
 
-- `teamvault <sub> --help` runs (CLI installed) and, when needed, config + `teamvault login` are set up.
+- `teamvault-cli <sub> --help` runs (CLI installed) and, when needed, config + `teamvault-cli login` are set up.
 - The requested secret is retrieved by key and delivered to its consumer without the value ever being written to disk, committed, or printed into the conversation.
