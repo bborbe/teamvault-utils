@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.1.0
 
 - chore(repo): the project is now company-owned at **`github.com/seibert-media/teamvault-cli`** (transferred from `github.com/bborbe/teamvault-utils`, IT-44264). Module path becomes `github.com/seibert-media/teamvault-cli/v5` — install with `go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@latest`. The `teamvault` binary name and `cmd/teamvault` layout are unchanged; only Go library importers must update the import path. The Claude Code plugin is renamed `teamvault-utils` → `teamvault-cli` (the `teamvault` skill inside is unchanged); re-add via `claude plugin marketplace add seibert-media/teamvault-cli`.
 

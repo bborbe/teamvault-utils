@@ -10,7 +10,7 @@ Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password 
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
 - [ ] `TV_CONFIG=~/.teamvault.json`
 - [ ] `TV_KEY=${TV_PROBE_KEY:-lO4K1w}`
 - [ ] `[ -f "$TV_CONFIG" ]` (config file exists)

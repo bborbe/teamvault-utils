@@ -9,7 +9,7 @@ Validates that `teamvault login` stores the password in the macOS Keychain and t
 ## Setup
 
 - [ ] `[ "$(uname -s)" = "Darwin" ]` (else skip)
-- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
 - [ ] `TV_URL=$(jq -r .url ~/.teamvault.json)` (vault URL from existing config)
 - [ ] `TV_USER=$(jq -r .user ~/.teamvault.json)` (vault user from existing config)
 - [ ] `TV_PASS=$(security find-generic-password -s teamvault-utils -a "$TV_URL" -w)` (replay existing Keychain entry)

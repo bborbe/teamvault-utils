@@ -8,7 +8,7 @@ Validates that when TeamVault is unreachable and cache is disabled, the binary e
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
 - [ ] `WORK_DIR=$(mktemp -d)`
 - [ ] `TV_HOME="$WORK_DIR/home"; mkdir -p "$TV_HOME"`
 - [ ] `TV_KEY=probe-key-004`
