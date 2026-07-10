@@ -25,9 +25,9 @@ format:
 
 .PHONY: generate
 generate:
-	rm -rf mocks avro
-	mkdir -p mocks
-	echo "package mocks" > mocks/mocks.go
+	rm -rf pkg/mocks avro
+	mkdir -p pkg/mocks
+	echo "package mocks" > pkg/mocks/mocks.go
 	go generate -mod=mod ./...
 
 # --race catches data races but flakes on some CI runners (rare SIGSEGV

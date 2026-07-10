@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
-	teamvault "github.com/bborbe/teamvault-utils/v5"
+	teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
 	"github.com/bborbe/teamvault-utils/v5/pkg/factory"
 )
 

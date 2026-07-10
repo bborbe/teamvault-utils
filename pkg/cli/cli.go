@@ -18,7 +18,7 @@ import (
 	libtime "github.com/bborbe/time"
 	"github.com/spf13/cobra"
 
-	"github.com/bborbe/teamvault-utils/v5"
+	teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
 	"github.com/bborbe/teamvault-utils/v5/pkg/factory"
 )
 

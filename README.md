@@ -78,7 +78,7 @@ claude plugin update teamvault-utils@teamvault-utils
 
 ## Go library
 
-`teamvault-utils` is also a Go library (`github.com/bborbe/teamvault-utils/v5`). See **[docs/library.md](docs/library.md)** and the [API reference](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v5).
+`teamvault-utils` is also a Go library — import `github.com/bborbe/teamvault-utils/v5/pkg` (package `teamvault`). See **[docs/library.md](docs/library.md)** and the [API reference](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v5/pkg).
 
 ## Development
 
