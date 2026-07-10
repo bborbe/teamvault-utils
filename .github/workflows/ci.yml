@@ -37,3 +37,32 @@ jobs:
         if: always()
         with:
           fail_ci_if_error: false
+
+  # Validate the release pipeline on every PR so a broken .goreleaser.yaml
+  # surfaces here, not only at tag-push. `build` skips the publish/brew steps,
+  # so no tokens are needed.
+  goreleaser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Validate GoReleaser config
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: check
+
+      - name: Snapshot build (no publish)
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: build --snapshot --clean

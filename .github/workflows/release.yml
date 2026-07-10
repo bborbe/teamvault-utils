@@ -30,5 +30,8 @@ jobs:
         env:
           # builds the GitHub Release + archives on this repo
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # pushes the generated Homebrew formula to Seibert-Data/homebrew-tap (cross-repo)
+          # Pushes the generated Homebrew formula to Seibert-Data/homebrew-tap (cross-repo).
+          # SECURITY: use a *fine-grained* PAT scoped to ONLY the homebrew-tap repo with
+          # Contents: Read and write (nothing else). This limits blast radius if the secret
+          # leaks — a compromised token can only touch the tap, not this repo or the org.
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
