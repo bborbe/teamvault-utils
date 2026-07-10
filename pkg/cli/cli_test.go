@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/seibert-media/teamvault-cli/v5/pkg/cli"
+	"github.com/Seibert-Data/teamvault-cli/v5/pkg/cli"
 )
 
 var _ = Describe("CLI", func() {

@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
+	teamvault "github.com/Seibert-Data/teamvault-cli/v5/pkg"
 )
 
 type Connector struct {

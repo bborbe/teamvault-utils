@@ -18,8 +18,8 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
-	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
-	"github.com/seibert-media/teamvault-cli/v5/pkg/factory"
+	teamvault "github.com/Seibert-Data/teamvault-cli/v5/pkg"
+	"github.com/Seibert-Data/teamvault-cli/v5/pkg/factory"
 )
 
 // connectorFactory creates a TeamVault connector given a context and password.
