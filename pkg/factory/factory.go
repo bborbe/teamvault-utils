@@ -13,7 +13,7 @@ import (
 	libhttp "github.com/bborbe/http"
 	libtime "github.com/bborbe/time"
 
-	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
+	teamvault "github.com/Seibert-Data/teamvault-cli/v5/pkg"
 )
 
 // CreateConnectorWithConfig creates a new TeamVault Connector using configuration from a file or parameters.

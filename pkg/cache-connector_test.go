@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
+	teamvault "github.com/Seibert-Data/teamvault-cli/v5/pkg"
 )
 
 var _ = Describe("CacheConnector", func() {

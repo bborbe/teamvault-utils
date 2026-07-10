@@ -1,16 +1,16 @@
 # teamvault-cli
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/seibert-media/teamvault-cli/v5.svg)](https://pkg.go.dev/github.com/seibert-media/teamvault-cli/v5)
-[![CI](https://github.com/seibert-media/teamvault-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/seibert-media/teamvault-cli/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/seibert-media/teamvault-cli/v5)](https://goreportcard.com/report/github.com/seibert-media/teamvault-cli/v5)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/seibert-media/teamvault-cli)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Seibert-Data/teamvault-cli/v5.svg)](https://pkg.go.dev/github.com/Seibert-Data/teamvault-cli/v5)
+[![CI](https://github.com/Seibert-Data/teamvault-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/Seibert-Data/teamvault-cli/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Seibert-Data/teamvault-cli/v5)](https://goreportcard.com/report/github.com/Seibert-Data/teamvault-cli/v5)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Seibert-Data/teamvault-cli)
 
 A single command-line tool for reading secrets from [TeamVault](https://github.com/trustedsec/teamvault) — passwords, usernames, URLs, and files — by their lookup key. Built for humans at a terminal **and** AI coding agents (e.g. Claude Code), as a sanctioned alternative to the 1Password `op` CLI for TeamVault-managed credentials.
 
 ## Install
 
 ```bash
-go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@latest
+go install github.com/Seibert-Data/teamvault-cli/v5/cmd/teamvault@latest
 ```
 
 ## Quick start
@@ -65,7 +65,7 @@ teamvault-cli ships a Claude Code plugin — a `teamvault` skill that helps you 
 
 ```bash
 # Install
-claude plugin marketplace add seibert-media/teamvault-cli
+claude plugin marketplace add Seibert-Data/teamvault-cli
 claude plugin install teamvault-cli
 
 # Update
@@ -79,7 +79,7 @@ claude plugin update teamvault-cli@teamvault-cli
 
 ## Go library
 
-`teamvault-cli` is also a Go library — import `github.com/seibert-media/teamvault-cli/v5/pkg` (package `teamvault`). See **[docs/library.md](docs/library.md)** and the [API reference](https://pkg.go.dev/github.com/seibert-media/teamvault-cli/v5/pkg).
+`teamvault-cli` is also a Go library — import `github.com/Seibert-Data/teamvault-cli/v5/pkg` (package `teamvault`). See **[docs/library.md](docs/library.md)** and the [API reference](https://pkg.go.dev/github.com/Seibert-Data/teamvault-cli/v5/pkg).
 
 ## Development
 

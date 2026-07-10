@@ -1,4 +1,4 @@
-module github.com/seibert-media/teamvault-cli/v5
+module github.com/Seibert-Data/teamvault-cli/v5
 
 go 1.26.5
 
