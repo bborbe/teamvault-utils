@@ -1,24 +1,24 @@
-# Getting Started with `teamvault`
+# Getting Started with `teamvault-cli`
 
-`teamvault` is a single command-line tool for reading secrets from a [TeamVault](https://github.com/trustedsec/teamvault) instance — passwords, usernames, URLs, and files — by their lookup key. It's built for both humans at a terminal and AI coding agents (e.g. Claude Code), as a company-sanctioned alternative to the 1Password `op` CLI for TeamVault-managed credentials.
+`teamvault-cli` is a single command-line tool for reading secrets from a [TeamVault](https://github.com/trustedsec/teamvault) instance — passwords, usernames, URLs, and files — by their lookup key. It's built for both humans at a terminal and AI coding agents (e.g. Claude Code), as a company-sanctioned alternative to the 1Password `op` CLI for TeamVault-managed credentials.
 
 One binary, a handful of subcommands, and your secret never has to sit in plaintext in a shell history or a repo.
 
 ## 1. Install
 
 ```bash
-go install github.com/Seibert-Data/teamvault-cli/v5/cmd/teamvault@latest
+go install github.com/Seibert-Data/teamvault-cli/v5@latest
 ```
 
-This puts a single `teamvault` binary on your `PATH` (in `$(go env GOPATH)/bin`). Verify:
+This puts a single `teamvault-cli` binary on your `PATH` (in `$(go env GOPATH)/bin`). Verify:
 
 ```bash
-teamvault --help
+teamvault-cli --help
 ```
 
 ## 2. Configure
 
-`teamvault` needs to know your TeamVault URL and username. The password is best left out of the config file and stored in your macOS Keychain via `teamvault login` (see step 3).
+`teamvault-cli` needs to know your TeamVault URL and username. The password is best left out of the config file and stored in your macOS Keychain via `teamvault login` (see step 3).
 
 Create `~/.teamvault.json`:
 
@@ -48,7 +48,7 @@ Precedence is **flag → environment variable → config file**.
 ## 3. Log in (store your password in the Keychain)
 
 ```bash
-teamvault login
+teamvault-cli login
 ```
 
 This prompts for your TeamVault password (input hidden), verifies it against the server, and stores it in your **macOS Keychain**. After that, you never pass `--teamvault-pass` again — every command reads the password from the Keychain automatically. (Keychain storage is macOS-only today; on other platforms, supply the password via `TEAMVAULT_PASS` or the config file.)
@@ -58,16 +58,16 @@ This prompts for your TeamVault password (input hidden), verifies it against the
 Every secret in TeamVault has a short **lookup key** — the alphanumeric ID in the TeamVault web UI URL when you open a secret (e.g. `https://teamvault.…/secret/AbC123/` → key `AbC123`).
 
 ```bash
-teamvault password --teamvault-key AbC123
-teamvault username --teamvault-key AbC123
-teamvault url      --teamvault-key AbC123
-teamvault file     --teamvault-key AbC123
+teamvault-cli password --teamvault-key AbC123
+teamvault-cli username --teamvault-key AbC123
+teamvault-cli url      --teamvault-key AbC123
+teamvault-cli file     --teamvault-key AbC123
 ```
 
 Output is the raw value with **no trailing newline**, so it drops straight into other commands:
 
 ```bash
-curl -u "$(teamvault username --teamvault-key AbC123):$(teamvault password --teamvault-key AbC123)" https://api.internal/…
+curl -u "$(teamvault-cli username --teamvault-key AbC123):$(teamvault-cli password --teamvault-key AbC123)" https://api.internal/…
 ```
 
 ## 5. Use it in projects with direnv
@@ -76,17 +76,17 @@ Instead of copying secrets into `.env` files, resolve them at shell-entry. In a 
 
 ```bash
 export TEAMVAULT_CONFIG="$HOME/.teamvault.json"
-export DB_PASSWORD="$(teamvault password --teamvault-key AbC123)"
+export DB_PASSWORD="$(teamvault-cli password --teamvault-key AbC123)"
 ```
 
 The secret lives only in memory for the session and never touches disk.
 
 ## 6. Use it with an AI agent (Claude Code)
 
-When an agent needs a credential, have it call `teamvault` rather than embedding secrets in prompts or code:
+When an agent needs a credential, have it call `teamvault-cli` rather than embedding secrets in prompts or code:
 
 ```bash
-teamvault password --teamvault-key AbC123
+teamvault-cli password --teamvault-key AbC123
 ```
 
 The agent gets the value it needs, the secret is resolved just-in-time from TeamVault, and nothing sensitive is written into the conversation or the repository. This is the sanctioned replacement for ad-hoc `op` usage on company-managed secrets.

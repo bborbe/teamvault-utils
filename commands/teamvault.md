@@ -1,5 +1,5 @@
 ---
-description: Fetch a TeamVault secret (password/username/url/file) or set up the teamvault CLI
+description: Fetch a TeamVault secret (password/username/url/file) or set up the teamvault-cli CLI
 allowed-tools: Skill(teamvault-cli:teamvault)
 ---
 

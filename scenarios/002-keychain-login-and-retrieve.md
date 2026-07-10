@@ -2,14 +2,14 @@
 status: active
 ---
 
-# Scenario 002: teamvault login persists password; subsequent reads use Keychain
+# Scenario 002: teamvault-cli login persists password; subsequent reads use Keychain
 
-Validates that `teamvault login` stores the password in the macOS Keychain and that subsequent `teamvault` subcommand calls read it from there without a stdin prompt or a plaintext `pass` in the config. macOS-only.
+Validates that `teamvault login` stores the password in the macOS Keychain and that subsequent `teamvault-cli` subcommand calls read it from there without a stdin prompt or a plaintext `pass` in the config. macOS-only.
 
 ## Setup
 
 - [ ] `[ "$(uname -s)" = "Darwin" ]` (else skip)
-- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault-cli .`
 - [ ] `TV_URL=$(jq -r .url ~/.teamvault.json)` (vault URL from existing config)
 - [ ] `TV_USER=$(jq -r .user ~/.teamvault.json)` (vault user from existing config)
 - [ ] `TV_PASS=$(security find-generic-password -s teamvault-cli -a "$TV_URL" -w)` (replay existing Keychain entry)
@@ -22,9 +22,9 @@ Validates that `teamvault login` stores the password in the macOS Keychain and t
 
 ## Action
 
-- [ ] `LOGIN_OUT=$(printf '%s\n' "$TV_PASS" | /tmp/teamvault login --teamvault-config $TV_CONFIG 2>&1); LOGIN_RC=$?`
-- [ ] `PW_OUT=$(/tmp/teamvault password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY </dev/null 2>/tmp/scenario-002-pw.err); PW_RC=$?`
-- [ ] `USER_OUT=$(/tmp/teamvault username --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY </dev/null 2>/tmp/scenario-002-user.err); USER_RC=$?`
+- [ ] `LOGIN_OUT=$(printf '%s\n' "$TV_PASS" | /tmp/teamvault-cli login --teamvault-config $TV_CONFIG 2>&1); LOGIN_RC=$?`
+- [ ] `PW_OUT=$(/tmp/teamvault-cli password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY </dev/null 2>/tmp/scenario-002-pw.err); PW_RC=$?`
+- [ ] `USER_OUT=$(/tmp/teamvault-cli username --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY </dev/null 2>/tmp/scenario-002-user.err); USER_RC=$?`
 
 ## Expected
 
@@ -41,7 +41,7 @@ Validates that `teamvault login` stores the password in the macOS Keychain and t
 ## Cleanup
 
 ```bash
-rm -rf "$WORK_DIR" /tmp/teamvault /tmp/scenario-002-*.err
+rm -rf "$WORK_DIR" /tmp/teamvault-cli /tmp/scenario-002-*.err
 ```
 
 Keychain entry is intentionally left in place — it was reused, not created by this scenario.

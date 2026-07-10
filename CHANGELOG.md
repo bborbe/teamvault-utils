@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- change(cli): the binary is now named **`teamvault-cli`** (was `teamvault`) — the entry point moved to the module root, so install is `go install github.com/Seibert-Data/teamvault-cli/v5@latest` (no more `/cmd/teamvault`). Update call sites: `teamvault password …` → `teamvault-cli password …`. The `TEAMVAULT_*` env/flag contract, the `~/.teamvault.json` config, and the Keychain service name are unchanged.
+- docs: add `CLAUDE.md` (agent-operational context — build, architecture, design decisions) and restructure `README.md` around usage scenarios (install, Claude Code plugin, configure, shell scripts, k8s config templating, AI agents).
+
 ## v5.2.0
 
 - chore(repo): relocated to the **`Seibert-Data`** org — module path is now `github.com/Seibert-Data/teamvault-cli/v5`; install with `go install github.com/Seibert-Data/teamvault-cli/v5/cmd/teamvault@latest`. (Was `github.com/seibert-media/teamvault-cli/v5` in v5.1.0; the seibert-media and bborbe URLs redirect.) Binary name, `cmd/teamvault` layout, and the `teamvault-cli` Keychain service are unchanged; only Go library importers update the import path.

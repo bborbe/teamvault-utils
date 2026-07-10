@@ -8,7 +8,7 @@ Validates that when TeamVault is unreachable and `cacheEnabled` is on (via confi
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault-cli .`
 - [ ] `WORK_DIR=$(mktemp -d)`
 - [ ] `TV_HOME="$WORK_DIR/home"; mkdir -p "$TV_HOME"`
 - [ ] `TV_KEY=probe-key-003`
@@ -26,11 +26,11 @@ Validates that when TeamVault is unreachable and `cacheEnabled` is on (via confi
 
 ### Path A — config sets cacheEnabled
 
-- [ ] `START_A=$(date +%s); OUT_A=$(env HOME="$TV_HOME" /tmp/teamvault password --teamvault-config $WORK_DIR/with-cache-enabled.json --teamvault-key $TV_KEY 2>/tmp/scenario-003-A.err); RC_A=$?; END_A=$(date +%s); DURATION_A=$((END_A - START_A))`
+- [ ] `START_A=$(date +%s); OUT_A=$(env HOME="$TV_HOME" /tmp/teamvault-cli password --teamvault-config $WORK_DIR/with-cache-enabled.json --teamvault-key $TV_KEY 2>/tmp/scenario-003-A.err); RC_A=$?; END_A=$(date +%s); DURATION_A=$((END_A - START_A))`
 
 ### Path B — CLI `--cache=true` overrides absent config flag (OR-logic regression check)
 
-- [ ] `START_B=$(date +%s); OUT_B=$(env HOME="$TV_HOME" /tmp/teamvault password --teamvault-config $WORK_DIR/no-cache-field.json --teamvault-key $TV_KEY --cache=true 2>/tmp/scenario-003-B.err); RC_B=$?; END_B=$(date +%s); DURATION_B=$((END_B - START_B))`
+- [ ] `START_B=$(date +%s); OUT_B=$(env HOME="$TV_HOME" /tmp/teamvault-cli password --teamvault-config $WORK_DIR/no-cache-field.json --teamvault-key $TV_KEY --cache=true 2>/tmp/scenario-003-B.err); RC_B=$?; END_B=$(date +%s); DURATION_B=$((END_B - START_B))`
 
 ## Expected
 
@@ -49,5 +49,5 @@ Validates that when TeamVault is unreachable and `cacheEnabled` is on (via confi
 ## Cleanup
 
 ```bash
-rm -rf "$WORK_DIR" /tmp/teamvault /tmp/scenario-003-*.err
+rm -rf "$WORK_DIR" /tmp/teamvault-cli /tmp/scenario-003-*.err
 ```

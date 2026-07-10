@@ -2,7 +2,7 @@
 status: active
 ---
 
-# Scenario 001: teamvault password and teamvault username read a secret end-to-end
+# Scenario 001: teamvault-cli password and teamvault-cli username read a secret end-to-end
 
 Validates that `teamvault password` and `teamvault username` resolve config + keychain + remote and print the resolved value to stdout. Smoke test proving libargument parsing, factory wiring, and remote call work in the shipped binary. Also asserts the value is printed with NO trailing newline (basic-auth-safe).
 
@@ -10,7 +10,7 @@ Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password 
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault-cli .`
 - [ ] `TV_CONFIG=~/.teamvault.json`
 - [ ] `TV_KEY=${TV_PROBE_KEY:-lO4K1w}`
 - [ ] `[ -f "$TV_CONFIG" ]` (config file exists)
@@ -18,9 +18,9 @@ Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password 
 
 ## Action
 
-- [ ] `PASS_OUT=$(/tmp/teamvault password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-pw.err); PASS_RC=$?`
-- [ ] `USER_OUT=$(/tmp/teamvault username --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-user.err); USER_RC=$?`
-- [ ] `LAST_BYTE=$(/tmp/teamvault password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/dev/null | xxd | tail -1)`
+- [ ] `PASS_OUT=$(/tmp/teamvault-cli password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-pw.err); PASS_RC=$?`
+- [ ] `USER_OUT=$(/tmp/teamvault-cli username --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/tmp/scenario-001-user.err); USER_RC=$?`
+- [ ] `LAST_BYTE=$(/tmp/teamvault-cli password --teamvault-config $TV_CONFIG --teamvault-key $TV_KEY 2>/dev/null | xxd | tail -1)`
 
 ## Expected
 
@@ -35,5 +35,5 @@ Assumes a working `~/.teamvault.json` (url + user, no `pass`) with the password 
 ## Cleanup
 
 ```bash
-rm -f /tmp/teamvault /tmp/scenario-001-pw.err /tmp/scenario-001-user.err
+rm -f /tmp/teamvault-cli /tmp/scenario-001-pw.err /tmp/scenario-001-user.err
 ```
