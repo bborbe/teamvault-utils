@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.2.0
 
 - chore(repo): relocated to the **`Seibert-Data`** org — module path is now `github.com/Seibert-Data/teamvault-cli/v5`; install with `go install github.com/Seibert-Data/teamvault-cli/v5/cmd/teamvault@latest`. (Was `github.com/seibert-media/teamvault-cli/v5` in v5.1.0; the seibert-media and bborbe URLs redirect.) Binary name, `cmd/teamvault` layout, and the `teamvault-cli` Keychain service are unchanged; only Go library importers update the import path.
 - change(keychain): rename the macOS Keychain service name `teamvault-utils` → `teamvault-cli`. After upgrading, run `teamvault login` once to store the password under the new service name. The old `teamvault-utils` entry is left intact, so a previously-installed `teamvault-utils` binary keeps working in parallel.
