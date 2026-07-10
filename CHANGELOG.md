@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- feat(cli): add `--version` — `teamvault-cli --version` prints the release. Injected at build time via `-ldflags` (`make install`), with a `debug.ReadBuildInfo` fallback so `go install …/v5@vX.Y.Z` also reports the real module version.
+
 ## v5.3.0
 
 - change(cli): the binary is now named **`teamvault-cli`** (was `teamvault`) — the entry point moved to the module root, so install is `go install github.com/Seibert-Data/teamvault-cli/v5@latest` (no more `/cmd/teamvault`). Update call sites: `teamvault password …` → `teamvault-cli password …`. The `TEAMVAULT_*` env/flag contract, the `~/.teamvault.json` config, and the Keychain service name are unchanged.
