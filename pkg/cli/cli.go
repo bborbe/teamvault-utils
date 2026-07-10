@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/bborbe/errors"
@@ -21,6 +22,24 @@ import (
 	teamvault "github.com/Seibert-Data/teamvault-cli/v5/pkg"
 	"github.com/Seibert-Data/teamvault-cli/v5/pkg/factory"
 )
+
+// version is injected at build time via -ldflags (see the Makefile). For a
+// plain `go install …@vX.Y.Z` build (no ldflags) it falls back to the module
+// version recorded in the binary's build info, so `--version` still reports the
+// real release.
+var version = "dev"
+
+func resolveVersion() string {
+	if version != "dev" {
+		return version
+	}
+	if bi, ok := debug.ReadBuildInfo(); ok {
+		if v := bi.Main.Version; v != "" && v != "(devel)" {
+			return v
+		}
+	}
+	return version
+}
 
 // Execute runs the CLI application. It sets up signal handling for SIGINT and
 // SIGTERM, configures structured logging, and executes the root command.
@@ -73,6 +92,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:           "teamvault-cli",
 		Short:         "TeamVault CLI for retrieving secrets",
+		Version:       resolveVersion(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}

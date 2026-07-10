@@ -2,6 +2,8 @@
 include tools.env
 
 GOPATH ?= $(shell go env GOPATH)
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+LDFLAGS := -X github.com/Seibert-Data/teamvault-cli/v5/pkg/cli.version=$(VERSION)
 
 .PHONY: default
 default: precommit
@@ -114,4 +116,4 @@ addlicense:
 
 .PHONY: install
 install:
-	go build -o $(GOPATH)/bin/teamvault-cli .
+	go build -ldflags "$(LDFLAGS)" -o $(GOPATH)/bin/teamvault-cli .
