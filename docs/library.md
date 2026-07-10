@@ -3,10 +3,10 @@
 `teamvault-utils` is also a Go library. Import it:
 
 ```bash
-go get github.com/bborbe/teamvault-utils/v5
+go get github.com/seibert-media/teamvault-cli/v5
 ```
 
-The library package lives at `github.com/bborbe/teamvault-utils/v5/pkg` (package `teamvault`). API reference: [pkg.go.dev](https://pkg.go.dev/github.com/bborbe/teamvault-utils/v5/pkg).
+The library package lives at `github.com/seibert-media/teamvault-cli/v5/pkg` (package `teamvault`). API reference: [pkg.go.dev](https://pkg.go.dev/github.com/seibert-media/teamvault-cli/v5/pkg).
 
 ## The `Connector` interface
 
@@ -17,7 +17,7 @@ import (
     "context"
     "net/http"
 
-    teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
+    teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
     libtime "github.com/bborbe/time"
 )
 
@@ -54,8 +54,8 @@ teamvault.NewDummyConnector()               // fixtures, for tests
 
 ```go
 import (
-    "github.com/bborbe/teamvault-utils/v5/pkg/factory"
-    teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
+    "github.com/seibert-media/teamvault-cli/v5/pkg/factory"
+    teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
     libtime "github.com/bborbe/time"
 )
 
@@ -88,8 +88,8 @@ Use the Counterfeiter mock or the dummy connector:
 
 ```go
 import (
-    teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
-    "github.com/bborbe/teamvault-utils/v5/pkg/mocks"
+    teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
+    "github.com/seibert-media/teamvault-cli/v5/pkg/mocks"
 )
 
 conn := &mocks.Connector{}

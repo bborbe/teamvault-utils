@@ -4,7 +4,7 @@ package mocks
 import (
 	"sync"
 
-	teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
+	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
 )
 
 type KeyringClient struct {

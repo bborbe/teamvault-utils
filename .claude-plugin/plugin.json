@@ -1,11 +1,11 @@
 {
-  "name": "teamvault-utils",
+  "name": "teamvault-cli",
   "description": "Fetch TeamVault secrets (password, username, url, file) and set up the teamvault CLI, for humans and AI agents",
   "version": "5.0.2",
   "author": {
     "name": "Benjamin Borbe"
   },
-  "homepage": "https://github.com/bborbe/teamvault-utils",
-  "repository": "https://github.com/bborbe/teamvault-utils",
+  "homepage": "https://github.com/seibert-media/teamvault-cli",
+  "repository": "https://github.com/seibert-media/teamvault-cli",
   "license": "BSD-2-Clause"
 }

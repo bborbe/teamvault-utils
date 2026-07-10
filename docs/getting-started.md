@@ -7,7 +7,7 @@ One binary, a handful of subcommands, and your secret never has to sit in plaint
 ## 1. Install
 
 ```bash
-go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest
+go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@latest
 ```
 
 This puts a single `teamvault` binary on your `PATH` (in `$(go env GOPATH)/bin`). Verify:

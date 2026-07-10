@@ -1,5 +1,5 @@
 {
-  "name": "teamvault-utils",
+  "name": "teamvault-cli",
   "owner": {
     "name": "Benjamin Borbe"
   },
@@ -9,7 +9,7 @@
   },
   "plugins": [
     {
-      "name": "teamvault-utils",
+      "name": "teamvault-cli",
       "description": "Fetch TeamVault secrets (password, username, url, file) and set up the teamvault CLI, for humans and AI agents",
       "source": "./",
       "version": "5.0.2",
