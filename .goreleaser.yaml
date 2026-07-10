@@ -1,0 +1,50 @@
+version: 2
+
+project_name: teamvault-cli
+
+builds:
+  - id: teamvault-cli
+    binary: teamvault-cli
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/Seibert-Data/teamvault-cli/v5/pkg/cli.version={{ .Tag }}
+
+archives:
+  - id: teamvault-cli
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: Seibert-Data
+    name: teamvault-cli
+
+homebrew_casks:
+  - name: teamvault-cli
+    description: "Read secrets from TeamVault (passwords, usernames, URLs, files) by lookup key"
+    homepage: "https://github.com/Seibert-Data/teamvault-cli"
+    repository:
+      owner: Seibert-Data
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    commit_author:
+      name: goreleaser-bot
+      email: goreleaser@seibert.group
+    # The binary is unsigned; strip the download quarantine so it runs without a
+    # Gatekeeper "unidentified developer" prompt on first use.
+    hooks:
+      post:
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/teamvault-cli"]
