@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.0.3
 
 - refactor(library): move the Go library package from the module root into `pkg/` — import `github.com/bborbe/teamvault-utils/v5/pkg` (package `teamvault`), was `github.com/bborbe/teamvault-utils/v5`. Aligns the layout with the go-package-layout guide (all production code under `pkg/`; the module root now holds only `cmd/` and `pkg/`). The `teamvault` binary and its `go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest` install path are unchanged — only Go library importers must update the import path.
 
