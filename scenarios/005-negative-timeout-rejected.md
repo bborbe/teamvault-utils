@@ -8,7 +8,7 @@ Validates that `--teamvault-timeout=-1s` (or a negative `timeout` field in the c
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault-cli .`
 - [ ] `WORK_DIR=$(mktemp -d)`
 - [ ] Throwaway config (real URL/user not needed — validation fires before any call):
       `printf '{"url":"https://example.invalid","user":"probe","pass":"probe"}' > "$WORK_DIR/config.json"`
@@ -17,12 +17,12 @@ Validates that `--teamvault-timeout=-1s` (or a negative `timeout` field in the c
 
 ### Path A — negative timeout via CLI flag
 
-- [ ] `START_A=$(date +%s); OUT_A=$(/tmp/teamvault password --teamvault-config $WORK_DIR/config.json --teamvault-key any-key --teamvault-timeout=-1s 2>/tmp/scenario-005-A.err); RC_A=$?; END_A=$(date +%s); DURATION_A=$((END_A - START_A))`
+- [ ] `START_A=$(date +%s); OUT_A=$(/tmp/teamvault-cli password --teamvault-config $WORK_DIR/config.json --teamvault-key any-key --teamvault-timeout=-1s 2>/tmp/scenario-005-A.err); RC_A=$?; END_A=$(date +%s); DURATION_A=$((END_A - START_A))`
 
 ### Path B — negative timeout via config file
 
 - [ ] `printf '{"url":"https://example.invalid","user":"probe","pass":"probe","timeout":"-5s"}' > "$WORK_DIR/negative-config.json"`
-- [ ] `START_B=$(date +%s); OUT_B=$(/tmp/teamvault password --teamvault-config $WORK_DIR/negative-config.json --teamvault-key any-key 2>/tmp/scenario-005-B.err); RC_B=$?; END_B=$(date +%s); DURATION_B=$((END_B - START_B))`
+- [ ] `START_B=$(date +%s); OUT_B=$(/tmp/teamvault-cli password --teamvault-config $WORK_DIR/negative-config.json --teamvault-key any-key 2>/tmp/scenario-005-B.err); RC_B=$?; END_B=$(date +%s); DURATION_B=$((END_B - START_B))`
 
 ## Expected
 
@@ -45,5 +45,5 @@ Validates that `--teamvault-timeout=-1s` (or a negative `timeout` field in the c
 ## Cleanup
 
 ```bash
-rm -rf "$WORK_DIR" /tmp/teamvault /tmp/scenario-005-*.err
+rm -rf "$WORK_DIR" /tmp/teamvault-cli /tmp/scenario-005-*.err
 ```

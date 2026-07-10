@@ -5,63 +5,19 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Seibert-Data/teamvault-cli/v5)](https://goreportcard.com/report/github.com/Seibert-Data/teamvault-cli/v5)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Seibert-Data/teamvault-cli)
 
-A single command-line tool for reading secrets from [TeamVault](https://github.com/trustedsec/teamvault) — passwords, usernames, URLs, and files — by their lookup key. Built for humans at a terminal **and** AI coding agents (e.g. Claude Code), as a sanctioned alternative to the 1Password `op` CLI for TeamVault-managed credentials.
+Read secrets from [TeamVault](https://github.com/trustedsec/teamvault) — passwords, usernames, URLs, and files — by their lookup key. A single `teamvault-cli` binary for humans at a terminal, shell scripts, deployment tooling, **and** AI coding agents (e.g. Claude Code), as a sanctioned alternative to the 1Password `op` CLI for TeamVault-managed credentials.
 
-## Install
+## Install the CLI
 
 ```bash
-go install github.com/Seibert-Data/teamvault-cli/v5/cmd/teamvault@latest
+go install github.com/Seibert-Data/teamvault-cli/v5@latest
 ```
 
-## Quick start
+Installs a `teamvault-cli` binary into `$(go env GOPATH)/bin`. Check it: `teamvault-cli --help`.
 
-1. Create `~/.teamvault.json` with your vault URL + user (leave the password out — store it in the Keychain):
+## Install the Claude Code plugin
 
-   ```json
-   { "url": "https://teamvault.your-company.example", "user": "your-username" }
-   ```
-
-2. Log in once — verifies your password and stores it in the macOS Keychain:
-
-   ```bash
-   teamvault login --teamvault-config ~/.teamvault.json
-   ```
-
-3. Read a secret by its key (the alphanumeric ID in the TeamVault web-UI URL, e.g. `…/secret/AbC123/` → `AbC123`):
-
-   ```bash
-   teamvault password --teamvault-config ~/.teamvault.json --teamvault-key AbC123
-   ```
-
-   Output has **no trailing newline**, so it composes directly:
-
-   ```bash
-   curl -u "$(teamvault username … --teamvault-key AbC123):$(teamvault password … --teamvault-key AbC123)" https://api.internal/…
-   ```
-
-**→ Full walkthrough: [docs/getting-started.md](docs/getting-started.md)** (config, env vars, direnv, and using it with AI agents).
-
-## Commands
-
-| Command | Purpose |
-|---------|---------|
-| `teamvault login` | verify credentials and store the password in the macOS Keychain |
-| `teamvault password --teamvault-key <KEY>` | print a secret's password |
-| `teamvault username --teamvault-key <KEY>` | print a secret's username |
-| `teamvault url --teamvault-key <KEY>` | print a secret's URL |
-| `teamvault file --teamvault-key <KEY>` | print a secret's file contents |
-| `teamvault config parse` | render a template from stdin (`{{ "<KEY>" \| teamvaultPassword }}` placeholders) |
-| `teamvault config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
-
-Shared flags (persistent on every subcommand) — each also reads an env var: `--teamvault-url` (`TEAMVAULT_URL`), `--teamvault-user` (`TEAMVAULT_USER`), `--teamvault-pass` (`TEAMVAULT_PASS`), `--teamvault-config` (`TEAMVAULT_CONFIG`), `--teamvault-timeout` (`TEAMVAULT_TIMEOUT`), `--cache` (`CACHE`), `--staging` (`STAGING`). Run `teamvault <command> --help` for details.
-
-## Using it with AI agents
-
-Have the agent call `teamvault` for credentials instead of embedding secrets in prompts or code — the value is resolved just-in-time and never written to the conversation or the repo. See the [getting-started guide](docs/getting-started.md#6-use-it-with-an-ai-agent-claude-code).
-
-## Claude Code Plugin
-
-teamvault-cli ships a Claude Code plugin — a `teamvault` skill that helps you (or an agent) set up the CLI and fetch secrets from a Claude Code session, with a hard rule to never write a secret into the conversation, a file, or a commit.
+Lets Claude Code (or an agent) set up the CLI and fetch secrets from a session, with a hard rule to never write a secret into the conversation, a file, or a commit.
 
 ```bash
 # Install
@@ -73,9 +29,95 @@ claude plugin marketplace update teamvault-cli
 claude plugin update teamvault-cli@teamvault-cli
 ```
 
-| Command | Description |
-|---------|-------------|
-| `/teamvault` | Fetch a secret (password/username/url/file) or set up the `teamvault` CLI |
+Then use `/teamvault` in Claude Code to fetch a secret or set up the CLI.
+
+## Configure
+
+`teamvault-cli` reads its server URL and username from `~/.teamvault.json`. Leave the password **out** of the file — store it in the macOS Keychain instead.
+
+```json
+{ "url": "https://teamvault.your-company.example", "user": "your-username" }
+```
+
+Log in once to verify the password and store it in the Keychain:
+
+```bash
+teamvault-cli login
+```
+
+Every flag also reads an env var, so config-less use works too: `--teamvault-url`/`TEAMVAULT_URL`, `--teamvault-user`/`TEAMVAULT_USER`, `--teamvault-pass`/`TEAMVAULT_PASS`, `--teamvault-config`/`TEAMVAULT_CONFIG`, `--teamvault-timeout`/`TEAMVAULT_TIMEOUT`, `--cache`/`CACHE`, `--staging`/`STAGING`.
+
+The secret **key** is the alphanumeric ID from the TeamVault web-UI URL (e.g. `…/secret/AbC123/` → `AbC123`).
+
+## Use in shell scripts
+
+Reads print the raw value with **no trailing newline**, so they compose directly in command substitution:
+
+```bash
+# Inject a secret into a process's environment
+export DB_PASSWORD="$(teamvault-cli password --teamvault-key AbC123)"
+
+# Basic-auth for an API call
+curl -u "$(teamvault-cli username --teamvault-key AbC123):$(teamvault-cli password --teamvault-key AbC123)" \
+  https://api.internal/…
+```
+
+With [direnv](https://direnv.net), put the lookups in `.envrc` so a repo's secrets load on `cd`:
+
+```bash
+# .envrc
+export DB_PASSWORD="$(teamvault-cli password --teamvault-key AbC123)"
+```
+
+## Use in deployments (config templating)
+
+For k8s manifests, config files, or any templated config that needs secrets, keep templates with placeholders in source control and render them at deploy time — the secret values never touch the repo.
+
+A template uses the `teamvaultPassword` / `teamvaultUser` / `teamvaultUrl` functions with a key:
+
+```yaml
+# templates/db-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata: { name: db }
+stringData:
+  password: {{ "AbC123" | teamvaultPassword }}
+  username: {{ "AbC123" | teamvaultUser }}
+```
+
+Render one template via stdin/stdout, or a whole directory tree:
+
+```bash
+# single file
+teamvault-cli config parse < templates/db-secret.yaml > out/db-secret.yaml
+
+# whole tree (templates/ → out/, structure preserved)
+teamvault-cli config generate --source-dir templates/ --target-dir out/
+```
+
+Pipe rendered output straight to `kubectl` if you'd rather not write secrets to disk:
+
+```bash
+teamvault-cli config parse < templates/db-secret.yaml | kubectl apply -f -
+```
+
+## Use with an AI agent
+
+Have the agent call `teamvault-cli` for credentials instead of embedding secrets in prompts or code — the value is resolved just-in-time and never written to the conversation or the repo. The Claude Code plugin's `/teamvault` skill enforces this. See the [getting-started guide](docs/getting-started.md#6-use-it-with-an-ai-agent-claude-code).
+
+## Command reference
+
+| Command | Purpose |
+|---------|---------|
+| `teamvault-cli login` | verify credentials and store the password in the macOS Keychain |
+| `teamvault-cli password --teamvault-key <KEY>` | print a secret's password |
+| `teamvault-cli username --teamvault-key <KEY>` | print a secret's username |
+| `teamvault-cli url --teamvault-key <KEY>` | print a secret's URL |
+| `teamvault-cli file --teamvault-key <KEY>` | print a secret's file contents |
+| `teamvault-cli config parse` | render a template from stdin to stdout |
+| `teamvault-cli config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
+
+Run `teamvault-cli <command> --help` for all flags. Full walkthrough (config, env vars, direnv, agents): **[docs/getting-started.md](docs/getting-started.md)**.
 
 ## Go library
 
@@ -86,6 +128,8 @@ claude plugin update teamvault-cli@teamvault-cli
 ```bash
 make precommit   # format, generate, test, lint, security checks
 ```
+
+See [CLAUDE.md](CLAUDE.md) for architecture and contributor notes.
 
 ## License
 
