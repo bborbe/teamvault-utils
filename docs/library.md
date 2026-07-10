@@ -1,6 +1,6 @@
 # Go Library Usage
 
-`teamvault-utils` is also a Go library. Import it:
+`teamvault-cli` is also a Go library. Import it:
 
 ```bash
 go get github.com/seibert-media/teamvault-cli/v5

@@ -8,7 +8,7 @@ Validates that `--teamvault-timeout=-1s` (or a negative `timeout` field in the c
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/teamvault .`
+- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault .`
 - [ ] `WORK_DIR=$(mktemp -d)`
 - [ ] Throwaway config (real URL/user not needed — validation fires before any call):
       `printf '{"url":"https://example.invalid","user":"probe","pass":"probe"}' > "$WORK_DIR/config.json"`

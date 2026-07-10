@@ -37,7 +37,7 @@ var _ = Describe("DarwinKeychain integration", func() {
 	})
 
 	It("round-trips a password through zalando go-keyring against the real OS keychain", func() {
-		svc := fmt.Sprintf("teamvault-utils-it-%d", time.Now().UnixNano())
+		svc := fmt.Sprintf("teamvault-cli-it-%d", time.Now().UnixNano())
 		url := teamvault.Url(svc)
 		pwd := teamvault.Password(`integration "test" password with , and \\ chars`)
 

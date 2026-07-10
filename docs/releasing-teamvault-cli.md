@@ -1,10 +1,10 @@
-# Releasing teamvault-utils
+# Releasing teamvault-cli
 
-How to ship a new version of teamvault-utils. Mandatory reading before tagging.
+How to ship a new version of teamvault-cli. Mandatory reading before tagging.
 
 ## One surface, one version stream
 
-Unlike `vault-cli` / `dark-factory` / `coding` which ship both a binary and a Claude Code plugin, `teamvault-utils` is **binary-only**: a Go library + a single `teamvault` CLI binary (spf13/cobra) with subcommands (`teamvault login`, `teamvault password`, `teamvault username`, `teamvault url`, `teamvault file`, `teamvault config parse`, `teamvault config generate`) distributed via Go modules.
+Unlike `vault-cli` / `dark-factory` / `coding` which ship both a binary and a Claude Code plugin, `teamvault-cli` is **binary-only**: a Go library + a single `teamvault` CLI binary (spf13/cobra) with subcommands (`teamvault login`, `teamvault password`, `teamvault username`, `teamvault url`, `teamvault file`, `teamvault config parse`, `teamvault config generate`) distributed via Go modules.
 
 | Surface | Versioned by | Consumed by | Bumped how |
 |---------|--------------|-------------|------------|
@@ -46,14 +46,14 @@ All five are macOS-only and require the user's real `~/.teamvault.json` config +
 command -v jq && command -v security || echo "missing macOS tools"
 
 # Confirm the operator's real keychain entry is intact BEFORE running any scenario
-security find-generic-password -s teamvault-utils -a "$(jq -r .url ~/.teamvault.json)" -w >/dev/null && echo "keychain OK"
+security find-generic-password -s teamvault-cli -a "$(jq -r .url ~/.teamvault.json)" -w >/dev/null && echo "keychain OK"
 ```
 
 If the keychain entry is missing or empty, restore it before walking scenarios:
 
 ```bash
 REAL_PASS=$(jq -r .xpass ~/.teamvault.json)
-security add-generic-password -U -s teamvault-utils -a "$(jq -r .url ~/.teamvault.json)" -w "$REAL_PASS"
+security add-generic-password -U -s teamvault-cli -a "$(jq -r .url ~/.teamvault.json)" -w "$REAL_PASS"
 ```
 
 (Workaround: `~/.teamvault.json` keeps the password under the non-standard key `xpass` so the Config parser doesn't read it — it's only there as a recovery backup. Don't rename to `pass`; that re-introduces the plaintext-config attack surface that motivated spec 001.)
@@ -62,7 +62,7 @@ security add-generic-password -U -s teamvault-utils -a "$(jq -r .url ~/.teamvaul
 
 ```bash
 # 1. Build a fresh binary (NOT the installed one) — one binary, all subcommands
-go build -C ~/Documents/workspaces/teamvault/teamvault-utils -o /tmp/new-teamvault .
+go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/new-teamvault .
 
 # 2. Walk each active scenario by hand
 #    Each file's Setup → Action → Expected must pass.
