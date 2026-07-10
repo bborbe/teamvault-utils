@@ -31,11 +31,10 @@ release:
     owner: Seibert-Data
     name: teamvault-cli
 
-brews:
+homebrew_casks:
   - name: teamvault-cli
     description: "Read secrets from TeamVault (passwords, usernames, URLs, files) by lookup key"
     homepage: "https://github.com/Seibert-Data/teamvault-cli"
-    license: "BSD-2-Clause"
     repository:
       owner: Seibert-Data
       name: homebrew-tap
@@ -43,7 +42,9 @@ brews:
     commit_author:
       name: goreleaser-bot
       email: goreleaser@seibert.group
-    install: |
-      bin.install "teamvault-cli"
-    test: |
-      system "#{bin}/teamvault-cli", "--version"
+    # The binary is unsigned; strip the download quarantine so it runs without a
+    # Gatekeeper "unidentified developer" prompt on first use.
+    hooks:
+      post:
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/teamvault-cli"]
