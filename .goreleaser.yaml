@@ -1,0 +1,49 @@
+version: 2
+
+project_name: teamvault-cli
+
+builds:
+  - id: teamvault-cli
+    binary: teamvault-cli
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/Seibert-Data/teamvault-cli/v5/pkg/cli.version={{ .Tag }}
+
+archives:
+  - id: teamvault-cli
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: Seibert-Data
+    name: teamvault-cli
+
+brews:
+  - name: teamvault-cli
+    description: "Read secrets from TeamVault (passwords, usernames, URLs, files) by lookup key"
+    homepage: "https://github.com/Seibert-Data/teamvault-cli"
+    license: "BSD-2-Clause"
+    repository:
+      owner: Seibert-Data
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    commit_author:
+      name: goreleaser-bot
+      email: goreleaser@seibert.group
+    install: |
+      bin.install "teamvault-cli"
+    test: |
+      system "#{bin}/teamvault-cli", "--version"
