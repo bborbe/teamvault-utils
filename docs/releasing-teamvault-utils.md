@@ -8,7 +8,7 @@ Unlike `vault-cli` / `dark-factory` / `coding` which ship both a binary and a Cl
 
 | Surface | Versioned by | Consumed by | Bumped how |
 |---------|--------------|-------------|------------|
-| **Binary + library** | git tag `vX.Y.Z` + matching `## vX.Y.Z` section in `CHANGELOG.md` | `go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest`; downstream Go projects importing the library | Auto-tagged by the project's own dark-factory daemon (`autoRelease: true`) when a prompt completes and updates `## Unreleased` |
+| **Binary + library** | git tag `vX.Y.Z` + matching `## vX.Y.Z` section in `CHANGELOG.md` | `go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@latest`; downstream Go projects importing the library | Auto-tagged by the project's own dark-factory daemon (`autoRelease: true`) when a prompt completes and updates `## Unreleased` |
 
 There is no plugin to maintain. No marketplace JSONs to align. The CHANGELOG top entry and the git tag are the only two version sources, and `autoRelease` keeps them in lockstep.
 
@@ -162,7 +162,7 @@ git push origin master "$NEXT_TAG"
 gh release view "$NEXT_TAG" 2>/dev/null || echo "no GitHub Release yet (optional — see below)"
 ```
 
-The git tag is sufficient for `go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@vX.Y.Z`. A GitHub Release object is separate (see next section).
+The git tag is sufficient for `go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@vX.Y.Z`. A GitHub Release object is separate (see next section).
 
 ## GitHub Release (manual — when to surface a milestone)
 
@@ -192,15 +192,15 @@ Verify on github.com → Releases tab. The Release object can be edited (notes, 
 
 ```bash
 # Operator local install (single binary, all subcommands)
-go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest
+go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@latest
 teamvault --help 2>&1 | head -1  # sanity check
 
 # Downstream / fresh machine:
-go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@vX.Y.Z
+go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@vX.Y.Z
 
 # Library import (downstream Go projects):
-#   go.mod: require github.com/bborbe/teamvault-utils/v5 vX.Y.Z
-#   import: github.com/bborbe/teamvault-utils/v5/pkg
+#   go.mod: require github.com/seibert-media/teamvault-cli/v5 vX.Y.Z
+#   import: github.com/seibert-media/teamvault-cli/v5/pkg
 ```
 
 This is the step that bites downstream consumers if the gate was skipped. Other Go projects that import this library and any user's `teamvault` CLI on the next `go install` pick up the new binary. A regression in the new binary surfaces in their workflow, not yours.

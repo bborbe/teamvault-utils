@@ -11,8 +11,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
-	"github.com/bborbe/teamvault-utils/v5/pkg/mocks"
+	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
+	"github.com/seibert-media/teamvault-cli/v5/pkg/mocks"
 )
 
 var _ = Describe("Keychain", func() {

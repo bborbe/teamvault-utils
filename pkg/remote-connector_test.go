@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 
-	teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
+	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
 )
 
 var _ = Describe("RemoteConnector", func() {

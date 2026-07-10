@@ -5,7 +5,7 @@
 package main
 
 import (
-	"github.com/bborbe/teamvault-utils/v5/pkg/cli"
+	"github.com/seibert-media/teamvault-cli/v5/pkg/cli"
 )
 
 func main() {

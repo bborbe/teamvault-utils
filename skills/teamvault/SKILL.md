@@ -7,14 +7,14 @@ description: Fetch secrets (password, username, url, file) from TeamVault via th
 
 `teamvault` is a single CLI that reads secrets from the company TeamVault by their lookup key. Use it to hand a credential to a command (or to yourself) just-in-time, instead of storing secrets in `.env` files, prompts, or code — the sanctioned alternative to the 1Password `op` CLI for TeamVault-managed secrets.
 
-Full walkthrough for humans: `docs/getting-started.md` in the teamvault-utils repo.
+Full walkthrough for humans: `docs/getting-started.md` in the teamvault-cli repo.
 
 ## Prerequisites (check first, set up if missing)
 
 Run `teamvault --help`. If the command is missing:
 
 ```bash
-go install github.com/bborbe/teamvault-utils/v5/cmd/teamvault@latest   # installs to $(go env GOPATH)/bin
+go install github.com/seibert-media/teamvault-cli/v5/cmd/teamvault@latest   # installs to $(go env GOPATH)/bin
 ```
 
 Config: `teamvault` needs a URL + username. Check for `~/.teamvault.json`:

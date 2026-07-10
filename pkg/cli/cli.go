@@ -18,8 +18,8 @@ import (
 	libtime "github.com/bborbe/time"
 	"github.com/spf13/cobra"
 
-	teamvault "github.com/bborbe/teamvault-utils/v5/pkg"
-	"github.com/bborbe/teamvault-utils/v5/pkg/factory"
+	teamvault "github.com/seibert-media/teamvault-cli/v5/pkg"
+	"github.com/seibert-media/teamvault-cli/v5/pkg/factory"
 )
 
 // Execute runs the CLI application. It sets up signal handling for SIGINT and
