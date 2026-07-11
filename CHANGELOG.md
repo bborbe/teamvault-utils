@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.5.1
 
 - test(e2e): add `cmd/fakevault` — a fake TeamVault HTTP server with seeded secrets — plus a `make e2e` target, scenario 007, and a CI job that drives the real `teamvault-cli` binary against it (temp config + `TEAMVAULT_PASS`, no live TeamVault / Keychain). Exercises the real HTTP connector, Basic-auth, and JSON-parse path that `--staging` and unit tests do not; makes the read scenarios hermetic and CI-runnable. `fakevault` is a test helper and is not shipped.
 
