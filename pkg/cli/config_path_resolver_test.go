@@ -56,6 +56,13 @@ var _ = Describe("resolveDefaultConfigPath", func() {
 		// XDG_CONFIG_HOME points at tmpDir but no teamvault-cli/config.json exists.
 		Expect(resolveDefaultConfigPath()).To(Equal(legacyConfigPath))
 	})
+
+	It("falls back to the legacy path when HOME and XDG_CONFIG_HOME are both unset", func() {
+		Expect(os.Unsetenv("TEAMVAULT_CONFIG")).To(Succeed())
+		Expect(os.Unsetenv("XDG_CONFIG_HOME")).To(Succeed())
+		Expect(os.Unsetenv("HOME")).To(Succeed())
+		Expect(resolveDefaultConfigPath()).To(Equal(legacyConfigPath))
+	})
 })
 
 var _ = Describe("xdgConfigPath", func() {
@@ -76,5 +83,11 @@ var _ = Describe("xdgConfigPath", func() {
 		Expect(
 			xdgConfigPath(),
 		).To(Equal(filepath.Join("/home/tester", ".config", "teamvault-cli", "config.json")))
+	})
+
+	It("returns empty when both XDG_CONFIG_HOME and HOME are unset", func() {
+		Expect(os.Unsetenv("XDG_CONFIG_HOME")).To(Succeed())
+		Expect(os.Unsetenv("HOME")).To(Succeed())
+		Expect(xdgConfigPath()).To(Equal(""))
 	})
 })
