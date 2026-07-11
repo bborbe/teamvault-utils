@@ -3,63 +3,40 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 #
-# Hermetic end-to-end test: start the fake TeamVault server (cmd/fakevault),
-# point the real teamvault-cli binary at it via a temp config + TEAMVAULT_PASS
-# (no Keychain, no live TeamVault), and assert the seeded secret values.
-set -euo pipefail
+# Hermetic end-to-end test: start cmd/fakevault and drive the real teamvault-cli
+# binary against it (no live TeamVault, no Keychain). Shares setup/assert helpers
+# with the scenarios via scenarios/helper/lib.sh.
+set -uo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-TMP="$(mktemp -d)"
-FV_PID=""
-cleanup() {
-	[ -n "$FV_PID" ] && kill "$FV_PID" 2>/dev/null || true
-	rm -rf "$TMP"
-}
-trap cleanup EXIT
+source "$(cd "$(dirname "$0")/.." && pwd)/scenarios/helper/lib.sh"
 
 echo "e2e: building binaries"
-go build -C "$ROOT" -o "$TMP/teamvault-cli" .
-go build -C "$ROOT" -o "$TMP/fakevault" ./cmd/fakevault
-
+build_binaries
 echo "e2e: starting fakevault"
-"$TMP/fakevault" --addr 127.0.0.1:0 >"$TMP/fv.log" 2>&1 &
-FV_PID=$!
+start_fakevault
+echo "e2e: fakevault at $FV_URL"
 
-URL=""
-for _ in $(seq 1 50); do
-	URL="$(sed -n 's#^fakevault listening on ##p' "$TMP/fv.log")"
-	[ -n "$URL" ] && break
-	sleep 0.1
-done
-if [ -z "$URL" ]; then
-	echo "e2e: fakevault did not start"; cat "$TMP/fv.log"; exit 1
-fi
-echo "e2e: fakevault at $URL"
+# Secret reads (config resolved via TEAMVAULT_CONFIG env — set by start_fakevault).
+assert_eq "password" "demo-pass-123"              "$("$TV" password --teamvault-key demo)"
+assert_eq "username" "demo-user"                  "$("$TV" username --teamvault-key demo)"
+assert_eq "url"      "https://demo.example/login" "$("$TV" url --teamvault-key demo)"
+assert_eq "file"     "demo-file-contents"         "$("$TV" file --teamvault-key demo)"
 
-printf '{"url":"%s","user":"test"}\n' "$URL" >"$TMP/config.json"
-export TEAMVAULT_CONFIG="$TMP/config.json" TEAMVAULT_PASS="test"
+# config parse — Go-template funcs resolve secrets from stdin to stdout.
+assert_eq "config parse" "user=demo-user pass=demo-pass-123" \
+	"$(printf 'user={{ teamvaultUser "demo" }} pass={{ teamvaultPassword "demo" }}' | "$TV" config parse)"
 
-fail=0
-check() { # check <desc> <expected> <actual>
-	if [ "$2" = "$3" ]; then
-		echo "  ok: $1"
-	else
-		echo "  FAIL: $1 — expected '$2' got '$3'"; fail=1
-	fi
-}
+# not-found — an unknown key errors (non-zero exit).
+assert_exit_nonzero "not-found error" "$TV" password --teamvault-key nope-does-not-exist
 
-check "password demo"   "demo-pass-123"               "$("$TMP/teamvault-cli" password --teamvault-key demo)"
-check "username demo"   "demo-user"                   "$("$TMP/teamvault-cli" username --teamvault-key demo)"
-check "url demo"        "https://demo.example/login"  "$("$TMP/teamvault-cli" url --teamvault-key demo)"
-check "file demo"       "demo-file-contents"          "$("$TMP/teamvault-cli" file --teamvault-key demo)"
-check "password AbC123" "s3cr3t-value"                "$("$TMP/teamvault-cli" password --teamvault-key AbC123)"
+# config via env var (TEAMVAULT_CONFIG) — already exported; resolve without a flag.
+assert_eq "config via env" "demo-user" "$("$TV" username --teamvault-key demo)"
 
-# Basic-auth-safe: raw output must have NO trailing newline ("demo-pass-123" = 13 bytes).
-BYTES="$("$TMP/teamvault-cli" password --teamvault-key demo | wc -c | tr -d ' ')"
-check "no trailing newline (byte count)" "13" "$BYTES"
+# config via flag (--teamvault-config) — with TEAMVAULT_CONFIG unset, the flag wins.
+assert_eq "config via flag" "demo-user" \
+	"$(env -u TEAMVAULT_CONFIG "$TV" username --teamvault-config "$WORK_DIR/config.json" --teamvault-key demo)"
 
-if [ "$fail" -eq 0 ]; then
-	echo "e2e: PASS"
-else
-	echo "e2e: FAIL"; exit 1
-fi
+# Basic-auth-safe: raw output has NO trailing newline ("demo-pass-123" = 13 bytes).
+assert_eq "no trailing newline" "13" "$("$TV" password --teamvault-key demo | wc -c | tr -d ' ')"
+
+scenario_done

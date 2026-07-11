@@ -2,39 +2,43 @@
 status: active
 ---
 
-# Scenario 007: hermetic end-to-end read via the fake TeamVault server
+# Scenario 007: hermetic end-to-end via the fake TeamVault server
 
-Validates `teamvault-cli` end-to-end against `cmd/fakevault` — a fake TeamVault HTTP server with seeded secrets — using a temp config + `TEAMVAULT_PASS` (no live TeamVault, no macOS Keychain, no personal probe key). Exercises the real HTTP connector, Basic-auth header, and JSON parse path that `--staging` (pure fixtures) and unit tests do not. This is the CI-runnable variant of scenario 001; CI runs it via `make e2e`.
+Validates `teamvault-cli` end-to-end against `cmd/fakevault` — a fake TeamVault HTTP server with seeded secrets — using a temp config file that carries url + user + pass (no live TeamVault, no macOS Keychain, no personal probe key). Exercises the real HTTP connector, Basic-auth header, and JSON parse path that `--staging` (pure fixtures) and unit tests do not.
 
-The fastest path is `make e2e` (builds both binaries, starts fakevault, asserts, cleans up). The steps below are the manual walk it automates.
+Setup/assert helpers live in `scenarios/helper/lib.sh` (same convention as vault-cli / dark-factory). CI runs the whole thing via `make e2e`; the fastest local path is also `make e2e`.
+
+Covered cases: `password`, `username`, `url`, `file`, `config parse`, `not-found error`, config-via-env (`TEAMVAULT_CONFIG`), config-via-flag (`--teamvault-config`), no-trailing-newline.
 
 ## Setup
 
-- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/teamvault-cli .`
-- [ ] `go build -C ~/Documents/workspaces/sm-teamvault-cli -o /tmp/fakevault ./cmd/fakevault`
-- [ ] `/tmp/fakevault --addr 127.0.0.1:0 >/tmp/fv.log 2>&1 & FV_PID=$!`
-- [ ] `URL=$(sed -n 's#^fakevault listening on ##p' /tmp/fv.log)` (repeat until non-empty)
-- [ ] `printf '{"url":"%s","user":"test"}\n' "$URL" > /tmp/fv-config.json`
-- [ ] `export TEAMVAULT_CONFIG=/tmp/fv-config.json TEAMVAULT_PASS=test`
+```bash
+source ~/Documents/workspaces/sm-teamvault-cli/scenarios/helper/lib.sh
+build_binaries      # builds teamvault-cli + fakevault to a temp dir, sets $TV
+start_fakevault     # starts the server, writes a temp config (url+user+pass), exports TEAMVAULT_CONFIG
+```
 
-## Action
+- [ ] `$TV` and `$WORK_DIR/config.json` exist; `fakevault` is listening (`$FV_URL` non-empty)
 
-- [ ] `PW=$(/tmp/teamvault-cli password --teamvault-key demo)`
-- [ ] `USER=$(/tmp/teamvault-cli username --teamvault-key demo)`
-- [ ] `URLOUT=$(/tmp/teamvault-cli url --teamvault-key demo)`
-- [ ] `FILE=$(/tmp/teamvault-cli file --teamvault-key demo)`
-- [ ] `BYTES=$(/tmp/teamvault-cli password --teamvault-key demo | wc -c | tr -d ' ')`
+## Action + Expected
 
-## Expected
+```bash
+assert_eq "password" "demo-pass-123"              "$("$TV" password --teamvault-key demo)"
+assert_eq "username" "demo-user"                  "$("$TV" username --teamvault-key demo)"
+assert_eq "url"      "https://demo.example/login" "$("$TV" url --teamvault-key demo)"
+assert_eq "file"     "demo-file-contents"         "$("$TV" file --teamvault-key demo)"
+assert_eq "config parse" "user=demo-user pass=demo-pass-123" \
+	"$(printf 'user={{ teamvaultUser "demo" }} pass={{ teamvaultPassword "demo" }}' | "$TV" config parse)"
+assert_exit_nonzero "not-found error" "$TV" password --teamvault-key nope-does-not-exist
+assert_eq "config via env"  "demo-user" "$("$TV" username --teamvault-key demo)"
+assert_eq "config via flag" "demo-user" \
+	"$(env -u TEAMVAULT_CONFIG "$TV" username --teamvault-config "$WORK_DIR/config.json" --teamvault-key demo)"
+assert_eq "no trailing newline" "13" "$("$TV" password --teamvault-key demo | wc -c | tr -d ' ')"
+scenario_done   # prints "e2e: PASS" and exits non-zero if any assertion failed
+```
 
-- [ ] `[ "$PW" = "demo-pass-123" ]` (password fetched over real HTTP + Basic auth)
-- [ ] `[ "$USER" = "demo-user" ]`
-- [ ] `[ "$URLOUT" = "https://demo.example/login" ]`
-- [ ] `[ "$FILE" = "demo-file-contents" ]` (file goes through the current-revision → `/data` path)
-- [ ] `[ "$BYTES" = "13" ]` (no trailing newline — `demo-pass-123` is 13 bytes)
+- [ ] All assertions print `ok:` and `scenario_done` reports `e2e: PASS`
 
 ## Cleanup
 
-```bash
-kill "$FV_PID" 2>/dev/null; rm -f /tmp/teamvault-cli /tmp/fakevault /tmp/fv.log /tmp/fv-config.json
-```
+`scenarios/helper/lib.sh` installs an EXIT trap that kills `fakevault` and removes `$WORK_DIR` — no manual cleanup needed.
