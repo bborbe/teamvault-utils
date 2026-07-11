@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- test(e2e): add `cmd/fakevault` — a fake TeamVault HTTP server with seeded secrets — plus a `make e2e` target, scenario 007, and a CI job that drives the real `teamvault-cli` binary against it (temp config + `TEAMVAULT_PASS`, no live TeamVault / Keychain). Exercises the real HTTP connector, Basic-auth, and JSON-parse path that `--staging` and unit tests do not; makes the read scenarios hermetic and CI-runnable. `fakevault` is a test helper and is not shipped.
+
 ## v5.5.0
 
 - feat(config): default the config location when neither `--teamvault-config` nor `TEAMVAULT_CONFIG` is set — read the XDG path `~/.config/teamvault-cli/config.json` (honors `$XDG_CONFIG_HOME`) if present, else the legacy `~/.teamvault.json`. No config was read by default before; explicit flag/env still override, and an absent file keeps prior behaviour. Aligns with the XDG Base Directory convention used across the toolchain.

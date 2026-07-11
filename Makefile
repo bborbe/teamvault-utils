@@ -44,6 +44,10 @@ endif
 test:
 	go run github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION) -r --randomize-all $(TESTFLAGS_RACE) --cover --trace
 
+.PHONY: e2e
+e2e:
+	bash scripts/e2e.sh
+
 .PHONY: check
 check: lint vet vulncheck osv-scanner trivy
 

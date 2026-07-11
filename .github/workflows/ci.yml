@@ -38,6 +38,25 @@ jobs:
         with:
           fail_ci_if_error: false
 
+  # Hermetic end-to-end test: start the fake TeamVault server (cmd/fakevault)
+  # and drive the real teamvault-cli binary against it — no live TeamVault, no
+  # Keychain. Exercises the real HTTP connector + auth + parse path.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run e2e
+        run: make e2e
+
   # Validate the release pipeline on every PR so a broken .goreleaser.yaml
   # surfaces here, not only at tag-push. `build` skips the publish/brew steps,
   # so no tokens are needed.
