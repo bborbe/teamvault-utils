@@ -9,11 +9,23 @@ Read secrets from [TeamVault](https://github.com/trustedsec/teamvault) — passw
 
 ## Install the CLI
 
+**macOS (recommended)** — via [Homebrew](https://brew.sh):
+
+```bash
+brew install seibert-data/tap/teamvault-cli
+```
+
+Update later with `brew upgrade teamvault-cli`. The cask installs an unsigned binary and strips the download quarantine, so it runs without a Gatekeeper prompt.
+
+**Any platform** — via Go:
+
 ```bash
 go install github.com/Seibert-Data/teamvault-cli/v5@latest
 ```
 
-Installs a `teamvault-cli` binary into `$(go env GOPATH)/bin`. Check it: `teamvault-cli --help`.
+Installs a `teamvault-cli` binary into `$(go env GOPATH)/bin`.
+
+Check either install: `teamvault-cli --version`.
 
 ## Install the Claude Code plugin
 

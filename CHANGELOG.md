@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- docs: document Homebrew as the recommended macOS install — `brew install seibert-data/tap/teamvault-cli` (and `brew upgrade` for updates) via the published cask; `go install` kept as the cross-platform alternative.
+
+## v5.4.0
+
 - feat(cli): add `--version` — `teamvault-cli --version` prints the release. Injected at build time via `-ldflags` (`make install`), with a `debug.ReadBuildInfo` fallback so `go install …/v5@vX.Y.Z` also reports the real module version.
 
 ## v5.3.0
