@@ -1,8 +1,9 @@
 ---
-status: approved
+status: cancelled
 spec: [005-consolidate-cli-into-teamvault-command]
 created: "2026-07-09T15:01:03Z"
 queued: "2026-07-09T15:16:04Z"
+cancelled: "2026-07-11T12:44:19Z"
 ---
 
 <summary>

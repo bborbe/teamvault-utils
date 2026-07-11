@@ -1,8 +1,10 @@
 ---
-status: prompted
+status: completed
 approved: "2026-07-09T14:31:51Z"
 generating: "2026-07-09T15:15:36Z"
 prompted: "2026-07-09T15:15:36Z"
+verifying: "2026-07-11T12:45:37Z"
+completed: "2026-07-11T12:45:51Z"
 branch: dark-factory/consolidate-cli-into-teamvault-command
 issue: IT-44264
 ---

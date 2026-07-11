@@ -11,6 +11,7 @@ coverprofile.out
 /.update-logs/
 /.dark-factory.lock
 /.dark-factory.log
+/.dark-factory/
 /prompts/log
 /specs/log
 /teamvault-config-dir-generator
