@@ -5,12 +5,22 @@
 package cli
 
 import (
+	stderrors "errors"
 	"os"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+// stubNoHome makes userHomeDir report failure for the duration of the spec, so
+// the "no home directory" branch is exercised deterministically regardless of
+// the platform's os.UserHomeDir getpwuid_r fallback.
+func stubNoHome() {
+	orig := userHomeDir
+	userHomeDir = func() (string, error) { return "", stderrors.New("no home") }
+	DeferCleanup(func() { userHomeDir = orig })
+}
 
 // saveEnv snapshots the given env vars and restores them after the spec.
 func saveEnv(keys ...string) {
@@ -56,6 +66,13 @@ var _ = Describe("resolveDefaultConfigPath", func() {
 		// XDG_CONFIG_HOME points at tmpDir but no teamvault-cli/config.json exists.
 		Expect(resolveDefaultConfigPath()).To(Equal(legacyConfigPath))
 	})
+
+	It("falls back to the legacy path when the home directory cannot be determined", func() {
+		Expect(os.Unsetenv("TEAMVAULT_CONFIG")).To(Succeed())
+		Expect(os.Unsetenv("XDG_CONFIG_HOME")).To(Succeed())
+		stubNoHome()
+		Expect(resolveDefaultConfigPath()).To(Equal(legacyConfigPath))
+	})
 })
 
 var _ = Describe("xdgConfigPath", func() {
@@ -77,4 +94,13 @@ var _ = Describe("xdgConfigPath", func() {
 			xdgConfigPath(),
 		).To(Equal(filepath.Join("/home/tester", ".config", "teamvault-cli", "config.json")))
 	})
+
+	It(
+		"returns empty when XDG_CONFIG_HOME is unset and the home directory cannot be determined",
+		func() {
+			Expect(os.Unsetenv("XDG_CONFIG_HOME")).To(Succeed())
+			stubNoHome()
+			Expect(xdgConfigPath()).To(Equal(""))
+		},
+	)
 })

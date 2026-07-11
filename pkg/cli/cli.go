@@ -62,13 +62,19 @@ func resolveDefaultConfigPath() string {
 	return legacyConfigPath
 }
 
+// userHomeDir is a seam over os.UserHomeDir so tests can simulate a missing
+// home directory deterministically — os.UserHomeDir's getpwuid_r fallback (cgo)
+// can return a home from /etc/passwd even with $HOME unset, making env-only
+// tests platform-dependent.
+var userHomeDir = os.UserHomeDir
+
 // xdgConfigPath returns the XDG Base Directory config location
 // (${XDG_CONFIG_HOME:-$HOME/.config}/teamvault-cli/config.json), or "" when
 // neither XDG_CONFIG_HOME nor a home directory can be determined.
 func xdgConfigPath() string {
 	base := os.Getenv("XDG_CONFIG_HOME")
 	if base == "" {
-		home, err := os.UserHomeDir()
+		home, err := userHomeDir()
 		if err != nil || home == "" {
 			return ""
 		}
