@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime/debug"
 	"syscall"
 
@@ -39,6 +40,41 @@ func resolveVersion() string {
 		}
 	}
 	return version
+}
+
+// legacyConfigPath is the historical home-root config location. Kept in tilde
+// form so TeamvaultConfigPath.NormalizePath expands it at use time.
+const legacyConfigPath = "~/.teamvault.json"
+
+// resolveDefaultConfigPath decides which config file the CLI reads when no
+// --teamvault-config flag is given. Precedence: the TEAMVAULT_CONFIG env var,
+// then the XDG path (~/.config/teamvault-cli/config.json) when that file
+// exists, then the legacy ~/.teamvault.json. The returned path is still passed
+// through TeamvaultConfigPath.Exists/NormalizePath, so an absent legacy file
+// leaves behaviour unchanged (no config read).
+func resolveDefaultConfigPath() string {
+	if env := os.Getenv("TEAMVAULT_CONFIG"); env != "" {
+		return env
+	}
+	if xdg := xdgConfigPath(); xdg != "" && teamvault.TeamvaultConfigPath(xdg).Exists() {
+		return xdg
+	}
+	return legacyConfigPath
+}
+
+// xdgConfigPath returns the XDG Base Directory config location
+// (${XDG_CONFIG_HOME:-$HOME/.config}/teamvault-cli/config.json), or "" when
+// neither XDG_CONFIG_HOME nor a home directory can be determined.
+func xdgConfigPath() string {
+	base := os.Getenv("XDG_CONFIG_HOME")
+	if base == "" {
+		home, err := os.UserHomeDir()
+		if err != nil || home == "" {
+			return ""
+		}
+		base = filepath.Join(home, ".config")
+	}
+	return filepath.Join(base, "teamvault-cli", "config.json")
 }
 
 // Execute runs the CLI application. It sets up signal handling for SIGINT and
@@ -104,8 +140,8 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	pf.StringVar(
 		&sf.configPath,
 		"teamvault-config",
-		os.Getenv("TEAMVAULT_CONFIG"),
-		"teamvault config file path",
+		resolveDefaultConfigPath(),
+		"teamvault config file path (default: $TEAMVAULT_CONFIG, else ~/.config/teamvault-cli/config.json, else ~/.teamvault.json)",
 	)
 	pf.BoolVar(&sf.staging, "staging", envBool("STAGING"), "staging status")
 	pf.BoolVar(&sf.cache, "cache", envBool("CACHE"), "enable teamvault secret cache")
