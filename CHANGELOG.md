@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- docs: add per-OS install instructions across the README, the getting-started guide, and the Claude Code skill — Homebrew for macOS (`brew install seibert-data/tap/teamvault-cli`), a prebuilt-binary `curl` one-liner for Linux (no Go toolchain needed), and `go install` as the any-platform fallback.
+
+## v5.4.0
+
 - feat(cli): add `--version` — `teamvault-cli --version` prints the release. Injected at build time via `-ldflags` (`make install`), with a `debug.ReadBuildInfo` fallback so `go install …/v5@vX.Y.Z` also reports the real module version.
 
 ## v5.3.0

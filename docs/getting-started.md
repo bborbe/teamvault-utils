@@ -6,14 +6,36 @@ One binary, a handful of subcommands, and your secret never has to sit in plaint
 
 ## 1. Install
 
+Pick the one for your OS. Each drops a single `teamvault-cli` binary on your `PATH`.
+
+**macOS — [Homebrew](https://brew.sh) (recommended):**
+
+```bash
+brew install seibert-data/tap/teamvault-cli
+```
+
+Update later with `brew upgrade teamvault-cli`. The cask installs an unsigned binary and strips the download quarantine, so it runs without a Gatekeeper prompt.
+
+**Linux — prebuilt release binary (no Go toolchain needed):**
+
+```bash
+curl -sSL "https://github.com/Seibert-Data/teamvault-cli/releases/latest/download/teamvault-cli_linux_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz teamvault-cli && sudo install teamvault-cli /usr/local/bin/ && rm teamvault-cli
+```
+
+To update, re-run the command. (`x86_64` and `arm64`/`aarch64` are both covered.)
+
+**Any platform — Go toolchain:**
+
 ```bash
 go install github.com/Seibert-Data/teamvault-cli/v5@latest
 ```
 
-This puts a single `teamvault-cli` binary on your `PATH` (in `$(go env GOPATH)/bin`). Verify:
+Puts the binary in `$(go env GOPATH)/bin`.
+
+Verify whichever you picked:
 
 ```bash
-teamvault-cli --help
+teamvault-cli --version
 ```
 
 ## 2. Configure
