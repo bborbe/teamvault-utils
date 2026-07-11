@@ -36,6 +36,17 @@ assert_eq "config via env" "demo-user" "$("$TV" username --teamvault-key demo)"
 assert_eq "config via flag" "demo-user" \
 	"$(env -u TEAMVAULT_CONFIG "$TV" username --teamvault-config "$WORK_DIR/config.json" --teamvault-key demo)"
 
+# config generate — render a template directory tree to a target directory.
+mkdir -p "$WORK_DIR/gen-src"
+printf 'db_pass={{ teamvaultPassword "demo" }}' >"$WORK_DIR/gen-src/app.conf"
+"$TV" config generate --source-dir "$WORK_DIR/gen-src" --target-dir "$WORK_DIR/gen-out"
+assert_eq "config generate" "db_pass=demo-pass-123" "$(cat "$WORK_DIR/gen-out/app.conf")"
+
+# auth failure — a config with the wrong password gets 401 → non-zero exit.
+printf '{"url":"%s","user":"test","pass":"wrong"}\n' "$FV_URL" >"$WORK_DIR/badconfig.json"
+assert_exit_nonzero "auth failure (401)" \
+	"$TV" password --teamvault-config "$WORK_DIR/badconfig.json" --teamvault-key demo
+
 # Basic-auth-safe: raw output has NO trailing newline ("demo-pass-123" = 13 bytes).
 assert_eq "no trailing newline" "13" "$("$TV" password --teamvault-key demo | wc -c | tr -d ' ')"
 

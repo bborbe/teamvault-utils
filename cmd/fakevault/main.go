@@ -45,8 +45,18 @@ var fixtures = map[string]secret{
 	},
 }
 
+// wantUser / wantPass are the Basic-auth credentials the server accepts (set
+// via flags). A request with any other credential gets 401 — so tests can
+// exercise the CLI's auth-failure path.
+var (
+	wantUser = "test"
+	wantPass = "test"
+)
+
 func main() {
 	addr := flag.String("addr", "127.0.0.1:0", "listen address (use :0 for an OS-assigned port)")
+	flag.StringVar(&wantUser, "user", "test", "required Basic-auth username")
+	flag.StringVar(&wantPass, "pass", "test", "required Basic-auth password")
 	flag.Parse()
 
 	mux := http.NewServeMux()
@@ -119,14 +129,15 @@ func main() {
 	log.Fatal(srv.Serve(ln))
 }
 
-// authOK requires a Basic Authorization header (any credential) so tests prove
-// the CLI actually sends auth. It writes 401 and returns false when absent.
+// authOK requires the configured Basic-auth credential so tests can exercise
+// both the happy path (correct creds) and the CLI's auth-failure path (wrong
+// creds → 401). It writes 401 and returns false on any mismatch.
 func authOK(w http.ResponseWriter, r *http.Request) bool {
-	if _, _, ok := r.BasicAuth(); ok {
+	if user, pass, ok := r.BasicAuth(); ok && user == wantUser && pass == wantPass {
 		return true
 	}
 	w.Header().Set("WWW-Authenticate", `Basic realm="fakevault"`)
-	http.Error(w, "missing basic auth", http.StatusUnauthorized)
+	http.Error(w, "unauthorized", http.StatusUnauthorized)
 	return false
 }
 
