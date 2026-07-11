@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.5.0
 
 - feat(config): default the config location when neither `--teamvault-config` nor `TEAMVAULT_CONFIG` is set — read the XDG path `~/.config/teamvault-cli/config.json` (honors `$XDG_CONFIG_HOME`) if present, else the legacy `~/.teamvault.json`. No config was read by default before; explicit flag/env still override, and an absent file keeps prior behaviour. Aligns with the XDG Base Directory convention used across the toolchain.
 - docs: add per-OS install instructions across the README, the getting-started guide, and the Claude Code skill — Homebrew for macOS (`brew install seibert-data/tap/teamvault-cli`), a prebuilt-binary `curl` one-liner for Linux (no Go toolchain needed), and `go install` as the any-platform fallback.
