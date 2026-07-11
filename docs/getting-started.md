@@ -42,7 +42,10 @@ teamvault-cli --version
 
 `teamvault-cli` needs to know your TeamVault URL and username. The password is best left out of the config file and stored in your macOS Keychain via `teamvault-cli login` (see step 3).
 
-Create `~/.teamvault.json`:
+Create the config file. With no flag or env var set, the tool reads the first that exists, XDG path first:
+
+1. `~/.config/teamvault-cli/config.json` (XDG — recommended; honors `$XDG_CONFIG_HOME`)
+2. `~/.teamvault.json` (legacy fallback — still works)
 
 ```json
 {
@@ -51,7 +54,7 @@ Create `~/.teamvault.json`:
 }
 ```
 
-Point the tool at it with `--teamvault-config ~/.teamvault.json`, or export `TEAMVAULT_CONFIG=~/.teamvault.json` once (e.g. in your shell profile or a project `.envrc`).
+To use a different location, pass `--teamvault-config <path>` or export `TEAMVAULT_CONFIG=<path>` once (e.g. in your shell profile or a project `.envrc`) — both override the default lookup.
 
 Every setting also has a flag and an environment variable, so you can skip the config file entirely if you prefer:
 

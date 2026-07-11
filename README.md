@@ -53,7 +53,12 @@ Then use `/teamvault` in Claude Code to fetch a secret or set up the CLI.
 
 ## Configure
 
-`teamvault-cli` reads its server URL and username from `~/.teamvault.json`. Leave the password **out** of the file — store it in the macOS Keychain instead.
+`teamvault-cli` reads its server URL and username from a JSON config file. By default it looks in two places, in order — the XDG path first, then the legacy home-root path:
+
+1. `~/.config/teamvault-cli/config.json` (XDG — recommended)
+2. `~/.teamvault.json` (legacy fallback)
+
+Point it elsewhere with `--teamvault-config <path>` or `TEAMVAULT_CONFIG`. Leave the password **out** of the file — store it in the macOS Keychain instead.
 
 ```json
 { "url": "https://teamvault.your-company.example", "user": "your-username" }

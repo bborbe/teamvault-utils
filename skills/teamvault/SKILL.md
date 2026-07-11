@@ -31,13 +31,13 @@ curl -sSL "https://github.com/Seibert-Data/teamvault-cli/releases/latest/downloa
 go install github.com/Seibert-Data/teamvault-cli/v5@latest   # installs to $(go env GOPATH)/bin
 ```
 
-Config: `teamvault-cli` needs a URL + username. Check for `~/.teamvault.json`:
+Config: `teamvault-cli` needs a URL + username. With no flag/env set, it reads the first that exists — `~/.config/teamvault-cli/config.json` (XDG, honors `$XDG_CONFIG_HOME`), then `~/.teamvault.json` (legacy). Check for either:
 
 ```json
 { "url": "https://teamvault.your-company.example", "user": "your-teamvault-username" }
 ```
 
-Point at it with `--teamvault-config ~/.teamvault.json` or `export TEAMVAULT_CONFIG=~/.teamvault.json`. Every setting also has a flag (`--teamvault-url`, `--teamvault-user`, …) and env var (`TEAMVAULT_URL`, `TEAMVAULT_USER`, …); precedence is flag → env → config file.
+Override the location with `--teamvault-config <path>` or `export TEAMVAULT_CONFIG=<path>`. Every setting also has a flag (`--teamvault-url`, `--teamvault-user`, …) and env var (`TEAMVAULT_URL`, `TEAMVAULT_USER`, …); precedence is flag → env → config file.
 
 Password: prefer the Keychain over the config file. Run `teamvault-cli login` once — it verifies the password and stores it in the macOS Keychain, after which every command reads it automatically.
 
