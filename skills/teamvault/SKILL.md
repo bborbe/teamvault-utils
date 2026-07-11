@@ -11,7 +11,21 @@ Full walkthrough for humans: `docs/getting-started.md` in the teamvault-cli repo
 
 ## Prerequisites (check first, set up if missing)
 
-Run `teamvault-cli --help`. If the command is missing:
+Run `teamvault-cli --help`. If the command is missing, install it — pick by the user's platform:
+
+**macOS** (Homebrew):
+
+```bash
+brew install seibert-data/tap/teamvault-cli
+```
+
+**Linux** (prebuilt release binary — no Go toolchain needed):
+
+```bash
+curl -sSL "https://github.com/Seibert-Data/teamvault-cli/releases/latest/download/teamvault-cli_linux_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz teamvault-cli && sudo install teamvault-cli /usr/local/bin/ && rm teamvault-cli
+```
+
+**Any platform with Go**:
 
 ```bash
 go install github.com/Seibert-Data/teamvault-cli/v5@latest   # installs to $(go env GOPATH)/bin

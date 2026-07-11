@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-- docs: document Homebrew as the recommended macOS install — `brew install seibert-data/tap/teamvault-cli` (and `brew upgrade` for updates) via the published cask; `go install` kept as the cross-platform alternative.
+- docs: add per-OS install instructions across the README, the getting-started guide, and the Claude Code skill — Homebrew for macOS (`brew install seibert-data/tap/teamvault-cli`), a prebuilt-binary `curl` one-liner for Linux (no Go toolchain needed), and `go install` as the any-platform fallback.
 
 ## v5.4.0
 

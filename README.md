@@ -17,6 +17,14 @@ brew install seibert-data/tap/teamvault-cli
 
 Update later with `brew upgrade teamvault-cli`. The cask installs an unsigned binary and strips the download quarantine, so it runs without a Gatekeeper prompt.
 
+**Linux** — prebuilt release binary (no Go toolchain needed):
+
+```bash
+curl -sSL "https://github.com/Seibert-Data/teamvault-cli/releases/latest/download/teamvault-cli_linux_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz teamvault-cli && sudo install teamvault-cli /usr/local/bin/ && rm teamvault-cli
+```
+
+Re-run to update. Covers both `x86_64` and `arm64`/`aarch64`.
+
 **Any platform** — via Go:
 
 ```bash
