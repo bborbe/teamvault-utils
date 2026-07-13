@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.6.0
 
 - feat(cli): add the `/teamvault-cli:setup` Claude Code command — a guided first-time Seibert setup (Homebrew install, interactive+non-interactive PATH check, XDG config, login instruction, verify). It configures + instructs + verifies but never runs `login` itself, so the interactive password never enters an AI session.
 - fix(url): strip a trailing slash (and surrounding whitespace) from the base TeamVault URL via `Url.Normalize()`, applied in `NewRemoteConnector` and the Keychain read/write. A configured `https://teamvault.seibert.tools/` previously produced a double-slash API path (`…//api/secrets/…`) that 404'd on the first fetch; normalizing in both places also keeps the Keychain key consistent between `login` (write) and fetch (read). Added unit tests + a hermetic trailing-slash e2e case.
