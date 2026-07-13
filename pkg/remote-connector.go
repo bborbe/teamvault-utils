@@ -246,9 +246,11 @@ func (r *remoteConnector) call(
 		// V(4): the URL path contains the lookup key; keep it out of the common V(2) log tier.
 		glog.V(4).Infof("request to %s failed with status: %d", url, resp.StatusCode)
 		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+			// Keep "status: %d" (with colon) — isAuthError in login.go matches on it
+			// to drive the login retry loop.
 			return errors.Errorf(
 				ctx,
-				"request to %s failed with status %d (authentication failed) — run `teamvault-cli login` to (re)store your TeamVault password in the Keychain",
+				"request to %s failed with status: %d (authentication failed) — run `teamvault-cli login` to (re)store your TeamVault password in the Keychain",
 				url,
 				resp.StatusCode,
 			)
