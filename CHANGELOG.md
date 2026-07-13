@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- fix(auth): on a `401`/`403` from TeamVault, and on a Keychain-read failure, the error now points the user at `teamvault-cli login` to (re)store their password — e.g. after the v5.2.0 Keychain service rename (`teamvault-utils` → `teamvault-cli`), a first fetch would 403 with no hint. Wraps the connector/factory errors via `github.com/bborbe/errors`.
+
 ## v5.5.1
 
 - test(e2e): add `cmd/fakevault` — a fake TeamVault HTTP server with seeded secrets — plus a `make e2e` target, scenario 007, and a CI job that drives the real `teamvault-cli` binary against it (temp config + `TEAMVAULT_PASS`, no live TeamVault / Keychain). Exercises the real HTTP connector, Basic-auth, and JSON-parse path that `--staging` and unit tests do not; makes the read scenarios hermetic and CI-runnable. `fakevault` is a test helper and is not shipped.

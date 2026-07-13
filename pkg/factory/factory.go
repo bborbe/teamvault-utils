@@ -98,7 +98,7 @@ func CreateConnectorWithConfigAndTimeout(
 			return nil, errors.Wrapf(
 				ctx,
 				err,
-				"read password from keychain for url %q failed",
+				"read password from keychain for url %q failed — run `teamvault-cli login` to store your TeamVault password",
 				apiURL,
 			)
 		}

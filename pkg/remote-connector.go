@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/bborbe/errors"
 	"github.com/bborbe/time"
 	"github.com/golang/glog"
 )
@@ -236,7 +237,15 @@ func (r *remoteConnector) call(
 	if resp.StatusCode/100 != 2 {
 		// V(4): the URL path contains the lookup key; keep it out of the common V(2) log tier.
 		glog.V(4).Infof("request to %s failed with status: %d", url, resp.StatusCode)
-		return fmt.Errorf("request to %s failed with status: %d", url, resp.StatusCode)
+		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+			return errors.Errorf(
+				ctx,
+				"request to %s failed with status %d (authentication failed) — run `teamvault-cli login` to (re)store your TeamVault password in the Keychain",
+				url,
+				resp.StatusCode,
+			)
+		}
+		return errors.Errorf(ctx, "request to %s failed with status: %d", url, resp.StatusCode)
 	}
 	if response != nil {
 		if err = json.NewDecoder(resp.Body).Decode(response); err != nil {

@@ -73,6 +73,14 @@ assert_exit_nonzero() {
 	fi
 }
 
+# assert_contains <desc> <needle> <haystack>
+assert_contains() {
+	case "$3" in
+		*"$2"*) echo "  ok: $1" ;;
+		*) echo "  FAIL: $1 — '$2' not found in: $3"; _FAIL=1 ;;
+	esac
+}
+
 # scenario_done reports and exits non-zero if any assertion failed.
 scenario_done() {
 	if [ "$_FAIL" -eq 0 ]; then
