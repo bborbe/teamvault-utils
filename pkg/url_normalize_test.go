@@ -26,23 +26,23 @@ var _ = Describe("Url.Normalize", func() {
 		},
 		Entry(
 			"already clean",
-			teamvault.Url("https://teamvault.seibert.tools"),
-			teamvault.Url("https://teamvault.seibert.tools"),
+			teamvault.Url("https://teamvault.example.com"),
+			teamvault.Url("https://teamvault.example.com"),
 		),
 		Entry(
 			"single trailing slash",
-			teamvault.Url("https://teamvault.seibert.tools/"),
-			teamvault.Url("https://teamvault.seibert.tools"),
+			teamvault.Url("https://teamvault.example.com/"),
+			teamvault.Url("https://teamvault.example.com"),
 		),
 		Entry(
 			"multiple trailing slashes",
-			teamvault.Url("https://teamvault.seibert.tools//"),
-			teamvault.Url("https://teamvault.seibert.tools"),
+			teamvault.Url("https://teamvault.example.com//"),
+			teamvault.Url("https://teamvault.example.com"),
 		),
 		Entry(
 			"surrounding whitespace",
-			teamvault.Url("  https://teamvault.seibert.tools/  "),
-			teamvault.Url("https://teamvault.seibert.tools"),
+			teamvault.Url("  https://teamvault.example.com/  "),
+			teamvault.Url("https://teamvault.example.com"),
 		),
 		Entry("empty stays empty", teamvault.Url(""), teamvault.Url("")),
 	)
@@ -57,7 +57,7 @@ var _ = Describe("RemoteConnector with trailing-slash URL", func() {
 		ctx = context.Background()
 		server = ghttp.NewServer()
 		// Build the connector with a URL that ends in a slash — the value a
-		// Seibert user copies from the browser (https://teamvault.seibert.tools/).
+		// user copies from the browser (https://teamvault.example.com/).
 		// Without normalization this produces a double-slash path that 404s.
 		remoteConnector = teamvault.NewRemoteConnector(
 			libhttp.CreateDefaultHttpClient(),
