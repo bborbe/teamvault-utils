@@ -55,6 +55,9 @@ type darwinKeychain struct {
 }
 
 func (d *darwinKeychain) ReadPassword(ctx context.Context, url Url) (Password, error) {
+	// Normalize so the lookup key matches what WritePassword stored, regardless
+	// of a trailing slash on the configured URL.
+	url = url.Normalize()
 	if url == "" {
 		glog.V(3).Infof("keychain read skipped: empty URL")
 		return "", nil
@@ -76,6 +79,9 @@ func (d *darwinKeychain) ReadPassword(ctx context.Context, url Url) (Password, e
 }
 
 func (d *darwinKeychain) WritePassword(ctx context.Context, url Url, password Password) error {
+	// Normalize so the stored key matches what ReadPassword looks up, regardless
+	// of a trailing slash on the configured URL.
+	url = url.Normalize()
 	if url == "" {
 		glog.V(3).Infof("keychain write skipped: empty URL")
 		return nil

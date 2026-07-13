@@ -31,15 +31,22 @@ curl -sSL "https://github.com/Seibert-Data/teamvault-cli/releases/latest/downloa
 go install github.com/Seibert-Data/teamvault-cli/v5@latest   # installs to $(go env GOPATH)/bin
 ```
 
-Config: `teamvault-cli` needs a URL + username. With no flag/env set, it reads the first that exists — `~/.config/teamvault-cli/config.json` (XDG, honors `$XDG_CONFIG_HOME`), then `~/.teamvault.json` (legacy). Check for either:
+Config: `teamvault-cli` needs a URL + username. With no flag/env set, it reads the first that exists — `~/.config/teamvault-cli/config.json` (XDG, honors `$XDG_CONFIG_HOME`), then `~/.teamvault.json` (legacy). At **Seibert** the file is:
 
 ```json
-{ "url": "https://teamvault.your-company.example", "user": "your-teamvault-username" }
+{ "url": "https://teamvault.seibert.tools", "user": "<your-ldap-username>" }
 ```
+
+Two things people get wrong here:
+
+- **`user` is your LDAP username, not an email.** It's the local part of your old `@seibert-media.net` address — e.g. `bborbe@seibert-media.net` → `bborbe`. (If you never had that address, it's your Confluence/Jira login name.)
+- **No trailing slash on `url`.** Write `https://teamvault.seibert.tools`, not `…/`. (The CLI now strips a trailing slash defensively, but a stale config with `…tools/` was a common first-fetch failure — it produced a double-slash API path that 404s.)
 
 Override the location with `--teamvault-config <path>` or `export TEAMVAULT_CONFIG=<path>`. Every setting also has a flag (`--teamvault-url`, `--teamvault-user`, …) and env var (`TEAMVAULT_URL`, `TEAMVAULT_USER`, …); precedence is flag → env → config file.
 
-Password: prefer the Keychain over the config file. Run `teamvault-cli login` once — it verifies the password and stores it in the macOS Keychain, after which every command reads it automatically.
+Password: prefer the Keychain over the config file. Run `teamvault-cli login` once **in a plain terminal** (it prompts for the password interactively — never paste a secret into an AI session) — it verifies the password and stores it in the macOS Keychain, after which every command reads it automatically.
+
+New to the tool? `/teamvault-cli:setup` walks through install → config → login → verify interactively.
 
 ## Retrieving a secret
 

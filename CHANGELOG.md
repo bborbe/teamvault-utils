@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- feat(cli): add the `/teamvault-cli:setup` Claude Code command — a guided first-time Seibert setup (Homebrew install, interactive+non-interactive PATH check, XDG config, login instruction, verify). It configures + instructs + verifies but never runs `login` itself, so the interactive password never enters an AI session.
+- fix(url): strip a trailing slash (and surrounding whitespace) from the base TeamVault URL via `Url.Normalize()`, applied in `NewRemoteConnector` and the Keychain read/write. A configured `https://teamvault.seibert.tools/` previously produced a double-slash API path (`…//api/secrets/…`) that 404'd on the first fetch; normalizing in both places also keeps the Keychain key consistent between `login` (write) and fetch (read). Added unit tests + a hermetic trailing-slash e2e case.
+- docs(skill): make the config guidance Seibert-specific — `user` is the LDAP username (hint: the local part of the old `@seibert-media.net` address, `bborbe@seibert-media.net` → `bborbe`), `url` has no trailing slash, and `login` runs in a plain terminal (never paste a secret into an AI session). Point new users at `/teamvault-cli:setup`.
+
 ## v5.5.3
 
 - docs(skill): expand the "Handling secrets safely" section of the Claude Code skill with the inbound cloud-session risk — never ask the user to paste a secret, rotate any credential that reaches the transcript, and state the "credentials never leak" rule standalone so it holds for users outside the company who lack the org policy.

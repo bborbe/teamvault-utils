@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/bborbe/errors"
 	"github.com/bborbe/time"
@@ -31,6 +32,16 @@ type Url string
 // String returns the string representation of the Url.
 func (u Url) String() string {
 	return string(u)
+}
+
+// Normalize returns the Url with surrounding whitespace and trailing slashes
+// removed. TeamVault API paths are built as "<url>/api/secrets/...", so a base
+// URL that ends in a slash (e.g. the value copied from a browser,
+// "https://teamvault.seibert.tools/") would produce a double-slash path that
+// 404s. It is also the key the Keychain stores the password under, so login
+// (write) and fetch (read) must normalize identically or the lookup misses.
+func (u Url) Normalize() Url {
+	return Url(strings.TrimRight(strings.TrimSpace(string(u)), "/"))
 }
 
 // User represents a TeamVault username.
@@ -97,7 +108,7 @@ func NewRemoteConnector(
 ) Connector {
 	return &remoteConnector{
 		httpClient:      httpClient,
-		url:             url,
+		url:             url.Normalize(),
 		user:            user,
 		pass:            pass,
 		currentDateTime: currentDateTime,

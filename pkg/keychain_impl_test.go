@@ -96,6 +96,19 @@ var _ = Describe("darwinKeychain", func() {
 				Expect(fakeKeyring.GetCallCount()).To(Equal(0))
 			})
 		})
+
+		Context("when URL has a trailing slash", func() {
+			BeforeEach(func() {
+				fakeKeyring.GetReturns("mysecret", nil)
+			})
+
+			It("keys on the normalized (trimmed) URL so it matches WritePassword", func() {
+				_, _ = kc.ReadPassword(ctx, "https://vault.example.com/")
+				Expect(fakeKeyring.GetCallCount()).To(Equal(1))
+				_, user := fakeKeyring.GetArgsForCall(0)
+				Expect(user).To(Equal("https://vault.example.com"))
+			})
+		})
 	})
 
 	Describe("WritePassword", func() {
@@ -148,6 +161,19 @@ var _ = Describe("darwinKeychain", func() {
 				err := kc.WritePassword(ctx, "", "mysecret")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeKeyring.SetCallCount()).To(Equal(0))
+			})
+		})
+
+		Context("when URL has a trailing slash", func() {
+			BeforeEach(func() {
+				fakeKeyring.SetReturns(nil)
+			})
+
+			It("keys on the normalized (trimmed) URL so ReadPassword matches", func() {
+				_ = kc.WritePassword(ctx, "https://vault.example.com/", "mysecret")
+				Expect(fakeKeyring.SetCallCount()).To(Equal(1))
+				_, user, _ := fakeKeyring.SetArgsForCall(0)
+				Expect(user).To(Equal("https://vault.example.com"))
 			})
 		})
 
