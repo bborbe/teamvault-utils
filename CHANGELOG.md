@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.6.1
 
 - docs: keep the public repo vendor-neutral — replace company-specific examples (domain, email, username) in the `/teamvault-cli:setup` command, the `teamvault` skill, docs, a code comment, and test data with generic placeholders (`teamvault.example.com`, `<your-username>`). Company-specific onboarding lives in downstream skill repos. Also add a "multiple instances (work + personal)" section to the getting-started guide.
 
