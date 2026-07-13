@@ -46,6 +46,9 @@ assert_eq "config generate" "db_pass=demo-pass-123" "$(cat "$WORK_DIR/gen-out/ap
 printf '{"url":"%s","user":"test","pass":"wrong"}\n' "$FV_URL" >"$WORK_DIR/badconfig.json"
 assert_exit_nonzero "auth failure (401)" \
 	"$TV" password --teamvault-config "$WORK_DIR/badconfig.json" --teamvault-key demo
+# the auth-failure error should point the user at `teamvault-cli login`.
+assert_contains "auth failure suggests login" "teamvault-cli login" \
+	"$("$TV" password --teamvault-config "$WORK_DIR/badconfig.json" --teamvault-key demo 2>&1 1>/dev/null)"
 
 # Basic-auth-safe: raw output has NO trailing newline ("demo-pass-123" = 13 bytes).
 assert_eq "no trailing newline" "13" "$("$TV" password --teamvault-key demo | wc -c | tr -d ' ')"

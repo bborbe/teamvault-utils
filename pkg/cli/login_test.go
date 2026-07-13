@@ -306,6 +306,15 @@ var _ = Describe("isAuthError", func() {
 		Expect(isAuthError(fmt.Errorf("request failed with status: 403"))).To(BeTrue())
 	})
 
+	It(
+		"returns true for the connector's login-hint auth error (contract with remote-connector.go)",
+		func() {
+			Expect(isAuthError(fmt.Errorf(
+				"request to https://tv.example/api/secrets/AbC123/ failed with status: 401 (authentication failed) — run `teamvault-cli login` to (re)store your TeamVault password in the Keychain",
+			))).To(BeTrue())
+		},
+	)
+
 	It("returns false for network error", func() {
 		Expect(isAuthError(fmt.Errorf("connection refused"))).To(BeFalse())
 	})

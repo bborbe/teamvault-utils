@@ -8,12 +8,21 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"net/http"
 	"net/url"
 
+	"github.com/bborbe/errors"
 	"github.com/bborbe/time"
 	"github.com/golang/glog"
+)
+
+var (
+	// ErrUserType is returned when a TeamVault username JSON value is neither a string nor a number.
+	ErrUserType = stderrors.New("username must be string or number")
+	// ErrPasswordType is returned when a TeamVault password JSON value is neither a string nor a number.
+	ErrPasswordType = stderrors.New("password must be string or number")
 )
 
 // Url represents a TeamVault URL or secret URL value.
@@ -48,7 +57,7 @@ func (u *User) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("username must be string or number")
+	return ErrUserType
 }
 
 // Password represents a TeamVault password.
@@ -75,7 +84,7 @@ func (t *Password) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("password must be string or number")
+	return ErrPasswordType
 }
 
 // NewRemoteConnector creates a new Connector that connects to a remote TeamVault instance.
@@ -150,7 +159,7 @@ func (r *remoteConnector) CurrentRevision(ctx context.Context, key Key) (Current
 func (r *remoteConnector) File(ctx context.Context, key Key) (File, error) {
 	rev, err := r.CurrentRevision(ctx, key)
 	if err != nil {
-		return "", fmt.Errorf("get current revision failed: %v", err)
+		return "", errors.Wrapf(ctx, err, "get current revision failed")
 	}
 	var response struct {
 		File File `json:"file"`
@@ -217,7 +226,7 @@ func (r *remoteConnector) call(
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		glog.V(2).Infof("build request failed: %v", err)
-		return err
+		return errors.Wrapf(ctx, err, "build request failed")
 	}
 	req.Header.Set("ContentType", "application/json")
 	for key, values := range headers {
@@ -230,18 +239,28 @@ func (r *remoteConnector) call(
 	) // #nosec G704 -- URLs are constructed from configured base URL and API paths, not user input
 	if err != nil {
 		glog.V(2).Infof("execute request failed: %v", err)
-		return err
+		return errors.Wrapf(ctx, err, "execute request failed")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode/100 != 2 {
 		// V(4): the URL path contains the lookup key; keep it out of the common V(2) log tier.
 		glog.V(4).Infof("request to %s failed with status: %d", url, resp.StatusCode)
-		return fmt.Errorf("request to %s failed with status: %d", url, resp.StatusCode)
+		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+			// Keep "status: %d" (with colon) — isAuthError in login.go matches on it
+			// to drive the login retry loop.
+			return errors.Errorf(
+				ctx,
+				"request to %s failed with status: %d (authentication failed) — run `teamvault-cli login` to (re)store your TeamVault password in the Keychain",
+				url,
+				resp.StatusCode,
+			)
+		}
+		return errors.Errorf(ctx, "request to %s failed with status: %d", url, resp.StatusCode)
 	}
 	if response != nil {
 		if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
 			glog.V(2).Infof("decode response failed: %v", err)
-			return err
+			return errors.Wrapf(ctx, err, "decode response failed")
 		}
 	}
 	glog.V(8).Infof("rest call successful")
