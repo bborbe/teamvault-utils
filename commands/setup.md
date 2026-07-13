@@ -1,6 +1,6 @@
 ---
 description: Guided first-time setup of teamvault-cli for Seibert TeamVault (install, config, login hint, verify)
-allowed-tools: Bash, Read, Write, AskUserQuestion
+allowed-tools: Bash(command -v:*), Bash(uname:*), Bash(brew:*), Bash(zsh:*), Bash(mkdir:*), Bash(teamvault-cli:*), Read, Write, AskUserQuestion
 ---
 
 # Set up teamvault-cli (Seibert)
@@ -29,19 +29,13 @@ On Linux, skip Homebrew — use the release binary or `go install` (see Step 2).
 
 ## Step 2 — Install teamvault-cli
 
-**macOS (Homebrew):**
+macOS (recommended):
 
 ```bash
-brew install seibert-data/tap/teamvault-cli   # or: brew upgrade teamvault-cli
+brew install seibert-data/tap/teamvault-cli   # update later: brew upgrade teamvault-cli
 ```
 
-**Linux (prebuilt binary):**
-
-```bash
-curl -sSL "https://github.com/Seibert-Data/teamvault-cli/releases/latest/download/teamvault-cli_linux_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz teamvault-cli && sudo install teamvault-cli /usr/local/bin/ && rm teamvault-cli
-```
-
-**Any platform with Go:** `go install github.com/Seibert-Data/teamvault-cli/v5@latest`
+**Linux / Go:** see `docs/getting-started.md` §1 for the platform-specific commands (prebuilt release binary, or `go install github.com/Seibert-Data/teamvault-cli/v5@latest`). Then skip to Step 4 — Homebrew's PATH steps below are macOS-only.
 
 ## Step 3 — PATH check (interactive AND non-interactive)
 
@@ -67,14 +61,7 @@ Determine the two values:
 - **URL** — Seibert is always `https://teamvault.seibert.tools` (**no trailing slash** — the CLI now strips one defensively, but write it clean).
 - **`user`** — the **LDAP username**, NOT an email. Hint to give the user: *it's the local part of your old `@seibert-media.net` address* — e.g. `bborbe@seibert-media.net` → `bborbe`. If they never had that address, it's their Confluence/Jira/LDAP login name. Ask via `AskUserQuestion` if unknown; do not guess.
 
-Write the XDG-default config (respect `$XDG_CONFIG_HOME`; default `~/.config`). Do NOT put a password in the file.
-
-```bash
-cfg="${XDG_CONFIG_HOME:-$HOME/.config}/teamvault-cli"
-mkdir -p "$cfg"
-```
-
-Write `$cfg/config.json` (substitute the LDAP username):
+Create the XDG-default dir (`mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/teamvault-cli"`), then write `config.json` there (substitute the LDAP username; never put a password in the file):
 
 ```json
 {

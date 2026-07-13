@@ -34,7 +34,7 @@ go install github.com/Seibert-Data/teamvault-cli/v5@latest   # installs to $(go 
 Config: `teamvault-cli` needs a URL + username. With no flag/env set, it reads the first that exists — `~/.config/teamvault-cli/config.json` (XDG, honors `$XDG_CONFIG_HOME`), then `~/.teamvault.json` (legacy). At **Seibert** the file is:
 
 ```json
-{ "url": "https://teamvault.seibert.tools", "user": "bborbe" }
+{ "url": "https://teamvault.seibert.tools", "user": "<your-ldap-username>" }
 ```
 
 Two things people get wrong here:
