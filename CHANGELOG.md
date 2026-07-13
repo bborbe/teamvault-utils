@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.5.3
 
 - docs(skill): expand the "Handling secrets safely" section of the Claude Code skill with the inbound cloud-session risk — never ask the user to paste a secret, rotate any credential that reaches the transcript, and state the "credentials never leak" rule standalone so it holds for users outside the company who lack the org policy.
 
