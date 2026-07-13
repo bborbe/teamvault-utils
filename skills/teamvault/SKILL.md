@@ -60,6 +60,12 @@ curl -u "$(teamvault-cli username --teamvault-key <KEY>):$(teamvault-cli passwor
 
 ## Handling secrets safely (non-negotiable)
 
+**Credentials never leak — not in output, not in committed files, not in chat.** This rule stands on its own; it does not depend on any external policy or `CLAUDE.md`, so it holds for every user of this CLI, inside or outside the company.
+
+Why it matters in an AI session: the conversation transcript leaves your machine — it is sent to the model provider's cloud, where it may be logged, cached, or indexed, and deleting a message does **not** unsend it. Any secret value that reaches the transcript must be treated as **compromised and rotated in TeamVault**. The whole point of `teamvault-cli` is that the secret is resolved locally, at the moment of use, and never passes through the prompt or the model.
+
+- **Never** ask the user to type or paste a secret value into the session. Ask only for the non-secret **key** (the alphanumeric ID) and let the CLI fetch the value locally.
+- If the user pastes a live credential into the chat anyway, stop and tell them to rotate it — do not reuse it. Rotation is a web-UI operation (open the secret in TeamVault → Edit → set/regenerate the value); `teamvault-cli` is read-only and cannot rotate it for them.
 - **Never** write a retrieved secret into a file, commit, comment, or the chat transcript. Pipe it directly into the consuming command, or use command substitution as above.
 - Prefer `$(teamvault-cli password --teamvault-key <KEY>)` inline over assigning the value to a visible variable.
 - Do not log, print, or echo the value to confirm it — confirm success by the consuming command's exit status instead.
