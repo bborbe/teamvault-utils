@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- docs(skill): expand the "Handling secrets safely" section of the Claude Code skill with the inbound cloud-session risk — never ask the user to paste a secret, rotate any credential that reaches the transcript, and state the "credentials never leak" rule standalone so it holds for users outside the company who lack the org policy.
+
 ## v5.5.2
 
 - fix(auth): on a `401`/`403` from TeamVault, and on a Keychain-read failure, the error now points the user at `teamvault-cli login` to (re)store their password — e.g. after the v5.2.0 Keychain service rename (`teamvault-utils` → `teamvault-cli`), a first fetch would 403 with no hint.
