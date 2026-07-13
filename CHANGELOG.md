@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-- fix(auth): on a `401`/`403` from TeamVault, and on a Keychain-read failure, the error now points the user at `teamvault-cli login` to (re)store their password — e.g. after the v5.2.0 Keychain service rename (`teamvault-utils` → `teamvault-cli`), a first fetch would 403 with no hint. Wraps the connector/factory errors via `github.com/bborbe/errors`.
+- fix(auth): on a `401`/`403` from TeamVault, and on a Keychain-read failure, the error now points the user at `teamvault-cli login` to (re)store their password — e.g. after the v5.2.0 Keychain service rename (`teamvault-utils` → `teamvault-cli`), a first fetch would 403 with no hint.
+- refactor(errors): make `pkg/remote-connector.go` compliant with the `github.com/bborbe/errors` wrapping guide — replace `fmt.Errorf`/bare `return err` with `errors.Wrapf(ctx, …)`, and introduce `ErrUserType`/`ErrPasswordType` sentinels for the ctx-less `UnmarshalJSON` paths.
 
 ## v5.5.1
 
