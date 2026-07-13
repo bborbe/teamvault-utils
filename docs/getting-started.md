@@ -40,6 +40,8 @@ teamvault-cli --version
 
 ## 2. Configure
 
+> **In a Claude Code session**, the `/teamvault-cli:setup` command walks through install, config, and login interactively — the rest of this section is the manual equivalent.
+
 `teamvault-cli` needs to know your TeamVault URL and username. The password is best left out of the config file and stored in your macOS Keychain via `teamvault-cli login` (see step 3).
 
 Create the config file. With no flag or env var set, the tool reads the first that exists, XDG path first:
@@ -49,10 +51,15 @@ Create the config file. With no flag or env var set, the tool reads the first th
 
 ```json
 {
-  "url": "https://teamvault.your-company.example",
+  "url": "https://teamvault.example.com",
   "user": "your-teamvault-username"
 }
 ```
+
+Two easy-to-miss details:
+
+- **No trailing slash on `url`** — write `https://teamvault.example.com`, not `…/`. (Recent versions strip it defensively, but a trailing slash in an older config produced a double-slash API path that 404'd on the first fetch.)
+- **`user` is your TeamVault username, not an email** — typically your directory/login name (some orgs derive it from your email's local part).
 
 To use a different location, pass `--teamvault-config <path>` or export `TEAMVAULT_CONFIG=<path>` once (e.g. in your shell profile or a project `.envrc`) — both override the default lookup.
 
@@ -77,6 +84,24 @@ teamvault-cli login
 ```
 
 This prompts for your TeamVault password (input hidden), verifies it against the server, and stores it in your **macOS Keychain**. After that, you never pass `--teamvault-pass` again — every command reads the password from the Keychain automatically. (Keychain storage is macOS-only today; on other platforms, supply the password via `TEAMVAULT_PASS` or the config file.)
+
+### Multiple instances (e.g. work and personal)
+
+`teamvault-cli` handles more than one TeamVault at once. The Keychain stores each password keyed by the **instance URL**, so you `login` once per config and each resolves independently:
+
+```bash
+teamvault-cli login                                              # default instance (XDG config)
+teamvault-cli login --teamvault-config ~/.teamvault-personal.json   # a second instance, its own config
+```
+
+Then point each call at the config you want — or let the default apply:
+
+```bash
+teamvault-cli password --teamvault-key <KEY>                                                 # default instance
+teamvault-cli password --teamvault-config ~/.teamvault-personal.json --teamvault-key <KEY>   # second instance
+```
+
+The two configs must have **different URLs** — the Keychain key is the URL, so two configs sharing one URL would overwrite each other's stored password.
 
 ## 4. Read a secret
 

@@ -2,11 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- docs: keep the public repo vendor-neutral — replace company-specific examples (domain, email, username) in the `/teamvault-cli:setup` command, the `teamvault` skill, docs, a code comment, and test data with generic placeholders (`teamvault.example.com`, `<your-username>`). Company-specific onboarding lives in downstream skill repos. Also add a "multiple instances (work + personal)" section to the getting-started guide.
+
 ## v5.6.0
 
-- feat(cli): add the `/teamvault-cli:setup` Claude Code command — a guided first-time Seibert setup (Homebrew install, interactive+non-interactive PATH check, XDG config, login instruction, verify). It configures + instructs + verifies but never runs `login` itself, so the interactive password never enters an AI session.
-- fix(url): strip a trailing slash (and surrounding whitespace) from the base TeamVault URL via `Url.Normalize()`, applied in `NewRemoteConnector` and the Keychain read/write. A configured `https://teamvault.seibert.tools/` previously produced a double-slash API path (`…//api/secrets/…`) that 404'd on the first fetch; normalizing in both places also keeps the Keychain key consistent between `login` (write) and fetch (read). Added unit tests + a hermetic trailing-slash e2e case.
-- docs(skill): make the config guidance Seibert-specific — `user` is the LDAP username (hint: the local part of the old `@seibert-media.net` address, `bborbe@seibert-media.net` → `bborbe`), `url` has no trailing slash, and `login` runs in a plain terminal (never paste a secret into an AI session). Point new users at `/teamvault-cli:setup`.
+- feat(cli): add the `/teamvault-cli:setup` Claude Code command — a guided first-time setup (Homebrew install, interactive+non-interactive PATH check, XDG config, login instruction, verify). It configures + instructs + verifies but never runs `login` itself, so the interactive password never enters an AI session.
+- fix(url): strip a trailing slash (and surrounding whitespace) from the base TeamVault URL via `Url.Normalize()`, applied in `NewRemoteConnector` and the Keychain read/write. A configured base URL with a trailing slash (e.g. `https://teamvault.example.com/`) previously produced a double-slash API path (`…//api/secrets/…`) that 404'd on the first fetch; normalizing in both places also keeps the Keychain key consistent between `login` (write) and fetch (read). Added unit tests + a hermetic trailing-slash e2e case.
+- docs(skill): sharpen the config guidance — `user` is your TeamVault username (typically a directory/login name, not an email), `url` has no trailing slash, and `login` runs in a plain terminal (never paste a secret into an AI session). Point new users at `/teamvault-cli:setup`.
 
 ## v5.5.3
 

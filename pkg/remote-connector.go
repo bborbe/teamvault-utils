@@ -37,7 +37,7 @@ func (u Url) String() string {
 // Normalize returns the Url with surrounding whitespace and trailing slashes
 // removed. TeamVault API paths are built as "<url>/api/secrets/...", so a base
 // URL that ends in a slash (e.g. the value copied from a browser,
-// "https://teamvault.seibert.tools/") would produce a double-slash path that
+// "https://teamvault.example.com/") would produce a double-slash path that
 // 404s. It is also the key the Keychain stores the password under, so login
 // (write) and fetch (read) must normalize identically or the lookup misses.
 func (u Url) Normalize() Url {

@@ -1,11 +1,11 @@
 ---
-description: Guided first-time setup of teamvault-cli for Seibert TeamVault (install, config, login hint, verify)
+description: Guided first-time setup of teamvault-cli (install, config, login hint, verify)
 allowed-tools: Bash(command -v:*), Bash(uname:*), Bash(brew:*), Bash(zsh:*), Bash(mkdir:*), Bash(teamvault-cli:*), Read, Write, AskUserQuestion
 ---
 
-# Set up teamvault-cli (Seibert)
+# Set up teamvault-cli
 
-Walk a new user through first-time setup of `teamvault-cli` against Seibert TeamVault, end to end. Optimized for the two things people get wrong: the **`user` must be the LDAP username** (not an email), and on macOS **Homebrew's bin must be on the PATH for non-interactive shells** (direnv / `.envrc` run there).
+Walk a new user through first-time setup of `teamvault-cli` against a TeamVault instance, end to end. Optimized for the two things people get wrong: the **`user` is usually your directory/login username** (not an email), and on macOS **Homebrew's bin must be on the PATH for non-interactive shells** (direnv / `.envrc` run there).
 
 **Never handle the password.** `teamvault-cli login` prompts for it interactively; that value must never enter this session or the transcript. This command configures + instructs + verifies — it does NOT run `login`.
 
@@ -58,15 +58,15 @@ echo -n "non-interactive shell:   "; zsh -c 'command -v teamvault-cli' 2>/dev/nu
 
 Determine the two values:
 
-- **URL** — Seibert is always `https://teamvault.seibert.tools` (**no trailing slash** — the CLI now strips one defensively, but write it clean).
-- **`user`** — the **LDAP username**, NOT an email. Hint to give the user: *it's the local part of your old `@seibert-media.net` address* — e.g. `bborbe@seibert-media.net` → `bborbe`. If they never had that address, it's their Confluence/Jira/LDAP login name. Ask via `AskUserQuestion` if unknown; do not guess.
+- **URL** — the TeamVault base URL (e.g. `https://teamvault.example.com`), **no trailing slash** — the CLI now strips one defensively, but write it clean. Ask the user for their instance URL.
+- **`user`** — the TeamVault username, typically your **directory/LDAP login name, NOT an email address** (some orgs derive it from your email's local part). Ask via `AskUserQuestion` if unknown; do not guess.
 
 Create the XDG-default dir (`mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/teamvault-cli"`), then write `config.json` there (substitute the LDAP username; never put a password in the file):
 
 ```json
 {
-    "url": "https://teamvault.seibert.tools",
-    "user": "<ldap-username>"
+    "url": "https://teamvault.example.com",
+    "user": "<your-username>"
 }
 ```
 
