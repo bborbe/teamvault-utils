@@ -53,4 +53,11 @@ assert_contains "auth failure suggests login" "teamvault-cli login" \
 # Basic-auth-safe: raw output has NO trailing newline ("demo-pass-123" = 13 bytes).
 assert_eq "no trailing newline" "13" "$("$TV" password --teamvault-key demo | wc -c | tr -d ' ')"
 
+# trailing-slash URL — a config whose url ends in "/" must still resolve (the CLI
+# normalizes it; without that, "<url>//api/secrets/…" 404s). This is the exact
+# value a user copies from the browser.
+printf '{"url":"%s/","user":"test","pass":"test"}\n' "$FV_URL" >"$WORK_DIR/slashconfig.json"
+assert_eq "trailing-slash url resolves" "demo-user" \
+	"$(env -u TEAMVAULT_CONFIG "$TV" username --teamvault-config "$WORK_DIR/slashconfig.json" --teamvault-key demo)"
+
 scenario_done
