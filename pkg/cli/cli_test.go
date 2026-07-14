@@ -127,19 +127,180 @@ var _ = Describe("CLI", func() {
 			Expect(output).To(ContainSubstring("--teamvault-timeout"))
 			Expect(output).To(ContainSubstring("--cache"))
 			Expect(output).To(ContainSubstring("--teamvault-key"))
+			Expect(output).To(ContainSubstring("--json"))
 		})
 	})
 
-	Describe("missing --teamvault-key", func() {
-		It("returns required flag error without calling connector", func() {
+	Describe("missing key", func() {
+		It(
+			"returns a clear error without calling connector when neither positional nor flag is given",
+			func() {
+				var errBuf bytes.Buffer
+				cmd := cli.NewRootCommand(ctx)
+				cmd.SetArgs([]string{"password"})
+				cmd.SetOut(&bytes.Buffer{})
+				cmd.SetErr(&errBuf)
+				err := cmd.Execute()
+				Expect(err).NotTo(BeNil())
+				Expect(err.Error()).To(ContainSubstring("teamvault key required"))
+			},
+		)
+	})
+
+	Describe("positional key", func() {
+		It("password accepts the key as a positional argument", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"password", "testkey"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(buf.String()).NotTo(BeEmpty())
+		})
+
+		It("password still accepts --teamvault-key (backward compat)", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"password", "--teamvault-key", "testkey"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(buf.String()).NotTo(BeEmpty())
+		})
+
+		It("positional argument takes precedence over --teamvault-key when both given", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"password", "positional-key", "--teamvault-key", "flag-key"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(buf.String()).NotTo(BeEmpty())
+		})
+
+		It("rejects more than one positional argument", func() {
 			var errBuf bytes.Buffer
 			cmd := cli.NewRootCommand(ctx)
-			cmd.SetArgs([]string{"password"})
+			cmd.SetArgs([]string{"password", "key1", "key2"})
 			cmd.SetOut(&bytes.Buffer{})
 			cmd.SetErr(&errBuf)
 			err := cmd.Execute()
-			Expect(err).NotTo(BeNil())
-			Expect(err.Error()).To(ContainSubstring(`required flag(s) "teamvault-key" not set`))
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("--json output", func() {
+		It("password --json prints a keyed JSON object", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"password", "testkey", "--json"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(strings.TrimSpace(buf.String())).To(MatchRegexp(`^\{"password":".*"\}$`))
+		})
+
+		It("username --json prints a keyed JSON object", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"username", "testkey", "--json"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(strings.TrimSpace(buf.String())).To(MatchRegexp(`^\{"username":".*"\}$`))
+		})
+	})
+
+	Describe("info command", func() {
+		It("prints an aligned key: value table by default", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"info", "testkey"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			output := buf.String()
+			Expect(output).To(ContainSubstring("username:"))
+			Expect(output).To(ContainSubstring("url:"))
+			Expect(output).To(ContainSubstring("password:"))
+			Expect(output).To(ContainSubstring("file:"))
+		})
+
+		It("prints a single JSON object with --json", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"info", "testkey", "--json"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			output := strings.TrimSpace(buf.String())
+			Expect(output).To(ContainSubstring(`"username"`))
+			Expect(output).To(ContainSubstring(`"url"`))
+			Expect(output).To(ContainSubstring(`"password"`))
+			Expect(output).To(ContainSubstring(`"file"`))
+			Expect(output).To(HavePrefix("{"))
+			Expect(output).To(HaveSuffix("}"))
+		})
+
+		It("supports --teamvault-key for backward compat", func() {
+			os.Setenv("STAGING", "true")
+			DeferCleanup(func() {
+				os.Unsetenv("STAGING")
+			})
+			var buf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"info", "--teamvault-key", "testkey"})
+			cmd.SetOut(&buf)
+			cmd.SetErr(&bytes.Buffer{})
+			err := cmd.Execute()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(buf.String()).NotTo(BeEmpty())
+		})
+
+		It("returns error when neither positional nor flag key is given", func() {
+			var errBuf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"info"})
+			cmd.SetOut(&bytes.Buffer{})
+			cmd.SetErr(&errBuf)
+			err := cmd.Execute()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("teamvault key required"))
 		})
 	})
 

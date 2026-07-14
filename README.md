@@ -76,22 +76,45 @@ The secret **key** is the alphanumeric ID from the TeamVault web-UI URL (e.g. `�
 
 ## Use in shell scripts
 
-Reads print the raw value with **no trailing newline**, so they compose directly in command substitution:
+Reads print the raw value with **no trailing newline**, so they compose directly in command substitution. The key can be given as a positional argument (recommended) or via `--teamvault-key` (still supported):
 
 ```bash
 # Inject a secret into a process's environment
-export DB_PASSWORD="$(teamvault-cli password --teamvault-key AbC123)"
+export DB_PASSWORD="$(teamvault-cli password AbC123)"
 
 # Basic-auth for an API call
-curl -u "$(teamvault-cli username --teamvault-key AbC123):$(teamvault-cli password --teamvault-key AbC123)" \
+curl -u "$(teamvault-cli username AbC123):$(teamvault-cli password AbC123)" \
   https://api.internal/…
+
+# --teamvault-key still works
+export DB_PASSWORD="$(teamvault-cli password --teamvault-key AbC123)"
 ```
 
 With [direnv](https://direnv.net), put the lookups in `.envrc` so a repo's secrets load on `cd`:
 
 ```bash
 # .envrc
-export DB_PASSWORD="$(teamvault-cli password --teamvault-key AbC123)"
+export DB_PASSWORD="$(teamvault-cli password AbC123)"
+```
+
+Add `--json` to any of `password`/`username`/`url`/`file` for a keyed JSON object instead of the raw value — useful when piping into `jq` or another JSON-aware tool:
+
+```bash
+teamvault-cli password AbC123 --json
+# {"password":"s3cr3t"}
+```
+
+Use `info` to fetch username, url, password, and file in a single call — an aligned table by default, or one JSON object with `--json`:
+
+```bash
+teamvault-cli info AbC123
+# username: alice
+# url:      https://example.com
+# password: s3cr3t
+# file:
+
+teamvault-cli info AbC123 --json
+# {"file":"","password":"s3cr3t","url":"https://example.com","username":"alice"}
 ```
 
 ## Use in deployments (config templating)
@@ -135,12 +158,15 @@ Have the agent call `teamvault-cli` for credentials instead of embedding secrets
 | Command | Purpose |
 |---------|---------|
 | `teamvault-cli login` | verify credentials and store the password in the macOS Keychain |
-| `teamvault-cli password --teamvault-key <KEY>` | print a secret's password |
-| `teamvault-cli username --teamvault-key <KEY>` | print a secret's username |
-| `teamvault-cli url --teamvault-key <KEY>` | print a secret's URL |
-| `teamvault-cli file --teamvault-key <KEY>` | print a secret's file contents |
+| `teamvault-cli password <KEY>` | print a secret's password |
+| `teamvault-cli username <KEY>` | print a secret's username |
+| `teamvault-cli url <KEY>` | print a secret's URL |
+| `teamvault-cli file <KEY>` | print a secret's file contents |
+| `teamvault-cli info <KEY>` | print username, url, password, and file together |
 | `teamvault-cli config parse` | render a template from stdin to stdout |
 | `teamvault-cli config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
+
+Add `--json` to `password`/`username`/`url`/`file`/`info` for JSON output. The key may also be given via `--teamvault-key <KEY>` instead of positionally (backward compatible).
 
 Run `teamvault-cli <command> --help` for all flags. Full walkthrough (config, env vars, direnv, agents): **[docs/getting-started.md](docs/getting-started.md)**.
 
