@@ -13,7 +13,7 @@ Covered cases: `create --password-stdin` (primary create path), read-back of the
 ## Setup
 
 ```bash
-source ~/Documents/workspaces/sm-teamvault-cli/scenarios/helper/lib.sh
+source scenarios/helper/lib.sh
 build_binaries      # builds teamvault-cli + fakevault to a temp dir, sets $TV
 start_fakevault     # starts the server, writes a temp config (url+user+pass), exports TEAMVAULT_CONFIG
 ```
