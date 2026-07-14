@@ -117,6 +117,17 @@ teamvault-cli info AbC123 --json
 # {"file":"","password":"s3cr3t","url":"https://example.com","username":"alice"}
 ```
 
+Use `search` to find secrets by name — prints one key per line, or a JSON array of keys with `--json`:
+
+```bash
+teamvault-cli search database
+# AbC123
+# XyZ789
+
+teamvault-cli search database --json
+# ["AbC123","XyZ789"]
+```
+
 ## Use in deployments (config templating)
 
 For k8s manifests, config files, or any templated config that needs secrets, keep templates with placeholders in source control and render them at deploy time — the secret values never touch the repo.
@@ -163,10 +174,11 @@ Have the agent call `teamvault-cli` for credentials instead of embedding secrets
 | `teamvault-cli url <KEY>` | print a secret's URL |
 | `teamvault-cli file <KEY>` | print a secret's file contents |
 | `teamvault-cli info <KEY>` | print username, url, password, and file together |
+| `teamvault-cli search <QUERY>` | search secrets by name and print matching keys |
 | `teamvault-cli config parse` | render a template from stdin to stdout |
 | `teamvault-cli config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
 
-Add `--json` to `password`/`username`/`url`/`file`/`info` for JSON output. The key may also be given via `--teamvault-key <KEY>` instead of positionally (backward compatible).
+Add `--json` to `password`/`username`/`url`/`file`/`info` for JSON output, and to `search` for a JSON array of keys. The key may also be given via `--teamvault-key <KEY>` instead of positionally (backward compatible).
 
 Run `teamvault-cli <command> --help` for all flags. Full walkthrough (config, env vars, direnv, agents): **[docs/getting-started.md](docs/getting-started.md)**.
 

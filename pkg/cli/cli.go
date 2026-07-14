@@ -208,6 +208,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	rootCmd.AddCommand(createConfigCommand(ctx, sf))
 	rootCmd.AddCommand(createCreateCommand(ctx, sf))
 	rootCmd.AddCommand(createUpdateCommand(ctx, sf))
+	rootCmd.AddCommand(createSearchCommand(ctx, sf))
 
 	return rootCmd
 }

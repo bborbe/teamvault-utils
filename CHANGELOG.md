@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- feat(cli): add a `search <query>` subcommand that lists the keys of secrets matching a name search (`GET /api/secrets/?search=…`). Prints one key per line by default, or a JSON array of keys with `--json`. Zero matches exits 0 (empty output, or `[]` with `--json`).
+
 ## v5.8.0
 
 - feat(library): add a `Writer` interface to `package teamvault` for creating secrets (`POST /api/secrets/`), updating existing secrets (`PATCH /api/secrets/<key>/`), and generating strong passwords (`POST /api/generate_password/`). Exposed via `NewRemoteWriter` and `CreateRemoteWriter` factory, reusing the read path's Basic-auth header, HTTP client, timeout, and non-2xx/auth error messaging. The existing `Connector` interface is unchanged — no breaking change to library consumers.
