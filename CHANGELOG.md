@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.9.0
 
 - feat(cli): add a `search <query>` subcommand that lists the keys of secrets matching a name search (`GET /api/secrets/?search=…`). Prints one key per line by default, or a JSON array of keys with `--json`. Zero matches exits 0 (empty output, or `[]` with `--json`).
 
