@@ -1,8 +1,13 @@
 ---
-status: approved
+status: completed
 spec: [007-create-update-write-commands]
+summary: Added `create` and `update <key>` subcommands to teamvault-cli with secure password input (--password-stdin, --generate), mutual-exclusion validation, metadata-only update support, and key-only/json output
+execution_id: sm-teamvault-cli-exec-013-spec-007-create-update-commands
+dark-factory-version: dev
 created: "2026-07-14T14:00:01Z"
 queued: "2026-07-14T13:56:02Z"
+started: "2026-07-14T14:04:57Z"
+completed: "2026-07-14T14:18:20Z"
 branch: dark-factory/create-update-write-commands
 ---
 

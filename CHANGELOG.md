@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 - feat(library): add a `Writer` interface to `package teamvault` for creating secrets (`POST /api/secrets/`), updating existing secrets (`PATCH /api/secrets/<key>/`), and generating strong passwords (`POST /api/generate_password/`). Exposed via `NewRemoteWriter` and `CreateRemoteWriter` factory, reusing the read path's Basic-auth header, HTTP client, timeout, and non-2xx/auth error messaging. The existing `Connector` interface is unchanged — no breaking change to library consumers.
 
+- feat(cli): add `create` and `update <key>` subcommands to `teamvault-cli`. The `create` command creates a new secret (password or file), requiring exactly one value source (`--password-stdin`, `--generate`, `--password`, or `--file`). The `update` command modifies an existing secret, allowing metadata-only changes (no value flag) or a new value. Password input is secure by default (`--password-stdin` reads from stdin; `--generate` asks the server); `--password` warns about shell-history/`ps` leak risk. The four value sources are mutually exclusive. Output is the bare key (no trailing newline) or `{"key","api_url"}` with `--json`.
+
 ## v5.7.0
 
 - feat(cli): accept the TeamVault key as a positional argument on `password`/`username`/`url`/`file` (e.g. `teamvault-cli password AbC123`); `--teamvault-key` is no longer required and still works for backward compatibility. Add a `--json` flag to those four commands for keyed JSON output (e.g. `{"password":"…"}`), default raw-value output unchanged. Add a new `info` subcommand (`teamvault-cli info <KEY>`) that fetches username/url/password/file in one call and prints an aligned table, or a single JSON object with `--json`.

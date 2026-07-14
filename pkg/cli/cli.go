@@ -116,9 +116,9 @@ func Run(ctx context.Context, args []string) error {
 	return rootCmd.ExecuteContext(ctx)
 }
 
-// sharedFlags holds the seven shared CLI flags that apply to all subcommands.
+// SharedFlags holds the seven shared CLI flags that apply to all subcommands.
 // Each flag falls back to its corresponding environment variable when not set.
-type sharedFlags struct {
+type SharedFlags struct {
 	url        string
 	user       string
 	pass       string
@@ -131,7 +131,7 @@ type sharedFlags struct {
 // NewRootCommand creates the root cobra command with all persistent flags
 // and subcommands registered.
 func NewRootCommand(ctx context.Context) *cobra.Command {
-	sf := &sharedFlags{}
+	sf := &SharedFlags{}
 	rootCmd := &cobra.Command{
 		Use:           "teamvault-cli",
 		Short:         "TeamVault CLI for retrieving secrets",
@@ -206,6 +206,8 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 	))
 	rootCmd.AddCommand(createInfoCommand(ctx, sf))
 	rootCmd.AddCommand(createConfigCommand(ctx, sf))
+	rootCmd.AddCommand(createCreateCommand(ctx, sf))
+	rootCmd.AddCommand(createUpdateCommand(ctx, sf))
 
 	return rootCmd
 }
@@ -240,7 +242,7 @@ func resolveKey(cmd *cobra.Command, args []string) (teamvault.Key, error) {
 // resolution, buildConnector, writeSecret).
 func createSecretCommand(
 	ctx context.Context,
-	sf *sharedFlags,
+	sf *SharedFlags,
 	use, short, jsonField, errMsg string,
 	fetch func(context.Context, teamvault.Connector, teamvault.Key) (fmt.Stringer, error),
 ) *cobra.Command {
@@ -307,7 +309,7 @@ func writeSecret(
 // all four fields (username, url, password, file) for a key in one call.
 // Missing/empty fields print empty rather than erroring, since not every
 // TeamVault secret populates every field.
-func createInfoCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
+func createInfoCommand(ctx context.Context, sf *SharedFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "info [key]",
 		Short: "Retrieve username, url, password, and file for a TeamVault secret",
@@ -393,7 +395,7 @@ func writeInfo(
 }
 
 // buildConnector creates a TeamVault connector using the shared flags.
-func (sf *sharedFlags) buildConnector(ctx context.Context) (teamvault.Connector, error) {
+func (sf *SharedFlags) buildConnector(ctx context.Context) (teamvault.Connector, error) {
 	httpClient, err := factory.CreateHttpClient(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create httpClient failed")

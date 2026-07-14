@@ -15,7 +15,7 @@ import (
 )
 
 // createConfigCommand creates the config parent command.
-func createConfigCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
+func createConfigCommand(ctx context.Context, sf *SharedFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
 		Short: "Configuration templating commands",
@@ -26,7 +26,7 @@ func createConfigCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
 }
 
 // createConfigParseCommand creates the config parse subcommand.
-func createConfigParseCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
+func createConfigParseCommand(ctx context.Context, sf *SharedFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "parse",
 		Short: "Parse a configuration template from stdin and render it to stdout",
@@ -54,7 +54,7 @@ func createConfigParseCommand(ctx context.Context, sf *sharedFlags) *cobra.Comma
 }
 
 // createConfigGenerateCommand creates the config generate subcommand.
-func createConfigGenerateCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
+func createConfigGenerateCommand(ctx context.Context, sf *SharedFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate configuration files from a source directory",

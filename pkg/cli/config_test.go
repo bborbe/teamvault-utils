@@ -36,7 +36,7 @@ var _ = Describe("config parse", func() {
 			// without the connector being called.
 			template := "plain text with no placeholders\n"
 
-			sf := &sharedFlags{
+			sf := &SharedFlags{
 				url:  "https://vault.example.com",
 				user: "alice",
 				pass: "secret",
@@ -57,7 +57,7 @@ var _ = Describe("config parse", func() {
 		It(
 			"errors when --source-dir and --target-dir are missing, before any connector call",
 			func() {
-				sf := &sharedFlags{url: "https://vault.example.com", user: "alice"}
+				sf := &SharedFlags{url: "https://vault.example.com", user: "alice"}
 				cmd = createConfigGenerateCommand(ctx, sf)
 				cmd.SetArgs([]string{})
 				cmd.SetOut(outBuf)
@@ -116,7 +116,7 @@ var _ = Describe("config parse", func() {
 				os.WriteFile(filepath.Join(srcDir, "config.txt"), []byte(content), 0600),
 			).To(Succeed())
 
-			sf := &sharedFlags{staging: true}
+			sf := &SharedFlags{staging: true}
 			cmd = createConfigGenerateCommand(ctx, sf)
 			cmd.SetArgs([]string{"--source-dir", srcDir, "--target-dir", dstDir})
 			cmd.SetOut(&bytes.Buffer{})

@@ -37,7 +37,7 @@ const (
 )
 
 // createLoginCommand creates the login subcommand.
-func createLoginCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
+func createLoginCommand(ctx context.Context, sf *SharedFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Login to TeamVault and store credentials in the macOS Keychain",

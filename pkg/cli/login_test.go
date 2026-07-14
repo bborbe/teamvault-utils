@@ -264,7 +264,7 @@ var _ = Describe("createLoginCommand wiring", func() {
 	It("rejects a negative --teamvault-timeout before any network call", func() {
 		// url+user+pass are supplied so validation reaches timeout resolution,
 		// which must reject the negative value before loginFlow / any connector.
-		sf := &sharedFlags{
+		sf := &SharedFlags{
 			url:     "https://vault.example.com",
 			user:    "alice",
 			pass:    "some-pass",
@@ -281,7 +281,7 @@ var _ = Describe("createLoginCommand wiring", func() {
 	})
 
 	It("errors when the teamvault URL is missing", func() {
-		sf := &sharedFlags{}
+		sf := &SharedFlags{}
 		cmd := createLoginCommand(ctx, sf)
 		cmd.SetArgs([]string{})
 		cmd.SetOut(&bytes.Buffer{})
