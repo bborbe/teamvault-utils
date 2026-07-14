@@ -3,13 +3,16 @@
 // license that can be found in the LICENSE file.
 
 // Command fakevault is a minimal fake TeamVault HTTP server for hermetic,
-// CI-runnable end-to-end tests of teamvault-cli. It implements only the four
-// read endpoints the remote connector calls (see pkg/remote-connector.go) and
-// serves a fixed set of in-memory secrets. It is a test helper and is never
-// shipped (goreleaser builds the root `main: .` only).
+// CI-runnable end-to-end tests of teamvault-cli. It implements the read
+// endpoints the remote connector calls (see pkg/remote-connector.go) plus the
+// write + search endpoints the remote writer / search command call (see
+// pkg/remote-writer.go), all backed by an in-memory, mutex-guarded store
+// seeded from a fixed fixture set. It is a test helper and is never shipped
+// (goreleaser builds the root `main: .` only).
 package main
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -17,32 +20,80 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
-// secret is one fixture entry served by the fake.
+// secret is one entry served by the fake — either a seeded fixture or a
+// secret created/updated at runtime via the write endpoints.
 type secret struct {
-	Username string
-	URL      string
-	Password string
-	File     string
+	ContentType string
+	Name        string
+	Username    string
+	URL         string
+	Description string
+	Password    string
+	File        string
 }
 
-// fixtures is the seeded secret set. Scenarios/e2e tests reference these keys
-// and assert the values below.
-var fixtures = map[string]secret{
-	"demo": {
-		Username: "demo-user",
-		URL:      "https://demo.example/login",
-		Password: "demo-pass-123",
-		File:     "demo-file-contents",
-	},
-	"AbC123": {
-		Username: "alice",
-		URL:      "https://api.internal",
-		Password: "s3cr3t-value",
-		File:     "certificate-bytes",
-	},
+// store is the in-memory, mutex-guarded secret set. It starts out seeded with
+// the fixed fixtures below; POST /api/secrets/ adds entries and
+// PATCH /api/secrets/{key}/ mutates them, so a created secret can be read
+// back, searched, and updated within the same server lifetime.
+type store struct {
+	mu   sync.Mutex
+	data map[string]secret
+}
+
+func newStore() *store {
+	return &store{
+		data: map[string]secret{
+			"demo": {
+				ContentType: "password",
+				Name:        "demo",
+				Username:    "demo-user",
+				URL:         "https://demo.example/login",
+				Password:    "demo-pass-123",
+				File:        "demo-file-contents",
+			},
+			"AbC123": {
+				ContentType: "password",
+				Name:        "AbC123",
+				Username:    "alice",
+				URL:         "https://api.internal",
+				Password:    "s3cr3t-value",
+				File:        "certificate-bytes",
+			},
+		},
+	}
+}
+
+func (s *store) get(key string) (secret, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	v, ok := s.data[key]
+	return v, ok
+}
+
+func (s *store) put(key string, v secret) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.data[key] = v
+}
+
+// search returns keys of secrets whose key or username contains q
+// (case-sensitive substring match, mirroring the pre-write fixture behavior).
+func (s *store) search(q string) []string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	keys := make([]string, 0, len(s.data))
+	for key, v := range s.data {
+		if q == "" || strings.Contains(key, q) || strings.Contains(v.Username, q) ||
+			strings.Contains(v.Name, q) {
+			keys = append(keys, key)
+		}
+	}
+	return keys
 }
 
 // wantUser / wantPass are the Basic-auth credentials the server accepts (set
@@ -59,6 +110,7 @@ func main() {
 	flag.StringVar(&wantPass, "pass", "test", "required Basic-auth password")
 	flag.Parse()
 
+	st := newStore()
 	mux := http.NewServeMux()
 
 	// GET /api/secrets/{key}/ — secret metadata (username, url, current_revision).
@@ -66,7 +118,7 @@ func main() {
 		if !authOK(w, r) {
 			return
 		}
-		s, ok := fixtures[r.PathValue("key")]
+		s, ok := st.get(r.PathValue("key"))
 		if !ok {
 			http.NotFound(w, r)
 			return
@@ -82,6 +134,55 @@ func main() {
 		})
 	})
 
+	// PATCH /api/secrets/{key}/ — partial update of metadata and/or secret_data.
+	// content_type is immutable and never read from the request body.
+	mux.HandleFunc("PATCH /api/secrets/{key}/", func(w http.ResponseWriter, r *http.Request) {
+		if !authOK(w, r) {
+			return
+		}
+		key := r.PathValue("key")
+		s, ok := st.get(key)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		var req struct {
+			Name        *string           `json:"name"`
+			Username    *string           `json:"username"`
+			Url         *string           `json:"url"`
+			Description *string           `json:"description"`
+			SecretData  map[string]string `json:"secret_data"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "decode request failed", http.StatusBadRequest)
+			return
+		}
+		if req.Name != nil {
+			s.Name = *req.Name
+		}
+		if req.Username != nil {
+			s.Username = *req.Username
+		}
+		if req.Url != nil {
+			s.URL = *req.Url
+		}
+		if req.Description != nil {
+			s.Description = *req.Description
+		}
+		if pw, ok := req.SecretData["password"]; ok {
+			s.Password = pw
+		}
+		if fc, ok := req.SecretData["file_content"]; ok {
+			s.File = fc
+		}
+		st.put(key, s)
+
+		writeJSON(w, map[string]any{
+			"api_url": fmt.Sprintf("http://%s/api/secrets/%s/", r.Host, key),
+		})
+	})
+
 	// GET /api/secret-revisions/{key}/data — revision data (password, file).
 	mux.HandleFunc(
 		"GET /api/secret-revisions/{key}/data",
@@ -89,7 +190,7 @@ func main() {
 			if !authOK(w, r) {
 				return
 			}
-			s, ok := fixtures[r.PathValue("key")]
+			s, ok := st.get(r.PathValue("key"))
 			if !ok {
 				http.NotFound(w, r)
 				return
@@ -98,21 +199,54 @@ func main() {
 		},
 	)
 
-	// GET /api/secrets/?search=q — search (login probe). Matches on key or username.
-	mux.HandleFunc("GET /api/secrets/{$}", func(w http.ResponseWriter, r *http.Request) {
+	// POST /api/secrets/ — create a new secret, returns {"api_url": "..."}.
+	// GET  /api/secrets/?search=q — search (login probe + search command).
+	mux.HandleFunc("/api/secrets/", func(w http.ResponseWriter, r *http.Request) {
 		if !authOK(w, r) {
 			return
 		}
-		q := r.URL.Query().Get("search")
-		results := make([]map[string]string, 0, len(fixtures))
-		for key, s := range fixtures {
-			if q == "" || strings.Contains(key, q) || strings.Contains(s.Username, q) {
+		switch r.Method {
+		case http.MethodGet:
+			q := r.URL.Query().Get("search")
+			keys := st.search(q)
+			results := make([]map[string]string, 0, len(keys))
+			for _, key := range keys {
 				results = append(results, map[string]string{
 					"api_url": fmt.Sprintf("http://%s/api/secrets/%s/", r.Host, key),
 				})
 			}
+			writeJSON(w, map[string]any{"results": results})
+
+		case http.MethodPost:
+			var req struct {
+				ContentType string            `json:"content_type"`
+				Name        string            `json:"name"`
+				Username    string            `json:"username"`
+				Url         string            `json:"url"`
+				Description string            `json:"description"`
+				SecretData  map[string]string `json:"secret_data"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				http.Error(w, "decode request failed", http.StatusBadRequest)
+				return
+			}
+			key := genKey()
+			st.put(key, secret{
+				ContentType: req.ContentType,
+				Name:        req.Name,
+				Username:    req.Username,
+				URL:         req.Url,
+				Description: req.Description,
+				Password:    req.SecretData["password"],
+				File:        req.SecretData["file_content"],
+			})
+			writeJSON(w, map[string]any{
+				"api_url": fmt.Sprintf("http://%s/api/secrets/%s/", r.Host, key),
+			})
+
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
-		writeJSON(w, map[string]any{"results": results})
 	})
 
 	ln, err := net.Listen("tcp", *addr)
@@ -146,4 +280,23 @@ func writeJSON(w http.ResponseWriter, v any) {
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		log.Printf("fakevault: encode: %v", err)
 	}
+}
+
+// keyAlphabet is deliberately alphanumeric-only, matching the shape of real
+// TeamVault hashids well enough for the CLI's api_url parsing (Key.Validate
+// only rejects empty keys, so the exact alphabet is not load-bearing).
+const keyAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+// genKey generates a short random key for a newly created secret, using
+// crypto/rand so the fake never depends on wall-clock time.
+func genKey() string {
+	b := make([]byte, 8)
+	if _, err := rand.Read(b); err != nil {
+		log.Fatalf("fakevault: generate key: %v", err)
+	}
+	out := make([]byte, len(b))
+	for i, c := range b {
+		out[i] = keyAlphabet[int(c)%len(keyAlphabet)]
+	}
+	return string(out)
 }
