@@ -1,11 +1,12 @@
 ---
-status: prompted
+status: verifying
 tags:
     - dark-factory
     - spec
 approved: "2026-07-14T13:27:53Z"
 generating: "2026-07-14T13:37:33Z"
 prompted: "2026-07-14T13:44:23Z"
+verifying: "2026-07-14T17:19:03Z"
 branch: dark-factory/create-update-write-commands
 ---
 
