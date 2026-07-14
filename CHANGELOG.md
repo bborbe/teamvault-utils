@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.8.0
 
 - feat(library): add a `Writer` interface to `package teamvault` for creating secrets (`POST /api/secrets/`), updating existing secrets (`PATCH /api/secrets/<key>/`), and generating strong passwords (`POST /api/generate_password/`). Exposed via `NewRemoteWriter` and `CreateRemoteWriter` factory, reusing the read path's Basic-auth header, HTTP client, timeout, and non-2xx/auth error messaging. The existing `Connector` interface is unchanged — no breaking change to library consumers.
 
