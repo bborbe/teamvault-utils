@@ -187,6 +187,17 @@ func CreateRemoteConnector(
 	)
 }
 
+// CreateRemoteWriter creates a Writer that communicates directly with a remote TeamVault API.
+func CreateRemoteWriter(
+	httpClient *http.Client,
+	apiURL teamvault.Url,
+	apiUser teamvault.User,
+	apiPassword teamvault.Password,
+	currentDateTime libtime.CurrentDateTime,
+) teamvault.Writer {
+	return teamvault.NewRemoteWriter(httpClient, apiURL, apiUser, apiPassword, currentDateTime)
+}
+
 // CreateHttpClient creates a new HTTP client configured for TeamVault API communication.
 // The client has a default timeout of 5 seconds.
 func CreateHttpClient(ctx context.Context) (*http.Client, error) {
