@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.7.0
 
 - feat(cli): accept the TeamVault key as a positional argument on `password`/`username`/`url`/`file` (e.g. `teamvault-cli password AbC123`); `--teamvault-key` is no longer required and still works for backward compatibility. Add a `--json` flag to those four commands for keyed JSON output (e.g. `{"password":"…"}`), default raw-value output unchanged. Add a new `info` subcommand (`teamvault-cli info <KEY>`) that fetches username/url/password/file in one call and prints an aligned table, or a single JSON object with `--json`.
 
