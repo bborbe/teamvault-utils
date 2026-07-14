@@ -7,6 +7,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -164,6 +165,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 		sf,
 		"password",
 		"Retrieve a password from TeamVault",
+		"password",
 		"get password failed",
 		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
 			return conn.Password(ctx, key)
@@ -174,6 +176,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 		sf,
 		"username",
 		"Retrieve a username from TeamVault",
+		"username",
 		"get user failed",
 		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
 			return conn.User(ctx, key)
@@ -184,6 +187,7 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 		sf,
 		"url",
 		"Retrieve a URL from TeamVault",
+		"url",
 		"get url failed",
 		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
 			return conn.Url(ctx, key)
@@ -194,11 +198,13 @@ func NewRootCommand(ctx context.Context) *cobra.Command {
 		sf,
 		"file",
 		"Retrieve a file from TeamVault",
+		"file",
 		"get file failed",
 		func(ctx context.Context, conn teamvault.Connector, key teamvault.Key) (fmt.Stringer, error) {
 			return conn.File(ctx, key)
 		},
 	))
+	rootCmd.AddCommand(createInfoCommand(ctx, sf))
 	rootCmd.AddCommand(createConfigCommand(ctx, sf))
 
 	return rootCmd
@@ -209,46 +215,179 @@ func envBool(name string) bool {
 	return os.Getenv(name) == "true"
 }
 
+// resolveKey resolves the TeamVault key from a positional argument or the
+// --teamvault-key flag, positional taking precedence. It returns an error
+// naming both forms when neither is given, since the flag is no longer
+// required and cobra can't enforce "one of" on its own.
+func resolveKey(cmd *cobra.Command, args []string) (teamvault.Key, error) {
+	if len(args) > 0 && args[0] != "" {
+		return teamvault.Key(args[0]), nil
+	}
+	flagKey, _ := cmd.Flags().GetString("teamvault-key")
+	if flagKey != "" {
+		return teamvault.Key(flagKey), nil
+	}
+	return "", errors.Errorf(
+		cmd.Context(),
+		"teamvault key required: pass it as a positional argument or via --teamvault-key",
+	)
+}
+
 // createSecretCommand builds a secret-reader subcommand. The four secret
 // readers (password/username/url/file) differ only in their Use/Short strings,
-// the connector method invoked, and the error message; this helper captures the
-// shared wiring (required --teamvault-key, buildConnector, writeSecret).
+// the JSON field name, the connector method invoked, and the error message;
+// this helper captures the shared wiring (positional/--teamvault-key
+// resolution, buildConnector, writeSecret).
 func createSecretCommand(
 	ctx context.Context,
 	sf *sharedFlags,
-	use, short, errMsg string,
+	use, short, jsonField, errMsg string,
 	fetch func(context.Context, teamvault.Connector, teamvault.Key) (fmt.Stringer, error),
 ) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   use,
+		Use:   use + " [key]",
 		Short: short,
-		Args:  cobra.NoArgs,
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			key, _ := cmd.Flags().GetString("teamvault-key")
+			key, err := resolveKey(cmd, args)
+			if err != nil {
+				return err
+			}
+			asJSON, _ := cmd.Flags().GetBool("json")
 			conn, err := sf.buildConnector(ctx)
 			if err != nil {
 				return err
 			}
-			result, err := fetch(ctx, conn, teamvault.Key(key))
+			result, err := fetch(ctx, conn, key)
 			if err != nil {
 				return errors.Wrap(ctx, err, errMsg)
 			}
-			return writeSecret(ctx, cmd.OutOrStdout(), result)
+			return writeSecret(ctx, cmd.OutOrStdout(), jsonField, result, asJSON)
 		},
 	}
 
 	var key string
-	cmd.Flags().StringVar(&key, "teamvault-key", "", "teamvault key")
-	_ = cmd.MarkFlagRequired("teamvault-key")
+	cmd.Flags().
+		StringVar(&key, "teamvault-key", "", "teamvault key (alternative to positional argument)")
+	cmd.Flags().
+		Bool("json", false, `print output as a JSON object (e.g. {"`+jsonField+`":"<value>"})`)
 
 	return cmd
 }
 
-// writeSecret writes the secret value to the given writer with no trailing newline.
-// This ensures curl -u style basic-auth usage works correctly.
-func writeSecret(ctx context.Context, out io.Writer, value fmt.Stringer) error {
-	if _, err := fmt.Fprintf(out, "%v", value); err != nil {
+// writeSecret writes the secret value to the given writer. In the default
+// mode it writes the raw value with no trailing newline, so curl -u style
+// basic-auth usage composes directly in command substitution. In --json mode
+// it writes a single-key JSON object ({"<field>":"<value>"}) with a trailing
+// newline.
+func writeSecret(
+	ctx context.Context,
+	out io.Writer,
+	field string,
+	value fmt.Stringer,
+	asJSON bool,
+) error {
+	if !asJSON {
+		if _, err := fmt.Fprintf(out, "%v", value); err != nil {
+			return errors.Wrapf(ctx, err, "write secret failed")
+		}
+		return nil
+	}
+	encoded, err := json.Marshal(map[string]string{field: value.String()})
+	if err != nil {
+		return errors.Wrapf(ctx, err, "marshal json failed")
+	}
+	if _, err := fmt.Fprintf(out, "%s\n", encoded); err != nil {
 		return errors.Wrapf(ctx, err, "write secret failed")
+	}
+	return nil
+}
+
+// createInfoCommand builds the `info` subcommand, which fetches and prints
+// all four fields (username, url, password, file) for a key in one call.
+// Missing/empty fields print empty rather than erroring, since not every
+// TeamVault secret populates every field.
+func createInfoCommand(ctx context.Context, sf *sharedFlags) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "info [key]",
+		Short: "Retrieve username, url, password, and file for a TeamVault secret",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			key, err := resolveKey(cmd, args)
+			if err != nil {
+				return err
+			}
+			asJSON, _ := cmd.Flags().GetBool("json")
+			conn, err := sf.buildConnector(ctx)
+			if err != nil {
+				return err
+			}
+
+			username, err := conn.User(ctx, key)
+			if err != nil {
+				return errors.Wrap(ctx, err, "get user failed")
+			}
+			url, err := conn.Url(ctx, key)
+			if err != nil {
+				return errors.Wrap(ctx, err, "get url failed")
+			}
+			password, err := conn.Password(ctx, key)
+			if err != nil {
+				return errors.Wrap(ctx, err, "get password failed")
+			}
+			file, err := conn.File(ctx, key)
+			if err != nil {
+				return errors.Wrap(ctx, err, "get file failed")
+			}
+
+			return writeInfo(ctx, cmd.OutOrStdout(), username, url, password, file, asJSON)
+		},
+	}
+
+	var key string
+	cmd.Flags().
+		StringVar(&key, "teamvault-key", "", "teamvault key (alternative to positional argument)")
+	cmd.Flags().Bool("json", false, "print output as a JSON object")
+
+	return cmd
+}
+
+// writeInfo writes the four secret fields to the given writer. In the
+// default mode it writes an aligned "key: value" table; in --json mode it
+// writes a single JSON object with all four fields.
+func writeInfo(
+	ctx context.Context,
+	out io.Writer,
+	username teamvault.User,
+	url teamvault.Url,
+	password teamvault.Password,
+	file teamvault.File,
+	asJSON bool,
+) error {
+	if !asJSON {
+		if _, err := fmt.Fprintf(
+			out,
+			"username: %s\nurl:      %s\npassword: %s\nfile:     %s\n",
+			username,
+			url,
+			password,
+			file,
+		); err != nil {
+			return errors.Wrapf(ctx, err, "write info failed")
+		}
+		return nil
+	}
+	encoded, err := json.Marshal(map[string]string{
+		"username": username.String(),
+		"url":      url.String(),
+		"password": password.String(),
+		"file":     file.String(),
+	})
+	if err != nil {
+		return errors.Wrapf(ctx, err, "marshal json failed")
+	}
+	if _, err := fmt.Fprintf(out, "%s\n", encoded); err != nil {
+		return errors.Wrapf(ctx, err, "write info failed")
 	}
 	return nil
 }
