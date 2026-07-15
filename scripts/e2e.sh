@@ -53,6 +53,10 @@ assert_contains "auth failure suggests login" "teamvault-cli login" \
 # Basic-auth-safe: raw output has NO trailing newline ("demo-pass-123" = 13 bytes).
 assert_eq "no trailing newline" "13" "$("$TV" password --teamvault-key demo | wc -c | tr -d ' ')"
 
+# htpasswd — derives a user:bcrypt line from the secret's username + password.
+assert_contains "htpasswd user prefix" "demo-user:" "$("$TV" htpasswd --teamvault-key demo)"
+assert_contains "htpasswd is bcrypt"   '$2'         "$("$TV" htpasswd --teamvault-key demo)"
+
 # trailing-slash URL — a config whose url ends in "/" must still resolve (the CLI
 # normalizes it; without that, "<url>//api/secrets/…" 404s). This is the exact
 # value a user copies from the browser.

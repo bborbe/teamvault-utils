@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- feat(cli): add `htpasswd <KEY>` subcommand that prints an htpasswd-format credential (`user:$2...` bcrypt) built from a TeamVault secret's username + password, for secret-free htpasswd generation at deploy time (e.g. `--set-string secrets.htpasswd=$(teamvault-cli htpasswd <KEY>)`). Reuses the existing `HtpasswdGenerator` (same bcrypt path as the `teamvaultHtpasswd` config template func).
 - feat(cli): `search` now prints an aligned `KEY  NAME` table by default, follows TeamVault pagination so results are not truncated to the first page, adds `--limit N` to cap results and `--keys-only` for bare-key-per-line scripting output. `--json` now emits an array of `{key,name,username,url}` objects instead of an array of key strings (breaking output-shape change).
 
 ## v5.9.1
