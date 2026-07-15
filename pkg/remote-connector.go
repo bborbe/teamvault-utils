@@ -196,25 +196,52 @@ func (r *remoteConnector) createHeader() http.Header {
 	return httpHeader
 }
 
-func (r *remoteConnector) Search(ctx context.Context, search string) ([]Key, error) {
-	var response struct {
-		Results []struct {
-			ApiUrl ApiUrl `json:"api_url"`
-		} `json:"results"`
-	}
+const maxSearchResults = 1000
+
+func (r *remoteConnector) Search(ctx context.Context, search string) ([]SearchResult, error) {
+	var result []SearchResult
+	nextURL := fmt.Sprintf("%s/api/secrets/", r.url.String())
 	values := url.Values{}
 	values.Add("search", search)
-	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/", r.url.String()), values, &response, r.createHeader()); err != nil {
-		return nil, err
-	}
-	var result []Key
-	for _, re := range response.Results {
-		key, err := re.ApiUrl.Key()
-		if err != nil {
-			return nil, err
+
+	for len(result) < maxSearchResults {
+		var response struct {
+			Next    *string `json:"next"`
+			Results []struct {
+				Hashid   string `json:"hashid"`
+				Name     string `json:"name"`
+				Username string `json:"username"`
+				Url      Url    `json:"url"`
+			} `json:"results"`
 		}
-		result = append(result, key)
+
+		var callErr error
+		if nextURL == "" || nextURL == fmt.Sprintf("%s/api/secrets/", r.url.String()) {
+			// First page: use values
+			callErr = r.call(ctx, nextURL, values, &response, r.createHeader())
+		} else {
+			// Subsequent pages: next URL already carries query string
+			callErr = r.call(ctx, nextURL, nil, &response, r.createHeader())
+		}
+		if callErr != nil {
+			return nil, errors.Wrapf(ctx, callErr, "search call failed")
+		}
+
+		for _, re := range response.Results {
+			result = append(result, SearchResult{
+				Key:      Key(re.Hashid),
+				Name:     re.Name,
+				Username: re.Username,
+				Url:      re.Url,
+			})
+		}
+
+		if response.Next == nil || *response.Next == "" {
+			break
+		}
+		nextURL = *response.Next
 	}
+
 	return result, nil
 }
 

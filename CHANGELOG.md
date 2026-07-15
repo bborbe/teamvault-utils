@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- feat(cli): `search` now prints an aligned `KEY  NAME` table by default, follows TeamVault pagination so results are not truncated to the first page, adds `--limit N` to cap results and `--keys-only` for bare-key-per-line scripting output. `--json` now emits an array of `{key,name,username,url}` objects instead of an array of key strings (breaking output-shape change).
+
 ## v5.9.1
 
 - test: add hermetic end-to-end scenario for create/update/search via fakevault

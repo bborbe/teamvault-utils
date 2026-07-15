@@ -8,7 +8,7 @@ Validates the `create`, `update <key>`, and `search <query>` subcommands end-to-
 
 Setup/assert helpers live in `scenarios/helper/lib.sh` (same convention as scenario 007). CI runs the whole thing via `make e2e`; the fastest local path is also `make e2e`.
 
-Covered cases: `create --password-stdin` (primary create path), read-back of the created secret, `search` finds the new secret by name substring, `update` changes a field (password) and the read-back reflects it, `update` metadata-only change (username) does not disturb the password.
+Covered cases: `create --password-stdin` (primary create path), read-back of the created secret, `search` finds the new secret by name substring and shows its name in the output, `update` changes a field (password) and the read-back reflects it, `update` metadata-only change (username) does not disturb the password.
 
 ## Setup
 
@@ -30,6 +30,7 @@ assert_eq "read back created password" "first-secret-pw" "$("$TV" password --tea
 assert_eq "read back created username" "wse-user"         "$("$TV" username --teamvault-key "$NEW_KEY")"
 
 assert_contains "search finds the new secret" "$NEW_KEY" "$("$TV" search write-search-e2e-secret)"
+assert_contains "search shows the created name" "write-search-e2e-secret" "$("$TV" search write-search-e2e-secret)"
 
 printf 'updated-secret-pw' | "$TV" update "$NEW_KEY" --password-stdin >/dev/null
 assert_eq "read back updated password" "updated-secret-pw" "$("$TV" password --teamvault-key "$NEW_KEY")"

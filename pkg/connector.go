@@ -14,5 +14,5 @@ type Connector interface {
 	User(ctx context.Context, key Key) (User, error)
 	Url(ctx context.Context, key Key) (Url, error)
 	File(ctx context.Context, key Key) (File, error)
-	Search(ctx context.Context, name string) ([]Key, error)
+	Search(ctx context.Context, name string) ([]SearchResult, error)
 }

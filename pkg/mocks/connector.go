@@ -37,18 +37,18 @@ type Connector struct {
 		result1 teamvault.Password
 		result2 error
 	}
-	SearchStub        func(context.Context, string) ([]teamvault.Key, error)
+	SearchStub        func(context.Context, string) ([]teamvault.SearchResult, error)
 	searchMutex       sync.RWMutex
 	searchArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 	}
 	searchReturns struct {
-		result1 []teamvault.Key
+		result1 []teamvault.SearchResult
 		result2 error
 	}
 	searchReturnsOnCall map[int]struct {
-		result1 []teamvault.Key
+		result1 []teamvault.SearchResult
 		result2 error
 	}
 	UrlStub        func(context.Context, teamvault.Key) (teamvault.Url, error)
@@ -213,7 +213,7 @@ func (fake *Connector) PasswordReturnsOnCall(i int, result1 teamvault.Password, 
 	}{result1, result2}
 }
 
-func (fake *Connector) Search(arg1 context.Context, arg2 string) ([]teamvault.Key, error) {
+func (fake *Connector) Search(arg1 context.Context, arg2 string) ([]teamvault.SearchResult, error) {
 	fake.searchMutex.Lock()
 	ret, specificReturn := fake.searchReturnsOnCall[len(fake.searchArgsForCall)]
 	fake.searchArgsForCall = append(fake.searchArgsForCall, struct {
@@ -239,7 +239,7 @@ func (fake *Connector) SearchCallCount() int {
 	return len(fake.searchArgsForCall)
 }
 
-func (fake *Connector) SearchCalls(stub func(context.Context, string) ([]teamvault.Key, error)) {
+func (fake *Connector) SearchCalls(stub func(context.Context, string) ([]teamvault.SearchResult, error)) {
 	fake.searchMutex.Lock()
 	defer fake.searchMutex.Unlock()
 	fake.SearchStub = stub
@@ -252,28 +252,28 @@ func (fake *Connector) SearchArgsForCall(i int) (context.Context, string) {
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *Connector) SearchReturns(result1 []teamvault.Key, result2 error) {
+func (fake *Connector) SearchReturns(result1 []teamvault.SearchResult, result2 error) {
 	fake.searchMutex.Lock()
 	defer fake.searchMutex.Unlock()
 	fake.SearchStub = nil
 	fake.searchReturns = struct {
-		result1 []teamvault.Key
+		result1 []teamvault.SearchResult
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *Connector) SearchReturnsOnCall(i int, result1 []teamvault.Key, result2 error) {
+func (fake *Connector) SearchReturnsOnCall(i int, result1 []teamvault.SearchResult, result2 error) {
 	fake.searchMutex.Lock()
 	defer fake.searchMutex.Unlock()
 	fake.SearchStub = nil
 	if fake.searchReturnsOnCall == nil {
 		fake.searchReturnsOnCall = make(map[int]struct {
-			result1 []teamvault.Key
+			result1 []teamvault.SearchResult
 			result2 error
 		})
 	}
 	fake.searchReturnsOnCall[i] = struct {
-		result1 []teamvault.Key
+		result1 []teamvault.SearchResult
 		result2 error
 	}{result1, result2}
 }

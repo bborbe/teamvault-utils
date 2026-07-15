@@ -227,13 +227,26 @@ func main() {
 		case http.MethodGet:
 			q := r.URL.Query().Get("search")
 			keys := st.search(q)
-			results := make([]map[string]string, 0, len(keys))
+			results := make([]map[string]any, 0, len(keys))
 			for _, key := range keys {
-				results = append(results, map[string]string{
-					"api_url": fmt.Sprintf("http://%s/api/secrets/%s/", r.Host, key),
+				s, _ := st.get(key)
+				results = append(results, map[string]any{
+					"hashid":   key,
+					"name":     s.Name,
+					"username": s.Username,
+					"url":      s.URL,
+					"api_url":  fmt.Sprintf("http://%s/api/secrets/%s/", r.Host, key),
 				})
 			}
-			writeJSON(w, map[string]any{"results": results})
+			writeJSON(
+				w,
+				map[string]any{
+					"count":    len(results),
+					"next":     nil,
+					"previous": nil,
+					"results":  results,
+				},
+			)
 
 		case http.MethodPost:
 			var req struct {
