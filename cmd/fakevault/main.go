@@ -81,6 +81,21 @@ func (s *store) put(key string, v secret) {
 	s.data[key] = v
 }
 
+// update atomically applies fn to the secret at key, holding the lock across the
+// whole read-modify-write so concurrent updates to the same key can't lose each
+// other's changes. Returns false (and does not call fn) if the key is absent.
+func (s *store) update(key string, fn func(secret) secret) (secret, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	v, ok := s.data[key]
+	if !ok {
+		return secret{}, false
+	}
+	v = fn(v)
+	s.data[key] = v
+	return v, true
+}
+
 // search returns keys of secrets whose key or username contains q
 // (case-sensitive substring match, mirroring the pre-write fixture behavior).
 func (s *store) search(q string) []string {
@@ -141,11 +156,6 @@ func main() {
 			return
 		}
 		key := r.PathValue("key")
-		s, ok := st.get(key)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
 
 		var req struct {
 			Name        *string           `json:"name"`
@@ -158,25 +168,33 @@ func main() {
 			http.Error(w, "decode request failed", http.StatusBadRequest)
 			return
 		}
-		if req.Name != nil {
-			s.Name = *req.Name
+		// Read-modify-write under a single lock so concurrent PATCHes can't lose
+		// updates. secret_data keys absent from the body leave the value untouched.
+		_, ok := st.update(key, func(s secret) secret {
+			if req.Name != nil {
+				s.Name = *req.Name
+			}
+			if req.Username != nil {
+				s.Username = *req.Username
+			}
+			if req.Url != nil {
+				s.URL = *req.Url
+			}
+			if req.Description != nil {
+				s.Description = *req.Description
+			}
+			if pw, ok := req.SecretData["password"]; ok {
+				s.Password = pw
+			}
+			if fc, ok := req.SecretData["file_content"]; ok {
+				s.File = fc
+			}
+			return s
+		})
+		if !ok {
+			http.NotFound(w, r)
+			return
 		}
-		if req.Username != nil {
-			s.Username = *req.Username
-		}
-		if req.Url != nil {
-			s.URL = *req.Url
-		}
-		if req.Description != nil {
-			s.Description = *req.Description
-		}
-		if pw, ok := req.SecretData["password"]; ok {
-			s.Password = pw
-		}
-		if fc, ok := req.SecretData["file_content"]; ok {
-			s.File = fc
-		}
-		st.put(key, s)
 
 		writeJSON(w, map[string]any{
 			"api_url": fmt.Sprintf("http://%s/api/secrets/%s/", r.Host, key),
