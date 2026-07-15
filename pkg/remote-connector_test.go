@@ -342,6 +342,37 @@ var _ = Describe("RemoteConnector", func() {
 		})
 	})
 
+	Context("Search following a relative next link", func() {
+		BeforeEach(func() {
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+					if req.URL.Query().Get("page") == "2" {
+						fmt.Fprint(
+							resp,
+							`{"count":2,"next":null,"previous":null,"results":[{"hashid":"key2","name":"two","username":"u2","url":"https://two.example"}]}`,
+						)
+						return
+					}
+					// next is RELATIVE (no scheme/host) — must resolve against the base and be followed.
+					fmt.Fprint(
+						resp,
+						`{"count":2,"next":"/api/secrets/?search=searchString&page=2","previous":null,"results":[{"hashid":"key1","name":"one","username":"u1","url":"https://one.example"}]}`,
+					)
+				},
+			)
+		})
+		It("resolves the relative next and returns all results", func() {
+			result, searchErr := remoteConnector.Search(ctx, "searchString")
+			Expect(searchErr).To(BeNil())
+			Expect(result).To(HaveLen(2))
+			Expect(result[0].Key).To(Equal(teamvault.Key("key1")))
+			Expect(result[1].Key).To(Equal(teamvault.Key("key2")))
+		})
+	})
+
 	Context("Search with pagination", func() {
 		var result []teamvault.SearchResult
 		JustBeforeEach(func() {

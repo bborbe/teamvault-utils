@@ -200,9 +200,14 @@ const maxSearchResults = 1000
 
 func (r *remoteConnector) Search(ctx context.Context, search string) ([]SearchResult, error) {
 	var result []SearchResult
+	baseParsed, err := url.Parse(r.url.String())
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "parse base url failed")
+	}
 	nextURL := fmt.Sprintf("%s/api/secrets/", r.url.String())
 	values := url.Values{}
 	values.Add("search", search)
+	isFirstPage := true
 
 	for len(result) < maxSearchResults {
 		var response struct {
@@ -216,16 +221,16 @@ func (r *remoteConnector) Search(ctx context.Context, search string) ([]SearchRe
 		}
 
 		var callErr error
-		if nextURL == "" || nextURL == fmt.Sprintf("%s/api/secrets/", r.url.String()) {
-			// First page: use values
+		if isFirstPage {
 			callErr = r.call(ctx, nextURL, values, &response, r.createHeader())
 		} else {
-			// Subsequent pages: next URL already carries query string
+			// Subsequent pages: the next URL already carries the query string.
 			callErr = r.call(ctx, nextURL, nil, &response, r.createHeader())
 		}
 		if callErr != nil {
 			return nil, errors.Wrapf(ctx, callErr, "search call failed")
 		}
+		isFirstPage = false
 
 		for _, re := range response.Results {
 			result = append(result, SearchResult{
@@ -239,19 +244,26 @@ func (r *remoteConnector) Search(ctx context.Context, search string) ([]SearchRe
 		if response.Next == nil || *response.Next == "" {
 			break
 		}
-		// Only follow same-host pagination links: the Basic-auth header is attached
-		// to every request, so following a tampered `next` URL to a different host
-		// would leak the TeamVault credentials. Compare host (not a raw prefix) so a
-		// scheme difference behind a proxy doesn't break legitimate pagination.
+		// Warn (don't silently drop) when the safety cap is reached while more
+		// pages remain, so the caller knows the result set is incomplete.
+		if len(result) >= maxSearchResults {
+			glog.Warningf(
+				"teamvault search: result cap (%d) reached; more matches exist but were not fetched",
+				maxSearchResults,
+			)
+			break
+		}
+		// Same-host pagination only: the Basic-auth header is attached to every
+		// request, so following a tampered `next` to a different host would leak
+		// the TeamVault credentials. A relative next (no host) is same-origin by
+		// definition and is resolved against the base; an absolute next must match
+		// the configured host (host compared, not a raw prefix, so an http/https
+		// difference behind a proxy doesn't break legitimate pagination).
 		nextParsed, parseErr := url.Parse(*response.Next)
 		if parseErr != nil {
 			return nil, errors.Wrapf(ctx, parseErr, "parse next url %q failed", *response.Next)
 		}
-		baseParsed, parseErr := url.Parse(r.url.String())
-		if parseErr != nil {
-			return nil, errors.Wrapf(ctx, parseErr, "parse base url failed")
-		}
-		if nextParsed.Host != baseParsed.Host {
+		if nextParsed.Host != "" && nextParsed.Host != baseParsed.Host {
 			return nil, errors.Errorf(
 				ctx,
 				"refusing to follow search pagination to a different host %q (expected %q)",
@@ -259,7 +271,7 @@ func (r *remoteConnector) Search(ctx context.Context, search string) ([]SearchRe
 				baseParsed.Host,
 			)
 		}
-		nextURL = *response.Next
+		nextURL = baseParsed.ResolveReference(nextParsed).String()
 	}
 
 	return result, nil

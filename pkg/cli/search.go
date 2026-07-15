@@ -35,6 +35,8 @@ func createSearchCommand(ctx context.Context, sf *SharedFlags) *cobra.Command {
 			}
 			asJSON, _ := cmd.Flags().GetBool("json")
 			keysOnly, _ := cmd.Flags().GetBool("keys-only")
+			// --limit truncates the results client-side after the (paginated,
+			// cap-bounded) fetch; it caps output, not server round-trips.
 			limit, _ := cmd.Flags().GetInt("limit")
 			if limit > 0 && len(results) > limit {
 				results = results[:limit]
