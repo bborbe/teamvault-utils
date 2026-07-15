@@ -84,6 +84,9 @@ var _ = Describe("htpasswd", func() {
 			Expect(fakeConn.PasswordCallCount()).To(Equal(1))
 			_, pwKey := fakeConn.PasswordArgsForCall(0)
 			Expect(pwKey).To(Equal(teamvault.Key("ABC123")))
+			Expect(fakeConn.UserCallCount()).To(Equal(1))
+			_, userKey := fakeConn.UserArgsForCall(0)
+			Expect(userKey).To(Equal(teamvault.Key("ABC123")))
 		})
 	})
 
@@ -91,6 +94,10 @@ var _ = Describe("htpasswd", func() {
 		It("returns an error when the password lookup fails", func() {
 			fakeConn := &mocks.Connector{}
 			fakeConn.PasswordReturns(teamvault.Password(""), stderrors.New("boom"))
+			// Stub User too so the test stays correct if Generate ever reorders
+			// its User/Password calls (otherwise a zero-value User + nil error
+			// would silently mask the error path).
+			fakeConn.UserReturns(teamvault.User(""), nil)
 
 			var errBuf bytes.Buffer
 			cmd := cli.NewRootCommand(ctx)
