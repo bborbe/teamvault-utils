@@ -3,14 +3,14 @@ module github.com/Seibert-Data/teamvault-cli/v5
 go 1.26.5
 
 require (
-	github.com/bborbe/errors v1.5.13
-	github.com/bborbe/http v1.26.13
-	github.com/bborbe/time v1.27.1
-	github.com/bborbe/validation v1.4.14
+	github.com/bborbe/errors v1.5.16
+	github.com/bborbe/http v1.26.17
+	github.com/bborbe/time v1.27.6
+	github.com/bborbe/validation v1.4.17
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/golang/glog v1.2.5
-	github.com/onsi/ginkgo/v2 v2.29.0
-	github.com/onsi/gomega v1.41.0
+	github.com/onsi/ginkgo/v2 v2.32.0
+	github.com/onsi/gomega v1.42.1
 	github.com/spf13/cobra v1.10.2
 	github.com/zalando/go-keyring v0.2.8
 	golang.org/x/term v0.45.0
@@ -19,17 +19,17 @@ require (
 require (
 	github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
-	github.com/bborbe/collection v1.20.12 // indirect
-	github.com/bborbe/kv v1.21.1 // indirect
-	github.com/bborbe/log v1.6.14 // indirect
-	github.com/bborbe/math v1.3.11 // indirect
-	github.com/bborbe/parse v1.10.12 // indirect
-	github.com/bborbe/run v1.9.28 // indirect
-	github.com/bborbe/sentry v1.9.18 // indirect
+	github.com/bborbe/collection v1.20.17 // indirect
+	github.com/bborbe/kv v1.21.5 // indirect
+	github.com/bborbe/log v1.6.17 // indirect
+	github.com/bborbe/math v1.3.15 // indirect
+	github.com/bborbe/parse v1.10.17 // indirect
+	github.com/bborbe/run v1.9.30 // indirect
+	github.com/bborbe/sentry v1.9.22 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/danieljoos/wincred v1.2.3 // indirect
-	github.com/getsentry/sentry-go v0.46.2 // indirect
+	github.com/getsentry/sentry-go v0.47.0 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect

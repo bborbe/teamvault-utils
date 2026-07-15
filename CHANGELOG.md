@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.9.1
 
 - test: add hermetic end-to-end scenario for create/update/search via fakevault
 - fix: bump golang.org/x/net (→v0.57.0) and golang.org/x/text (→v0.40.0) to clear trivy CVE-2026-46600 / CVE-2026-56852
+- chore: bump bborbe/* module deps and ginkgo/gomega, x/crypto, x/tools, sentry-go
 
 ## v5.9.0
 
