@@ -88,4 +88,21 @@ assert_eq "read back updated password" "updated-secret-pw" "$("$TV" password --t
 assert_eq "read back updated username"                  "wse-user-renamed"  "$("$TV" username --teamvault-key "$NEW_KEY")"
 assert_eq "password unchanged by metadata-only update" "updated-secret-pw" "$("$TV" password --teamvault-key "$NEW_KEY")"
 
+# --- Scenario 009: htpasswd derives a user:bcrypt line from a secret ---------
+
+# Seeded fixture (demo -> username demo-user / password demo-pass-123): the
+# htpasswd line carries the username verbatim and a bcrypt hash ($2...).
+HTP_DEMO="$("$TV" htpasswd --teamvault-key demo)"
+assert_contains "htpasswd carries the username prefix" "demo-user:" "$HTP_DEMO"
+assert_contains "htpasswd emits a bcrypt hash"         '$2'         "$HTP_DEMO"
+assert_eq "htpasswd is a single user:bcrypt line" "1" \
+	"$(printf '%s\n' "$HTP_DEMO" | grep -c '^demo-user:\$2')"
+
+# Freshly created secret: htpasswd reads username+password back over real HTTP
+# (same write path as scenario 008) and hashes them.
+HTP_KEY="$(printf 'reg-pw' | "$TV" create --name htpasswd-e2e-secret --username reg-user --password-stdin)"
+HTP_NEW="$("$TV" htpasswd --teamvault-key "$HTP_KEY")"
+assert_contains "htpasswd of a created secret carries its username" "reg-user:" "$HTP_NEW"
+assert_contains "htpasswd of a created secret is bcrypt"            '$2'        "$HTP_NEW"
+
 scenario_done

@@ -162,6 +162,17 @@ Pipe rendered output straight to `kubectl` if you'd rather not write secrets to 
 teamvault-cli config parse < templates/db-secret.yaml | kubectl apply -f -
 ```
 
+For basic-auth ingresses that need an htpasswd secret, `htpasswd <KEY>` derives the `user:bcrypt` line from a secret's username + password at deploy time — no pre-computed hash in git:
+
+```bash
+# append to an htpasswd file
+teamvault-cli htpasswd AbC123 >> auth/htpasswd
+
+# or inline into a Helm value
+helm upgrade registry ./chart \
+  --set-string secrets.htpasswd="$(teamvault-cli htpasswd AbC123)"
+```
+
 ## Use with an AI agent
 
 Have the agent call `teamvault-cli` for credentials instead of embedding secrets in prompts or code — the value is resolved just-in-time and never written to the conversation or the repo. The Claude Code plugin's `/teamvault` skill enforces this. See the [getting-started guide](docs/getting-started.md#6-use-it-with-an-ai-agent-claude-code).
@@ -177,6 +188,7 @@ Have the agent call `teamvault-cli` for credentials instead of embedding secrets
 | `teamvault-cli file <KEY>` | print a secret's file contents |
 | `teamvault-cli info <KEY>` | print username, url, password, and file together |
 | `teamvault-cli search <QUERY>` | search secrets by name and print matching keys |
+| `teamvault-cli htpasswd <KEY>` | print an htpasswd line (`user:bcrypt`) built from the secret's username + password |
 | `teamvault-cli config parse` | render a template from stdin to stdout |
 | `teamvault-cli config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
 
