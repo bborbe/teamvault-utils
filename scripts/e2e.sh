@@ -60,4 +60,31 @@ printf '{"url":"%s/","user":"test","pass":"test"}\n' "$FV_URL" >"$WORK_DIR/slash
 assert_eq "trailing-slash url resolves" "demo-user" \
 	"$(env -u TEAMVAULT_CONFIG "$TV" username --teamvault-config "$WORK_DIR/slashconfig.json" --teamvault-key demo)"
 
+# --- Scenario 008: create / search / update / read-back ---------------------
+
+# create --password-stdin — the primary, secure create path (no --password
+# flag, which warns about shell-history/ps leakage).
+NEW_KEY="$(printf 'first-secret-pw' | "$TV" create --name write-search-e2e-secret --username wse-user --password-stdin)"
+assert_eq "create returned a non-empty key" "nonempty" "$([ -n "$NEW_KEY" ] && echo nonempty || echo empty)"
+
+# read-back — the created secret resolves through the same GET path as the
+# seeded fixtures.
+assert_eq "read back created password" "first-secret-pw" "$("$TV" password --teamvault-key "$NEW_KEY")"
+assert_eq "read back created username" "wse-user"         "$("$TV" username --teamvault-key "$NEW_KEY")"
+
+# search — the new secret is found by a name substring, via
+# GET /api/secrets/?search=... -> {"results":[{"api_url":...}]}.
+assert_contains "search finds the new secret" "$NEW_KEY" "$("$TV" search write-search-e2e-secret)"
+
+# update (value change) — a new password creates a new revision; read-back
+# reflects it.
+printf 'updated-secret-pw' | "$TV" update "$NEW_KEY" --password-stdin >/dev/null
+assert_eq "read back updated password" "updated-secret-pw" "$("$TV" password --teamvault-key "$NEW_KEY")"
+
+# update (metadata-only) — no value flag; the password from the prior update
+# must be left untouched.
+"$TV" update "$NEW_KEY" --username wse-user-renamed >/dev/null
+assert_eq "read back updated username"                  "wse-user-renamed"  "$("$TV" username --teamvault-key "$NEW_KEY")"
+assert_eq "password unchanged by metadata-only update" "updated-secret-pw" "$("$TV" password --teamvault-key "$NEW_KEY")"
+
 scenario_done
