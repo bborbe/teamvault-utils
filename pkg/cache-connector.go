@@ -93,6 +93,6 @@ func (c *cacheConnector) File(ctx context.Context, key Key) (File, error) {
 	return value, err
 }
 
-func (c *cacheConnector) Search(ctx context.Context, key string) ([]Key, error) {
+func (c *cacheConnector) Search(ctx context.Context, key string) ([]SearchResult, error) {
 	return c.connector.Search(ctx, key)
 }

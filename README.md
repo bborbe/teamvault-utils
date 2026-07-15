@@ -117,15 +117,17 @@ teamvault-cli info AbC123 --json
 # {"file":"","password":"s3cr3t","url":"https://example.com","username":"alice"}
 ```
 
-Use `search` to find secrets by name — prints one key per line, or a JSON array of keys with `--json`:
+Use `search` to find secrets by name — prints an aligned `KEY  NAME` table by default, a JSON array of `{key,name,username,url}` objects with `--json`, bare keys with `--keys-only`, and supports `--limit` to cap results:
 
 ```bash
 teamvault-cli search database
-# AbC123
-# XyZ789
+# KEY     NAME
+# AbC123  prod-database
+# XyZ789  staging-database
 
-teamvault-cli search database --json
-# ["AbC123","XyZ789"]
+teamvault-cli search database --keys-only   # bare keys for scripting
+teamvault-cli search database --limit 10    # cap results
+teamvault-cli search database --json         # [{...}, {...}]
 ```
 
 ## Use in deployments (config templating)
@@ -178,7 +180,7 @@ Have the agent call `teamvault-cli` for credentials instead of embedding secrets
 | `teamvault-cli config parse` | render a template from stdin to stdout |
 | `teamvault-cli config generate --source-dir <DIR> --target-dir <DIR>` | render a directory of templates |
 
-Add `--json` to `password`/`username`/`url`/`file`/`info` for JSON output, and to `search` for a JSON array of keys. The key may also be given via `--teamvault-key <KEY>` instead of positionally (backward compatible).
+Add `--json` to `password`/`username`/`url`/`file`/`info` for JSON output; `search --json` emits an array of `{key,name,username,url}` objects. `search` also supports `--keys-only` (bare key per line for scripting) and `--limit N` (cap results, 0 = no limit). The key may also be given via `--teamvault-key <KEY>` instead of positionally (backward compatible).
 
 Run `teamvault-cli <command> --help` for all flags. Full walkthrough (config, env vars, direnv, agents): **[docs/getting-started.md](docs/getting-started.md)**.
 

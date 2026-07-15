@@ -196,25 +196,84 @@ func (r *remoteConnector) createHeader() http.Header {
 	return httpHeader
 }
 
-func (r *remoteConnector) Search(ctx context.Context, search string) ([]Key, error) {
-	var response struct {
-		Results []struct {
-			ApiUrl ApiUrl `json:"api_url"`
-		} `json:"results"`
+const maxSearchResults = 1000
+
+func (r *remoteConnector) Search(ctx context.Context, search string) ([]SearchResult, error) {
+	var result []SearchResult
+	baseParsed, err := url.Parse(r.url.String())
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "parse base url failed")
 	}
+	nextURL := fmt.Sprintf("%s/api/secrets/", r.url.String())
 	values := url.Values{}
 	values.Add("search", search)
-	if err := r.call(ctx, fmt.Sprintf("%s/api/secrets/", r.url.String()), values, &response, r.createHeader()); err != nil {
-		return nil, err
-	}
-	var result []Key
-	for _, re := range response.Results {
-		key, err := re.ApiUrl.Key()
-		if err != nil {
-			return nil, err
+	isFirstPage := true
+
+	for len(result) < maxSearchResults {
+		var response struct {
+			Next    *string `json:"next"`
+			Results []struct {
+				Hashid   string `json:"hashid"`
+				Name     string `json:"name"`
+				Username string `json:"username"`
+				Url      Url    `json:"url"`
+			} `json:"results"`
 		}
-		result = append(result, key)
+
+		var callErr error
+		if isFirstPage {
+			callErr = r.call(ctx, nextURL, values, &response, r.createHeader())
+		} else {
+			// Subsequent pages: the next URL already carries the query string.
+			callErr = r.call(ctx, nextURL, nil, &response, r.createHeader())
+		}
+		if callErr != nil {
+			return nil, errors.Wrapf(ctx, callErr, "search call failed")
+		}
+		isFirstPage = false
+
+		for _, re := range response.Results {
+			result = append(result, SearchResult{
+				Key:      Key(re.Hashid),
+				Name:     re.Name,
+				Username: re.Username,
+				Url:      re.Url,
+			})
+		}
+
+		if response.Next == nil || *response.Next == "" {
+			break
+		}
+		// Warn (don't silently drop) when the safety cap is reached while more
+		// pages remain, so the caller knows the result set is incomplete.
+		if len(result) >= maxSearchResults {
+			glog.Warningf(
+				"teamvault search: result cap (%d) reached; more matches exist but were not fetched",
+				maxSearchResults,
+			)
+			break
+		}
+		// Same-host pagination only: the Basic-auth header is attached to every
+		// request, so following a tampered `next` to a different host would leak
+		// the TeamVault credentials. A relative next (no host) is same-origin by
+		// definition and is resolved against the base; an absolute next must match
+		// the configured host (host compared, not a raw prefix, so an http/https
+		// difference behind a proxy doesn't break legitimate pagination).
+		nextParsed, parseErr := url.Parse(*response.Next)
+		if parseErr != nil {
+			return nil, errors.Wrapf(ctx, parseErr, "parse next url %q failed", *response.Next)
+		}
+		if nextParsed.Host != "" && nextParsed.Host != baseParsed.Host {
+			return nil, errors.Errorf(
+				ctx,
+				"refusing to follow search pagination to a different host %q (expected %q)",
+				nextParsed.Host,
+				baseParsed.Host,
+			)
+		}
+		nextURL = baseParsed.ResolveReference(nextParsed).String()
 	}
+
 	return result, nil
 }
 

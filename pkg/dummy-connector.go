@@ -41,6 +41,6 @@ func (t *dummyConnector) File(ctx context.Context, key Key) (File, error) {
 	return File(result), nil
 }
 
-func (t *dummyConnector) Search(ctx context.Context, search string) ([]Key, error) {
+func (t *dummyConnector) Search(ctx context.Context, search string) ([]SearchResult, error) {
 	return nil, nil
 }

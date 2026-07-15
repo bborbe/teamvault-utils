@@ -73,8 +73,9 @@ assert_eq "read back created password" "first-secret-pw" "$("$TV" password --tea
 assert_eq "read back created username" "wse-user"         "$("$TV" username --teamvault-key "$NEW_KEY")"
 
 # search — the new secret is found by a name substring, via
-# GET /api/secrets/?search=... -> {"results":[{"api_url":...}]}.
+# GET /api/secrets/?search=... -> {"results":[{"hashid":...,"name":...}]}.
 assert_contains "search finds the new secret" "$NEW_KEY" "$("$TV" search write-search-e2e-secret)"
+assert_contains "search shows the created name" "write-search-e2e-secret" "$("$TV" search write-search-e2e-secret)"
 
 # update (value change) — a new password creates a new revision; read-back
 # reflects it.

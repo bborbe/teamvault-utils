@@ -49,7 +49,7 @@ var _ = Describe("search", func() {
 	Describe("positional query", func() {
 		It("passes the query to Search", func() {
 			fakeConn := &mocks.Connector{}
-			fakeConn.SearchReturns([]teamvault.Key{"ABC123"}, nil)
+			fakeConn.SearchReturns([]teamvault.SearchResult{{Key: "ABC123"}}, nil)
 
 			cmd := cli.NewRootCommand(ctx)
 			cmd.SetArgs([]string{"search", "my-query"})
@@ -73,9 +73,12 @@ var _ = Describe("search", func() {
 	})
 
 	Describe("output", func() {
-		It("prints one key per line by default", func() {
+		It("prints KEY / NAME table by default", func() {
 			fakeConn := &mocks.Connector{}
-			fakeConn.SearchReturns([]teamvault.Key{"ABC123", "DEF456"}, nil)
+			fakeConn.SearchReturns([]teamvault.SearchResult{
+				{Key: "ABC123", Name: "alpha"},
+				{Key: "DEF456", Name: "beta"},
+			}, nil)
 
 			var outBuf bytes.Buffer
 			cmd := cli.NewRootCommand(ctx)
@@ -93,12 +96,57 @@ var _ = Describe("search", func() {
 			defer cli.ResetNewConnectorForTest()
 
 			_ = cmd.Execute()
+			out := outBuf.String()
+			Expect(out).To(ContainSubstring("KEY"))
+			Expect(out).To(ContainSubstring("NAME"))
+			Expect(out).To(ContainSubstring("ABC123"))
+			Expect(out).To(ContainSubstring("alpha"))
+			Expect(out).To(ContainSubstring("DEF456"))
+			Expect(out).To(ContainSubstring("beta"))
+		})
+
+		It("prints bare keys with --keys-only", func() {
+			fakeConn := &mocks.Connector{}
+			fakeConn.SearchReturns([]teamvault.SearchResult{
+				{Key: "ABC123", Name: "alpha"},
+				{Key: "DEF456", Name: "beta"},
+			}, nil)
+
+			var outBuf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"search", "foo", "--keys-only"})
+			cmd.SetOut(&outBuf)
+			cmd.SetErr(&bytes.Buffer{})
+
+			cli.SetNewConnectorForTest(
+				func(sf *cli.SharedFlags) func(context.Context) (teamvault.Connector, error) {
+					return func(ctx context.Context) (teamvault.Connector, error) {
+						return fakeConn, nil
+					}
+				},
+			)
+			defer cli.ResetNewConnectorForTest()
+
+			_ = cmd.Execute()
 			Expect(outBuf.String()).To(Equal("ABC123\nDEF456\n"))
 		})
 
-		It("prints JSON array with --json", func() {
+		It("prints JSON array of objects with --json", func() {
 			fakeConn := &mocks.Connector{}
-			fakeConn.SearchReturns([]teamvault.Key{"ABC123", "DEF456"}, nil)
+			fakeConn.SearchReturns([]teamvault.SearchResult{
+				{
+					Key:      "ABC123",
+					Name:     "alpha",
+					Username: "user1",
+					Url:      teamvault.Url("https://a.example"),
+				},
+				{
+					Key:      "DEF456",
+					Name:     "beta",
+					Username: "user2",
+					Url:      teamvault.Url("https://b.example"),
+				},
+			}, nil)
 
 			var outBuf bytes.Buffer
 			cmd := cli.NewRootCommand(ctx)
@@ -116,12 +164,44 @@ var _ = Describe("search", func() {
 			defer cli.ResetNewConnectorForTest()
 
 			_ = cmd.Execute()
-			Expect(strings.TrimSpace(outBuf.String())).To(Equal(`["ABC123","DEF456"]`))
+			Expect(strings.TrimSpace(outBuf.String())).To(Equal(
+				`[{"key":"ABC123","name":"alpha","username":"user1","url":"https://a.example"},{"key":"DEF456","name":"beta","username":"user2","url":"https://b.example"}]`,
+			))
+		})
+
+		It("respects --limit", func() {
+			fakeConn := &mocks.Connector{}
+			fakeConn.SearchReturns([]teamvault.SearchResult{
+				{Key: "ABC123", Name: "alpha"},
+				{Key: "DEF456", Name: "beta"},
+			}, nil)
+
+			var outBuf bytes.Buffer
+			cmd := cli.NewRootCommand(ctx)
+			cmd.SetArgs([]string{"search", "foo", "--limit", "1"})
+			cmd.SetOut(&outBuf)
+			cmd.SetErr(&bytes.Buffer{})
+
+			cli.SetNewConnectorForTest(
+				func(sf *cli.SharedFlags) func(context.Context) (teamvault.Connector, error) {
+					return func(ctx context.Context) (teamvault.Connector, error) {
+						return fakeConn, nil
+					}
+				},
+			)
+			defer cli.ResetNewConnectorForTest()
+
+			_ = cmd.Execute()
+			out := outBuf.String()
+			Expect(out).To(ContainSubstring("ABC123"))
+			Expect(out).To(ContainSubstring("alpha"))
+			Expect(out).NotTo(ContainSubstring("DEF456"))
+			Expect(out).NotTo(ContainSubstring("beta"))
 		})
 	})
 
 	Describe("empty results", func() {
-		It("exits 0 with no output for zero matches", func() {
+		It("exits 0 printing the table header only (no rows) for zero matches", func() {
 			fakeConn := &mocks.Connector{}
 			fakeConn.SearchReturns(nil, nil)
 
@@ -142,7 +222,8 @@ var _ = Describe("search", func() {
 
 			err := cmd.Execute()
 			Expect(err).To(BeNil())
-			Expect(outBuf.String()).To(Equal(""))
+			// Table mode prints the header even when there are no results.
+			Expect(outBuf.String()).To(Equal("KEY  NAME\n"))
 		})
 
 		It("prints empty JSON array with --json for zero matches", func() {

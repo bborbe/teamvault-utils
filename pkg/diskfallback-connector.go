@@ -85,7 +85,7 @@ func (d *diskFallback) File(ctx context.Context, key Key) (File, error) {
 	return content, err
 }
 
-func (d *diskFallback) Search(ctx context.Context, key string) ([]Key, error) {
+func (d *diskFallback) Search(ctx context.Context, key string) ([]SearchResult, error) {
 	return d.connector.Search(ctx, key)
 }
 

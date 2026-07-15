@@ -14,5 +14,9 @@ type Connector interface {
 	User(ctx context.Context, key Key) (User, error)
 	Url(ctx context.Context, key Key) (Url, error)
 	File(ctx context.Context, key Key) (File, error)
-	Search(ctx context.Context, name string) ([]Key, error)
+	// Search returns the secrets whose name matches name as SearchResult values
+	// (key + name + username + url), following the server's pagination up to an
+	// internal safety cap. NOTE: returns []SearchResult (was []Key in v5.9.x and
+	// earlier) — a breaking change for library consumers.
+	Search(ctx context.Context, name string) ([]SearchResult, error)
 }
