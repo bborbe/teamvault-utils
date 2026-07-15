@@ -201,7 +201,7 @@ var _ = Describe("search", func() {
 	})
 
 	Describe("empty results", func() {
-		It("exits 0 with no output for zero matches", func() {
+		It("exits 0 printing the table header only (no rows) for zero matches", func() {
 			fakeConn := &mocks.Connector{}
 			fakeConn.SearchReturns(nil, nil)
 

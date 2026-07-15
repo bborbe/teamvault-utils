@@ -319,6 +319,29 @@ var _ = Describe("RemoteConnector", func() {
 		})
 	})
 
+	Context("Search with a cross-host next link", func() {
+		BeforeEach(func() {
+			server.RouteToHandler(
+				http.MethodGet,
+				"/api/secrets/",
+				func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusOK)
+					// next points at a DIFFERENT host — the client must refuse to
+					// follow it (the Basic-auth header would leak to that host).
+					fmt.Fprint(
+						resp,
+						`{"count":2,"next":"https://evil.example.com/api/secrets/?page=2","previous":null,"results":[{"hashid":"key1","name":"one","username":"u","url":"https://example.com"}]}`,
+					)
+				},
+			)
+		})
+		It("refuses to follow the cross-host next and errors", func() {
+			_, searchErr := remoteConnector.Search(ctx, "searchString")
+			Expect(searchErr).NotTo(BeNil())
+			Expect(searchErr.Error()).To(ContainSubstring("different host"))
+		})
+	})
+
 	Context("Search with pagination", func() {
 		var result []teamvault.SearchResult
 		JustBeforeEach(func() {
