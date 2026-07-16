@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v5.10.0
 
 - test(e2e): add scenario 009 covering `htpasswd` end-to-end against fakevault (seeded fixture + a freshly created secret)
 - feat(cli): add `htpasswd <KEY>` subcommand that prints an htpasswd-format credential (`user:$2...` bcrypt) built from a TeamVault secret's username + password, for secret-free htpasswd generation at deploy time (e.g. `--set-string secrets.htpasswd=$(teamvault-cli htpasswd <KEY>)`). Reuses the existing `HtpasswdGenerator` (same bcrypt path as the `teamvaultHtpasswd` config template func).
